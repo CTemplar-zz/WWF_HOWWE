@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="assets/capas/geo_limite.js"></script>
+<script src="assets/capas/geo_departamentos.js"></script>
 <script src="assets/capas/geo_apn.js"></script>
 <script src="assets/capas/geo_jaguar.js"></script>
 <script src="assets/capas/geo_borochi.js"></script>
@@ -28,6 +29,7 @@
 <script src="assets/capas/geo_riq_orestias.js"></script>
 <script src="assets/capas/geo_riq_rivulidae.js"></script>
 <script src="assets/capas/geo_riq_trichomy.js"></script>
+<script src="assets/capas/geo_intersection.js"></script>
 <style>
   :root {
     --bg: #f5f6f3;
@@ -640,6 +642,7 @@ const MODULES = {
   '1': { title:'Marco espacial base', sub:'Polígonos oficiales SERNAP · límite nacional', color:'#6e8a55',
     icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2 4 7v10l8 5 8-5V7z"/><path d="m4 7 8 5 8-5M12 12v10"/></svg>',
     layers:[
+      {id:'departamentos',name:'Departamentos de Bolivia', color:'#000000',opacity:100,on:true},
       {id:'apn',   name:'Áreas Protegidas (33 polígonos)',  color:'#2c8a4d',opacity:100,on:true},
       {id:'limite',name:'Límite Bolivia',                    color:'#6a6a6a',opacity:80,on:true},
       {id:'zon',   name:'Zonificación interna',              color:'#7fa860',opacity:50,on:false},
@@ -658,6 +661,7 @@ const MODULES = {
   '2': { title:'Distribución de especies', sub:'IUCN Red List · BirdLife · datos actualizados', color:'#7c5fb5',
     icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M3 11c0-4 4-7 9-7s9 3 9 7-4 7-9 7c-1.7 0-3.3-.3-4.7-.9L3 19l1.5-3.4C3.5 14.4 3 12.8 3 11z"/></svg>',
     layers:[
+      {id:'departamentos',name:'Departamentos de Bolivia', group:'Marco espacial',          color:'#000000',opacity:100,on:true},
       {id:'apn',       name:'Áreas Protegidas',  group:'Marco espacial',          color:'#2c8a4d',opacity:100,on:true},
       {id:'jaguar',    name:'Jaguar',            group:'Objetos de conservación', color:'#7fa860',opacity:50,on:true,  iucn:'NT',sci:'Panthera onca'},
       {id:'paraba_bb', name:'Paraba Barba Azul', group:'Objetos de conservación', color:'#7a1a1a',opacity:50,on:false, iucn:'CR',sci:'Ara glaucogularis'},
@@ -690,6 +694,7 @@ const MODULES = {
   '3': { title:'Amenazas críticas', sub:'Incendios, deforestación, minería, infraestructura', color:'#d6452c',
     icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="m12 2 10 18H2z"/><path d="M12 9v5M12 17v.5"/></svg>',
     layers:[
+      {id:'departamentos',name:'Departamentos de Bolivia',color:'#000000',opacity:100,on:true},
       {id:'apn',      name:'Áreas Protegidas',             color:'#2c8a4d',opacity:100,on:true},
       {id:'fires',    name:'Incendios históricos (FIRMS)', color:'#d6452c',opacity:70,on:true},
       {id:'defor',    name:'Deforestación anual (GFW)',    color:'#a8341f',opacity:65,on:true},
@@ -708,6 +713,7 @@ const MODULES = {
   '4': { title:'Ecosistemas y agua', sub:'Humedales, cuencas, glaciares, conectividad', color:'#2374b5',
     icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 3s-7 8-7 13a7 7 0 1 0 14 0c0-5-7-13-7-13z"/></svg>',
     layers:[
+      {id:'departamentos',name:'Departamentos de Bolivia',color:'#000000',opacity:100,on:true},
       {id:'apn',    name:'Áreas Protegidas',              color:'#2c8a4d',opacity:100,on:true},
       {id:'wet',    name:'Humedales (bofedales, lagunas)',color:'#2374b5',opacity:65,on:true},
       {id:'ramsar', name:'Sitios Ramsar',                 color:'#4aa3e3',opacity:70,on:true},
@@ -726,6 +732,7 @@ const MODULES = {
   '5': { title:'Cambio climático', sub:'Escenarios, vulnerabilidad, conectividad climática', color:'#e8a417',
     icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19"/></svg>',
     layers:[
+      {id:'departamentos',name:'Departamentos de Bolivia',color:'#000000',opacity:100,on:true},
       {id:'apn', name:'Áreas Protegidas',               color:'#2c8a4d',opacity:100,on:true},
       {id:'temp',name:'Escenarios temperatura',         color:'#d6452c',opacity:55,on:true},
       {id:'prec',name:'Escenarios precipitación',       color:'#2374b5',opacity:45,on:false},
@@ -744,6 +751,7 @@ const MODULES = {
   '6': { title:'Comunidades y bienestar', sub:'Comunidades, sitios sagrados, turismo', color:'#4a8aa8',
     icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c0-3 3-5 6-5s6 2 6 5M14 19c0-2 2-4 5-4s5 1 5 4"/></svg>',
     layers:[
+      {id:'departamentos',name:'Departamentos de Bolivia',color:'#000000',opacity:100,on:true},
       {id:'apn',  name:'Áreas Protegidas',            color:'#2c8a4d',opacity:100,on:true},
       {id:'com',  name:'Comunidades dentro AP',       color:'#4a8aa8',opacity:70,on:true},
       {id:'sac',  name:'Sitios sagrados',             color:'#7c5fb5',opacity:80,on:false},
@@ -812,6 +820,7 @@ setBasemap('terrain');
 const DATA_FILES = {
   'apn':      'assets/capas/AreasProtegidas_Bolivia.geojson',
   'limite':   'assets/capas/Bolivia_limite.geojson',
+  'departamentos': 'assets/capas/Departamentos_Bolivia.geojson',
   'jaguar':   'assets/capas/Panthera_onca_Jaguar.geojson',
   'borochi':  'assets/capas/Chrysocyon_brachyurus_Borochi.geojson',
   'bufeo':    'assets/capas/Inia_geoffrensis_Bufeo.geojson',
@@ -877,9 +886,75 @@ const SERNAP_LEGEND=[
 // === Selección de APs y cálculos geoespaciales ===
 const selectedAPs = new Set();
 const speciesAreaCache = {};      // {speciesId: area_km2}
-// Placeholders — se poblarán cuando carguemos los resultados de intersección de ArcGIS
+// Índices de intersección especies × APs (pre-computados en ArcGIS Pro)
 const speciesAPPresence = {};
 const riquezaSpeciesByAP = {};
+const apHaBySpecies = {};   // {sci_name: {ap_name: ha}}
+const speciesByLayer = {};   // {layer_id: [sci_name, ...]}
+
+function buildIntersectionIndex(){
+  const data = window['GEO_INTERSECTION'];
+  if(!data || !data.species) return;
+  data.species.forEach(s=>{
+    if(!s.sci_name || !s.layer_id) return;
+    apHaBySpecies[s.sci_name] = s.by_ap || {};
+    if(!speciesByLayer[s.layer_id]) speciesByLayer[s.layer_id] = [];
+    speciesByLayer[s.layer_id].push(s.sci_name);
+  });
+}
+
+// Devuelve la superficie de intersección (ha) de una capa con las APs filtradas
+function getLayerIntersectedHa(layerId){
+  const spList = speciesByLayer[layerId] || [];
+  let total = 0;
+  for(const sci of spList){
+    const byAp = apHaBySpecies[sci] || {};
+    if(selectedAPs.size === 0){
+      for(const ap in byAp) total += byAp[ap];
+    } else {
+      for(const ap of selectedAPs){
+        if(byAp[ap]) total += byAp[ap];
+      }
+    }
+  }
+  return total;
+}
+
+// Para una capa, devuelve {sci_name: ha} filtrado por APs (usado en donut/tabla)
+function getLayerSpeciesBreakdown(layerId){
+  const spList = speciesByLayer[layerId] || [];
+  const result = {};
+  for(const sci of spList){
+    const byAp = apHaBySpecies[sci] || {};
+    let ha = 0;
+    if(selectedAPs.size === 0){
+      for(const ap in byAp) ha += byAp[ap];
+    } else {
+      for(const ap of selectedAPs){
+        if(byAp[ap]) ha += byAp[ap];
+      }
+    }
+    if(ha > 0) result[sci] = ha;
+  }
+  return result;
+}
+
+// Cuenta especies con intersección > 0 en las APs filtradas, para una capa
+function getLayerSpeciesCountInAPs(layerId){
+  const spList = speciesByLayer[layerId] || [];
+  let n = 0;
+  for(const sci of spList){
+    const byAp = apHaBySpecies[sci] || {};
+    if(selectedAPs.size === 0){
+      if(Object.keys(byAp).length > 0) n++;
+    } else {
+      for(const ap of selectedAPs){
+        if(byAp[ap]){ n++; break; }
+      }
+    }
+  }
+  return n;
+}
 
 function ringAreaKm2(ring){
   if(!ring||ring.length<3) return 0;
@@ -1043,6 +1118,12 @@ function createGeoJSONLayer(id, layerDef){
   if(id==='limite'){
     return L.geoJSON(data,{style:{color:layerDef.color,weight:2.5,fillOpacity:0,opacity:0.75,dashArray:'6,4'}});
   }
+  if(id==='departamentos'){
+    return L.geoJSON(data,{
+      interactive:false,
+      style:{color:'#000000',weight:1.4,fillOpacity:0,opacity:0.9,interactive:false}
+    });
+  }
   if(id==='apn'){
     return L.geoJSON(data,{
       style:f=>{
@@ -1142,7 +1223,7 @@ function applyLayerOpacity(layerId, leafletLayer, pct){
     });
     return;
   }
-  const outlineOnly = (layerId==='limite' || layerId==='apn_lim');
+  const outlineOnly = (layerId==='limite' || layerId==='apn_lim' || layerId==='departamentos');
   // Capas de riqueza usan fill 100% (no transparencia por defecto). Especies normales 55%.
   const fillRatio = layerId.startsWith('riq_') ? 1.0 : 0.55;
   try{
@@ -1315,10 +1396,9 @@ function _saveDefaultKPIs(){
 // Superficie aproximada de intersección entre una capa de especies y las APs (en ha)
 // Para especies normales: suma de sup_ha de APs donde la especie tiene presencia
 // Para capas riq_*: suma de áreas (calculadas) de features que intersectan APs activas
-// Devuelve la superficie TOTAL de distribución de la especie en ha (sin filtro AP).
-// La intersección real con APs se calculará en ArcGIS y se cargará aparte.
+// Superficie (ha) de intersección de la capa con las APs filtradas, desde ArcGIS Pro
 function getSpeciesIntersectionWithAPs(sid){
-  return getSpeciesAreaKm2(sid)*100;
+  return getLayerIntersectedHa(sid);
 }
 
 // Genera paleta de azules distintivos para N especies de una capa de riqueza
@@ -1334,23 +1414,15 @@ function generateBluePalette(n){
   return out;
 }
 
-// Para una capa riq_*, devuelve {especie: ha} sumando áreas de features que listan
-// esa especie en ESPECIES. Sin filtro AP (la intersección real vendrá de ArcGIS).
+// Para una capa riq_*, devuelve {sci_name: ha} con superficies de intersección reales
+// (calculadas en ArcGIS Pro), filtradas por las APs seleccionadas.
 function getRiquezaSpeciesBreakdown(sid){
-  const data=geoData[sid];
-  if(!data) return {};
-  const result={};
-  data.features.forEach(f=>{
-    const especies=(f.properties.ESPECIES||'').split(';').map(s=>s.trim()).filter(Boolean);
-    const fHa=geometryAreaKm2(f.geometry)*100;
-    especies.forEach(sp=>{ result[sp]=(result[sp]||0)+fHa; });
-  });
-  return result;
+  return getLayerSpeciesBreakdown(sid);
 }
 
 // Construye los items del desglose M2 (uno por especie individual)
 function getM2BreakdownItems(){
-  const activeSp=MODULES['2'].layers.filter(l=>activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite');
+  const activeSp=MODULES['2'].layers.filter(l=>activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos');
   const items=[];
   activeSp.forEach(s=>{
     if(s.id.startsWith('riq_')){
@@ -1421,9 +1493,10 @@ function renderM2Donut(){
   const legend=document.getElementById('donutLegend');
 
   // Actualizar título donut y tabla
-  if(h4) h4.innerHTML=`Distribución por especie <span class="mono" style="color:var(--text-dim);font-size:10px">distribución total</span>`;
+  const scope = selectedAPs.size===0 ? 'todas las APs' : `${selectedAPs.size} AP${selectedAPs.size===1?'':'s'}`;
+  if(h4) h4.innerHTML=`Distribución × Áreas Protegidas <span class="mono" style="color:var(--text-dim);font-size:10px">${scope}</span>`;
   const tableTitle=document.getElementById('breakdownTitle');
-  if(tableTitle) tableTitle.innerHTML=`Desglose por especie <span class="mono" style="color:var(--text-dim);font-size:10px">distribución total</span>`;
+  if(tableTitle) tableTitle.innerHTML=`Desglose por especie en APs <span class="mono" style="color:var(--text-dim);font-size:10px">${scope}</span>`;
 
   const items=getM2BreakdownItems();
 
@@ -1467,11 +1540,17 @@ function renderM2Stats(){
       if(inSel){ supAP += (parseFloat(p.sup_ha)||0); apCount++; }
     });
   }
-  // Superficie distribución (suma de capas de especies activas)
-  const activeSp = MODULES['2'].layers.filter(l=> activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite');
-  let supDistKm2=0;
-  activeSp.forEach(s=>{ supDistKm2 += getSpeciesAreaKm2(s.id); });
-  const supDistHa = supDistKm2*100;
+  const activeSp = MODULES['2'].layers.filter(l=> activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos');
+  // Superficie de intersección (ha) — datos reales de ArcGIS, filtrados por APs
+  let supInterHa = 0;
+  activeSp.forEach(s=>{ supInterHa += getLayerIntersectedHa(s.id); });
+  // # especies con intersección en APs (real, no estimado)
+  let countSpInAP = 0;
+  activeSp.forEach(s=>{ countSpInAP += getLayerSpeciesCountInAPs(s.id); });
+  // Total de especies (sumando las de capas de riqueza)
+  let totalSpInLayers = 0;
+  activeSp.forEach(s=>{ totalSpInLayers += (speciesByLayer[s.id]||[]).length; });
+
   const scope = selectedAPs.size===0 ? `${apCount} áreas (todas)` : `${selectedAPs.size} AP${selectedAPs.size===1?'':'s'} seleccionadas`;
   const clearLink = selectedAPs.size>0 ? ` · <a href="#" id="clearAPSel" style="color:var(--accent)">limpiar</a>` : '';
   grid.innerHTML = `
@@ -1481,9 +1560,14 @@ function renderM2Stats(){
       <div class="trend">${scope}${clearLink}</div>
     </div>
     <div class="kpi">
-      <div class="lbl">Sup. distribución activa</div>
-      <div class="val">${formatHa(supDistHa)}<span class="unit">${haUnitLabel(supDistHa)}</span></div>
-      <div class="trend">${activeSp.length} especie${activeSp.length===1?'':'s'} activa${activeSp.length===1?'':'s'}</div>
+      <div class="lbl">Sup. de distribución en APs</div>
+      <div class="val">${formatHa(supInterHa)}<span class="unit">${haUnitLabel(supInterHa)}</span></div>
+      <div class="trend">${activeSp.length} capa${activeSp.length===1?'':'s'} activa${activeSp.length===1?'':'s'}</div>
+    </div>
+    <div class="kpi" style="grid-column:span 2">
+      <div class="lbl">Especies con presencia en APs</div>
+      <div class="val">${countSpInAP}<span class="unit">/ ${totalSpInLayers} en capas activas</span></div>
+      <div class="trend">${selectedAPs.size===0 ? 'En todas las APs' : 'En APs seleccionadas'} · datos ArcGIS</div>
     </div>
   `;
   const clr=document.getElementById('clearAPSel');
@@ -1674,6 +1758,9 @@ document.querySelectorAll('.panel-section[data-collapse] .panel-h').forEach(h=>{
 renderAPList();
 renderModule('1');
 // Carga asíncrona de capas reales — re-renderiza al completar
+// Indexar datos de intersección ArcGIS apenas se cargue el script (síncrono)
+buildIntersectionIndex();
+
 loadAllGeoData().then(()=>{
   buildAPNFromGeoData();
   // Destruir capas simuladas del módulo activo para recrearlas con datos reales

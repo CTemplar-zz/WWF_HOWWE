@@ -1,0 +1,17 @@
+# ArcGIS Pro project files and indexes
+*.aprx
+*.atbx
+*.tbx
+*.gdb/
+Index/
+.backups/
+
+# Temporary working files
+arcgis_tmp/
+*.tmp
+*.bak
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
