@@ -877,8 +877,9 @@ const SERNAP_LEGEND=[
 // === Selección de APs y cálculos geoespaciales ===
 const selectedAPs = new Set();
 const speciesAreaCache = {};      // {speciesId: area_km2}
-const speciesAPPresence = {};     // {speciesId: Set<nombre_ap>}
-const riquezaSpeciesByAP = {};    // {speciesId: {nombre_ap: Set<species>}}
+// Placeholders — se poblarán cuando carguemos los resultados de intersección de ArcGIS
+const speciesAPPresence = {};
+const riquezaSpeciesByAP = {};
 
 function ringAreaKm2(ring){
   if(!ring||ring.length<3) return 0;
@@ -922,116 +923,11 @@ function featureBBox(g){
   return [w,s,e,n];
 }
 function bboxIntersect(a,b){return !(b[0]>a[2]||b[2]<a[0]||b[1]>a[3]||b[3]<a[1]);}
+// NOTA: La intersección polígono-polígono entre especies y APs se calculará
+// externamente en ArcGIS para mayor precisión. Los resultados se cargarán
+// en otro momento como datos pre-procesados.
 
-// Punto-en-polígono (ray casting). Acepta arrays de [lng,lat]
-function pointInRing(p, ring){
-  let inside=false; const px=p[0], py=p[1];
-  for(let i=0,j=ring.length-1; i<ring.length; j=i++){
-    const xi=ring[i][0], yi=ring[i][1];
-    const xj=ring[j][0], yj=ring[j][1];
-    if(((yi>py)!==(yj>py)) && (px < (xj-xi)*(py-yi)/(yj-yi)+xi)) inside=!inside;
-  }
-  return inside;
-}
-function pointInPolygon(p, rings){
-  if(!rings || rings.length===0) return false;
-  if(!pointInRing(p, rings[0])) return false;
-  // Restar huecos
-  for(let i=1;i<rings.length;i++){ if(pointInRing(p, rings[i])) return false; }
-  return true;
-}
-function pointInGeometry(p, geom){
-  if(!geom) return false;
-  if(geom.type==='Polygon') return pointInPolygon(p, geom.coordinates);
-  if(geom.type==='MultiPolygon') return geom.coordinates.some(poly => pointInPolygon(p, poly));
-  return false;
-}
-function getPolygonCentroid(geom){
-  // Centroide simple (promedio de vértices)
-  let sx=0, sy=0, n=0;
-  const walk=c=>{
-    if(typeof c[0]==='number'){ sx+=c[0]; sy+=c[1]; n++; }
-    else c.forEach(walk);
-  };
-  if(geom && geom.coordinates) walk(geom.coordinates);
-  return n===0 ? [0,0] : [sx/n, sy/n];
-}
-function generateGridPoints(bbox, n){
-  const [w,s,e,nn]=bbox; const pts=[];
-  for(let i=0;i<n;i++){
-    for(let j=0;j<n;j++){
-      pts.push([w+(e-w)*(i+0.5)/n, s+(nn-s)*(j+0.5)/n]);
-    }
-  }
-  return pts;
-}
-
-// Precomputo de muestras dentro de cada AP (sample points para Monte Carlo)
-const apSamplePoints={};      // {nombre_ap: [[lng,lat], ...]}
-const speciesAPCoverage={};   // {speciesId: {nombre_ap: ratio_0_a_1}}
-
-function precomputeAPSamples(){
-  if(!geoData['apn']) return;
-  geoData['apn'].features.forEach(ap=>{
-    const apName=ap.properties.nombre_ap; if(!apName) return;
-    const bbox=featureBBox(ap.geometry);
-    const grid=generateGridPoints(bbox, 7); // 49 puntos por bbox
-    const inside=grid.filter(p=>pointInGeometry(p, ap.geometry));
-    apSamplePoints[apName]=inside;
-  });
-}
-
-function precomputeSpeciesCoverage(){
-  Object.keys(DATA_FILES).forEach(sid=>{
-    if(sid==='apn'||sid==='limite'||sid.startsWith('riq_')) return;
-    const sData=geoData[sid]; if(!sData) return;
-    const cov={};
-    Object.entries(apSamplePoints).forEach(([apName, pts])=>{
-      if(pts.length===0){ cov[apName]=0; return; }
-      let hit=0;
-      for(let i=0;i<pts.length;i++){
-        if(sData.features.some(sf=>pointInGeometry(pts[i], sf.geometry))) hit++;
-      }
-      cov[apName] = hit/pts.length;
-    });
-    speciesAPCoverage[sid]=cov;
-  });
-}
-
-function computeSpeciesAPPresence(){
-  if(!geoData['apn']) return;
-  const aps = geoData['apn'].features
-    .filter(f=>f.properties.nombre_ap)
-    .map(f=>({name:f.properties.nombre_ap, bbox:featureBBox(f.geometry)}));
-  Object.keys(DATA_FILES).forEach(sid=>{
-    if(sid==='apn'||sid==='limite') return;
-    const d=geoData[sid]; if(!d) return;
-    if(sid.startsWith('riq_')){
-      // Para capas riqueza: para cada AP, recoger especies cuyas features (centroide) caen dentro
-      const byAP={};
-      geoData['apn'].features.forEach(ap=>{
-        const apName=ap.properties.nombre_ap; if(!apName) return;
-        const especiesSet=new Set();
-        d.features.forEach(f=>{
-          const c=getPolygonCentroid(f.geometry);
-          if(pointInGeometry(c, ap.geometry)){
-            (f.properties.ESPECIES||'').split(';').map(s=>s.trim()).filter(Boolean)
-              .forEach(s=>especiesSet.add(s));
-          }
-        });
-        if(especiesSet.size>0) byAP[apName]=especiesSet;
-      });
-      riquezaSpeciesByAP[sid]=byAP;
-      speciesAPPresence[sid]=new Set(Object.keys(byAP));
-    } else {
-      // Para especies normales: usar la cobertura precomputada (Monte Carlo)
-      const cov=speciesAPCoverage[sid]||{};
-      const presence=new Set();
-      Object.entries(cov).forEach(([apName, ratio])=>{ if(ratio>0) presence.add(apName); });
-      speciesAPPresence[sid]=presence;
-    }
-  });
-}
+// computeSpeciesAPPresence() removido: la presencia especie×AP se computará en ArcGIS.
 
 function getSpeciesAreaKm2(sid){
   if(speciesAreaCache[sid]!==undefined) return speciesAreaCache[sid];
@@ -1419,35 +1315,10 @@ function _saveDefaultKPIs(){
 // Superficie aproximada de intersección entre una capa de especies y las APs (en ha)
 // Para especies normales: suma de sup_ha de APs donde la especie tiene presencia
 // Para capas riq_*: suma de áreas (calculadas) de features que intersectan APs activas
+// Devuelve la superficie TOTAL de distribución de la especie en ha (sin filtro AP).
+// La intersección real con APs se calculará en ArcGIS y se cargará aparte.
 function getSpeciesIntersectionWithAPs(sid){
-  if(!geoData['apn']) return 0;
-  if(sid.startsWith('riq_')){
-    // Riqueza: si el centroide de la feature cae dentro de una AP filtrada, sumar su área
-    const data=geoData[sid]; if(!data) return 0;
-    let totalHa=0;
-    data.features.forEach(f=>{
-      const c=getPolygonCentroid(f.geometry);
-      const inAnyAP=geoData['apn'].features.some(ap=>{
-        const apName=ap.properties.nombre_ap; if(!apName) return false;
-        if(selectedAPs.size>0 && !selectedAPs.has(apName)) return false;
-        return pointInGeometry(c, ap.geometry);
-      });
-      if(inAnyAP) totalHa += geometryAreaKm2(f.geometry)*100;
-    });
-    return totalHa;
-  }
-  // Especies normales: usar la cobertura precomputada como proporción de cada AP
-  const cov=speciesAPCoverage[sid];
-  if(!cov) return 0;
-  let totalHa=0;
-  geoData['apn'].features.forEach(ap=>{
-    const apName=ap.properties.nombre_ap;
-    if(!apName) return;
-    if(selectedAPs.size>0 && !selectedAPs.has(apName)) return;
-    const ratio=cov[apName]||0;
-    if(ratio>0) totalHa += (parseFloat(ap.properties.sup_ha)||0) * ratio;
-  });
-  return totalHa;
+  return getSpeciesAreaKm2(sid)*100;
 }
 
 // Genera paleta de azules distintivos para N especies de una capa de riqueza
@@ -1463,24 +1334,16 @@ function generateBluePalette(n){
   return out;
 }
 
-// Para una capa riq_*, devuelve {especie: ha} sumando áreas de features
-// que contienen esa especie y cuyo bbox intersecta con APs filtradas
+// Para una capa riq_*, devuelve {especie: ha} sumando áreas de features que listan
+// esa especie en ESPECIES. Sin filtro AP (la intersección real vendrá de ArcGIS).
 function getRiquezaSpeciesBreakdown(sid){
   const data=geoData[sid];
-  if(!data||!geoData['apn']) return {};
+  if(!data) return {};
   const result={};
   data.features.forEach(f=>{
-    const c=getPolygonCentroid(f.geometry);
-    const inAnyAP=geoData['apn'].features.some(ap=>{
-      const apName=ap.properties.nombre_ap; if(!apName) return false;
-      if(selectedAPs.size>0 && !selectedAPs.has(apName)) return false;
-      return pointInGeometry(c, ap.geometry);
-    });
-    if(inAnyAP){
-      const especies=(f.properties.ESPECIES||'').split(';').map(s=>s.trim()).filter(Boolean);
-      const fHa=geometryAreaKm2(f.geometry)*100;
-      especies.forEach(sp=>{ result[sp]=(result[sp]||0)+fHa; });
-    }
+    const especies=(f.properties.ESPECIES||'').split(';').map(s=>s.trim()).filter(Boolean);
+    const fHa=geometryAreaKm2(f.geometry)*100;
+    especies.forEach(sp=>{ result[sp]=(result[sp]||0)+fHa; });
   });
   return result;
 }
@@ -1558,10 +1421,9 @@ function renderM2Donut(){
   const legend=document.getElementById('donutLegend');
 
   // Actualizar título donut y tabla
-  const scope = selectedAPs.size===0 ? 'todas las APs' : `${selectedAPs.size} AP${selectedAPs.size===1?'':'s'}`;
-  if(h4) h4.innerHTML=`Distribución × Áreas Protegidas <span class="mono" style="color:var(--text-dim);font-size:10px">${scope}</span>`;
+  if(h4) h4.innerHTML=`Distribución por especie <span class="mono" style="color:var(--text-dim);font-size:10px">distribución total</span>`;
   const tableTitle=document.getElementById('breakdownTitle');
-  if(tableTitle) tableTitle.innerHTML=`Desglose por especie <span class="mono" style="color:var(--text-dim);font-size:10px">${scope}</span>`;
+  if(tableTitle) tableTitle.innerHTML=`Desglose por especie <span class="mono" style="color:var(--text-dim);font-size:10px">distribución total</span>`;
 
   const items=getM2BreakdownItems();
 
@@ -1610,44 +1472,18 @@ function renderM2Stats(){
   let supDistKm2=0;
   activeSp.forEach(s=>{ supDistKm2 += getSpeciesAreaKm2(s.id); });
   const supDistHa = supDistKm2*100;
-  // # especies con presencia en APs (seleccionadas o todas)
-  let countSpInAP=0;
-  const uniqueRiquezaSp=new Set();
-  activeSp.forEach(s=>{
-    if(s.id.startsWith('riq_')){
-      const byAP=riquezaSpeciesByAP[s.id]; if(!byAP) return;
-      const targetAPs=selectedAPs.size===0 ? Object.keys(byAP) : Array.from(selectedAPs);
-      targetAPs.forEach(ap=>{ const set=byAP[ap]; if(set) set.forEach(sp=>uniqueRiquezaSp.add(sp)); });
-    } else {
-      const pres=speciesAPPresence[s.id]; if(!pres) return;
-      if(selectedAPs.size===0){
-        if(pres.size>0) countSpInAP++;
-      } else {
-        for(const ap of selectedAPs){ if(pres.has(ap)){ countSpInAP++; break; } }
-      }
-    }
-  });
-  countSpInAP += uniqueRiquezaSp.size;
   const scope = selectedAPs.size===0 ? `${apCount} áreas (todas)` : `${selectedAPs.size} AP${selectedAPs.size===1?'':'s'} seleccionadas`;
-  const supAPDisplay = formatHa(supAP);
-  const supAPUnit = haUnitLabel(supAP);
-  const supDistDisplay = formatHa(supDistHa);
-  const supDistUnit = haUnitLabel(supDistHa);
+  const clearLink = selectedAPs.size>0 ? ` · <a href="#" id="clearAPSel" style="color:var(--accent)">limpiar</a>` : '';
   grid.innerHTML = `
     <div class="kpi">
       <div class="lbl">Superficie de las APs</div>
-      <div class="val">${supAPDisplay}<span class="unit">${supAPUnit}</span></div>
-      <div class="trend">${scope}</div>
+      <div class="val">${formatHa(supAP)}<span class="unit">${haUnitLabel(supAP)}</span></div>
+      <div class="trend">${scope}${clearLink}</div>
     </div>
     <div class="kpi">
       <div class="lbl">Sup. distribución activa</div>
-      <div class="val">${supDistDisplay}<span class="unit">${supDistUnit}</span></div>
+      <div class="val">${formatHa(supDistHa)}<span class="unit">${haUnitLabel(supDistHa)}</span></div>
       <div class="trend">${activeSp.length} especie${activeSp.length===1?'':'s'} activa${activeSp.length===1?'':'s'}</div>
-    </div>
-    <div class="kpi" style="grid-column:span 2">
-      <div class="lbl">Especies con presencia en APs</div>
-      <div class="val">${countSpInAP}<span class="unit">/ ${activeSp.length||0} activas</span></div>
-      <div class="trend">${selectedAPs.size===0 ? 'En toda Bolivia' : 'En APs seleccionadas'}${selectedAPs.size>0?` · <a href="#" id="clearAPSel" style="color:var(--accent)">limpiar</a>`:''}</div>
     </div>
   `;
   const clr=document.getElementById('clearAPSel');
@@ -1840,9 +1676,6 @@ renderModule('1');
 // Carga asíncrona de capas reales — re-renderiza al completar
 loadAllGeoData().then(()=>{
   buildAPNFromGeoData();
-  precomputeAPSamples();
-  precomputeSpeciesCoverage();
-  computeSpeciesAPPresence();
   // Destruir capas simuladas del módulo activo para recrearlas con datos reales
   Object.keys(moduleLayers).forEach(k=>{
     if(map.hasLayer(moduleLayers[k]))map.removeLayer(moduleLayers[k]);
