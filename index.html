@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Geoportal PFP — Áreas Protegidas Bolivia</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="assets/capas/geo_limite.js"></script>
+<script src="assets/capas/geo_apn.js"></script>
+<script src="assets/capas/geo_jaguar.js"></script>
+<script src="assets/capas/geo_borochi.js"></script>
+<script src="assets/capas/geo_bufeo.js"></script>
+<script src="assets/capas/geo_londra.js"></script>
+<script src="assets/capas/geo_jucumari.js"></script>
+<script src="assets/capas/geo_dorado.js"></script>
+<script src="assets/capas/geo_guanaco.js"></script>
+<script src="assets/capas/geo_vicuna.js"></script>
+<script src="assets/capas/geo_paraba_az.js"></script>
+<script src="assets/capas/geo_paraba_bb.js"></script>
+<script src="assets/capas/geo_paraba_fr.js"></script>
+<script src="assets/capas/geo_fl_andino.js"></script>
+<script src="assets/capas/geo_fl_james.js"></script>
+<script src="assets/capas/geo_condor.js"></script>
+<script src="assets/capas/geo_brycon.js"></script>
+<script src="assets/capas/geo_colossoma.js"></script>
+<script src="assets/capas/geo_riq_orestias.js"></script>
+<script src="assets/capas/geo_riq_rivulidae.js"></script>
+<script src="assets/capas/geo_riq_trichomy.js"></script>
+<style>
+  :root {
+    --bg: #f5f6f3;
+    --bg-elev: #ffffff;
+    --bg-panel: #ffffff;
+    --bg-soft: #eef0ea;
+    --border: #d9dcd2;
+    --border-strong: #b8bdac;
+    --text: #1a201a;
+    --text-soft: #5a6358;
+    --text-dim: #8a9088;
+    --accent: #1f6b3a;
+    --accent-soft: #e3efe6;
+    --accent-2: #d6452c;
+    --accent-3: #e8a417;
+    --accent-4: #2374b5;
+    --danger: #b8341f;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 6px 16px rgba(0,0,0,.06);
+    --tab-active-bg: #ffffff;
+    --map-pad: #e7e3d8;
+  }
+  [data-theme="dark"] {
+    --bg: #0e120f;
+    --bg-elev: #161b18;
+    --bg-panel: #1a201c;
+    --bg-soft: #21271f;
+    --border: #2b3229;
+    --border-strong: #3b4438;
+    --text: #ecefe6;
+    --text-soft: #a9b1a5;
+    --text-dim: #6a7068;
+    --accent: #4ec97a;
+    --accent-soft: #1c2e22;
+    --accent-2: #ec6b4f;
+    --accent-3: #f1bc4a;
+    --accent-4: #4aa3e3;
+    --danger: #e07360;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.5);
+    --tab-active-bg: #21271f;
+    --map-pad: #0a0c0a;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    height: 100%;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    overflow: hidden;
+    transition: background .25s, color .25s;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .app {
+    display: grid;
+    grid-template-rows: 56px 44px 1fr 26px;
+    height: 100vh;
+  }
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 18px;
+    background: var(--bg-elev);
+    border-bottom: 1px solid var(--border);
+    z-index: 30;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 12px;
+    padding-right: 16px;
+    border-right: 1px solid var(--border);
+    height: 100%;
+  }
+  .brand-mark {
+    width: 36px; height: 36px;
+    display: grid; place-items: center;
+    border-radius: 8px;
+    background: var(--accent);
+    color: white;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: .5px;
+    position: relative;
+    overflow: hidden;
+  }
+  .brand-mark::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(255,255,255,.25), transparent 40%),
+      conic-gradient(from 45deg, #1f6b3a, #2c8a4d, #1f6b3a, #4ec97a, #1f6b3a);
+  }
+  .brand-mark span { position: relative; z-index: 1; text-shadow: 0 1px 2px rgba(0,0,0,.3); }
+  .brand-text { line-height: 1.15; }
+  .brand-text .t1 { font-weight: 700; font-size: 14px; letter-spacing: .2px; }
+  .brand-text .t2 { font-size: 10.5px; color: var(--text-soft); letter-spacing: 1.2px; text-transform: uppercase; }
+  .topbar-search {
+    flex: 1; max-width: 520px;
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 12px; height: 36px;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-soft);
+  }
+  .topbar-search:focus-within { border-color: var(--accent); background: var(--bg-elev); }
+  .topbar-search input { flex: 1; background: transparent; border: 0; outline: 0; color: var(--text); font-family: inherit; font-size: 13px; }
+  .topbar-search .kbd { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 2px 6px; border: 1px solid var(--border-strong); border-radius: 4px; color: var(--text-dim); }
+  .topbar-spacer { flex: 1; }
+  .topbar-actions { display: flex; align-items: center; gap: 6px; }
+  .iconbtn {
+    width: 34px; height: 34px;
+    display: grid; place-items: center;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-soft);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .iconbtn:hover { background: var(--bg-soft); color: var(--text); border-color: var(--border); }
+  .iconbtn.active { background: var(--accent-soft); color: var(--accent); }
+  .partners {
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 4px 0 14px; height: 100%;
+    border-left: 1px solid var(--border);
+    color: var(--text-dim); font-size: 10px;
+    letter-spacing: .8px; text-transform: uppercase;
+  }
+  .partners .lbl { white-space: nowrap; }
+  .partners img { height: 34px; width: auto; display: block; object-fit: contain; }
+  [data-theme="dark"] .partners img { filter: brightness(0) invert(.92) contrast(.95); }
+  .tabs {
+    display: flex; align-items: stretch;
+    padding: 0 14px;
+    background: var(--bg-elev);
+    border-bottom: 1px solid var(--border);
+    gap: 2px; overflow-x: auto; z-index: 25;
+  }
+  .tab {
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 14px; height: 100%;
+    border: 0; background: transparent;
+    color: var(--text-soft);
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    cursor: pointer; position: relative; white-space: nowrap;
+    border-radius: 8px 8px 0 0;
+    transition: background .15s, color .15s;
+  }
+  .tab:hover { color: var(--text); background: var(--bg-soft); }
+  .tab.active { color: var(--text); background: var(--bg); font-weight: 600; }
+  .tab.active::after {
+    content: ""; position: absolute;
+    left: 10px; right: 10px; bottom: -1px;
+    height: 2px; background: var(--accent);
+    border-radius: 2px 2px 0 0;
+  }
+  .tab .tab-num {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--text-dim); background: var(--bg-soft);
+    padding: 2px 5px; border-radius: 4px; font-weight: 500;
+  }
+  .tab.active .tab-num { background: var(--accent-soft); color: var(--accent); }
+  .tab .tab-dot { width: 8px; height: 8px; border-radius: 2px; }
+  .main {
+    display: grid;
+    grid-template-columns: 320px 1fr 340px;
+    overflow: hidden;
+    transition: grid-template-columns .28s cubic-bezier(.4,0,.2,1);
+    position: relative;
+  }
+  .app.left-collapsed  .main { grid-template-columns: 0 1fr 340px; }
+  .app.right-collapsed .main { grid-template-columns: 320px 1fr 0; }
+  .app.left-collapsed.app.right-collapsed .main { grid-template-columns: 0 1fr 0; }
+  .sb-toggle {
+    position: fixed;
+    top: calc(100px + (100vh - 126px) / 2);
+    transform: translateY(-50%);
+    width: 28px; height: 72px;
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    color: #ffffff;
+    cursor: pointer;
+    display: grid; place-items: center;
+    z-index: 9999;
+    box-shadow: 0 2px 6px rgba(0,0,0,.15), 0 6px 18px rgba(0,0,0,.18);
+    transition: background .15s, color .15s, transform .15s, left .28s cubic-bezier(.4,0,.2,1), right .28s cubic-bezier(.4,0,.2,1);
+    pointer-events: auto;
+  }
+  .sb-toggle:hover { background: #16542d; }
+  .sb-toggle:hover svg { transform: scale(1.2); }
+  .sb-toggle svg { width: 16px; height: 16px; stroke-width: 3; }
+  .sb-toggle.left { left: 320px; border-left: 0; border-radius: 0 8px 8px 0; }
+  .sb-toggle.right { right: 340px; border-right: 0; border-radius: 8px 0 0 8px; }
+  .sb-toggle.left.panel-hidden  { left: 0; }
+  .sb-toggle.right.panel-hidden { right: 0; }
+  .sb-toggle svg { transition: transform .25s; }
+  .sb-toggle.left.panel-hidden      svg { transform: rotate(180deg); }
+  .sb-toggle.right:not(.panel-hidden) svg { transform: rotate(180deg); }
+  .left {
+    background: var(--bg-panel);
+    border-right: 1px solid var(--border);
+    overflow-y: auto; overflow-x: hidden;
+    display: flex; flex-direction: column;
+    transition: opacity .2s;
+  }
+  .app.left-collapsed aside.left { opacity: 0; pointer-events: none; border-right: 0; }
+  .panel-section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .panel-h {
+    font-size: 10.5px; text-transform: uppercase;
+    letter-spacing: 1.4px; color: var(--text-dim);
+    font-weight: 600; margin: 0 0 10px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .module-title { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+  .module-icon { width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; flex-shrink: 0; color: white; }
+  .module-title h2 { margin: 0; font-size: 16px; line-height: 1.2; font-weight: 600; }
+  .module-title .sub { font-size: 12px; color: var(--text-soft); margin-top: 3px; }
+  .layer-list { display: flex; flex-direction: column; gap: 2px; }
+  .layer {
+    display: flex; flex-direction: column;
+    padding: 0; border-radius: 6px;
+    user-select: none;
+    transition: background .12s, opacity .12s;
+    border: 1px solid transparent;
+  }
+  .layer:hover { background: var(--bg-soft); }
+  .layer.dragging { opacity: .35; }
+  .layer.drop-before { border-top-color: var(--accent); }
+  .layer.drop-after  { border-bottom-color: var(--accent); }
+  .layer-main { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 4px; cursor: pointer; }
+  .layer .grip {
+    flex-shrink: 0; width: 14px; height: 18px;
+    cursor: grab; color: var(--text-dim);
+    display: grid; place-items: center;
+    opacity: .55;
+  }
+  .layer:hover .grip { opacity: 1; }
+  .layer .grip:active { cursor: grabbing; }
+  .layer .slider-btn {
+    flex-shrink: 0; width: 22px; height: 22px;
+    display: grid; place-items: center;
+    border-radius: 4px; border: 0;
+    background: transparent; color: var(--text-soft);
+    cursor: pointer; transition: background .12s, color .12s;
+  }
+  .layer .slider-btn:hover { background: var(--accent-soft); color: var(--accent); }
+  .layer .slider-btn.active { background: var(--accent-soft); color: var(--accent); }
+  .layer-slider { display: none; padding: 0 10px 10px 30px; gap: 8px; align-items: center; }
+  .layer.slider-open .layer-slider { display: flex; }
+  .layer-slider input[type=range] {
+    flex: 1; -webkit-appearance: none; appearance: none;
+    height: 4px; background: var(--bg-soft);
+    border-radius: 2px; outline: none;
+    border: 1px solid var(--border);
+  }
+  .layer-slider input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 14px; height: 14px;
+    background: var(--accent); border: 2px solid var(--bg-elev);
+    border-radius: 50%; cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  }
+  .layer-slider input[type=range]::-moz-range-thumb {
+    width: 14px; height: 14px;
+    background: var(--accent); border: 2px solid var(--bg-elev);
+    border-radius: 50%; cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  }
+  .layer .swatch { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; border: 1px solid rgba(0,0,0,.15); }
+  .layer .name { flex: 1; font-size: 13px; }
+  .layer .opacity { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-dim); }
+  .layer .chk {
+    width: 16px; height: 16px; border-radius: 4px;
+    border: 1.5px solid var(--border-strong);
+    display: grid; place-items: center;
+    flex-shrink: 0; background: var(--bg);
+  }
+  .layer.on .chk { background: var(--accent); border-color: var(--accent); }
+  .layer.on .chk::after {
+    content: ""; width: 8px; height: 4px;
+    border-left: 2px solid white; border-bottom: 2px solid white;
+    transform: rotate(-45deg) translate(1px,-1px);
+  }
+  .layer.on  .name { color: var(--text); font-weight: 500; }
+  .layer.off .name { color: var(--text-soft); }
+  .upload {
+    border: 1.5px dashed var(--border-strong);
+    border-radius: 8px; padding: 16px 14px;
+    text-align: center; cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .upload:hover, .upload.drag { border-color: var(--accent); background: var(--accent-soft); }
+  .upload .up-title { font-weight: 600; font-size: 13px; margin-bottom: 4px; }
+  .upload .up-sub { font-size: 11px; color: var(--text-soft); }
+  .upload .up-formats { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-dim); margin-top: 6px; }
+  .user-layer { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: var(--bg-soft); border-radius: 6px; margin-top: 6px; font-size: 12px; }
+  .user-layer .x { cursor: pointer; color: var(--text-dim); padding: 2px 6px; border-radius: 4px; }
+  .user-layer .x:hover { background: var(--danger); color: white; }
+  .ap-list { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 1px; }
+  .ap-item { display: flex; align-items: flex-start; gap: 8px; padding: 7px 10px; font-size: 12.5px; border-radius: 5px; cursor: pointer; }
+  .ap-list { max-height: none; }
+  .ap-item:hover { background: var(--bg-soft); }
+  .ap-item.selected { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .ap-item .cat { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; padding: 2px 5px; border-radius: 3px; background: var(--bg-soft); color: var(--text-dim); margin-left: auto; }
+  .ap-item.selected .cat { background: var(--accent); color: white; }
+  .map-wrap { position: relative; background: var(--map-pad); overflow: hidden; }
+  #map { position: absolute; inset: 0; }
+  [data-theme="dark"] .leaflet-tile { filter: brightness(.7) saturate(.8) hue-rotate(-10deg); }
+  .map-overlay { position: absolute; z-index: 400; pointer-events: none; }
+  .map-overlay > * { pointer-events: auto; }
+  .crumbs {
+    top: 14px; left: 14px;
+    display: flex; align-items: center; gap: 6px;
+    background: var(--bg-elev); border: 1px solid var(--border);
+    padding: 6px 12px; border-radius: 8px;
+    font-size: 12px; box-shadow: var(--shadow);
+  }
+  .crumbs .c-region { color: var(--accent); font-weight: 600; }
+  .crumbs .sep { color: var(--text-dim); }
+  .legend {
+    bottom: 60px; left: 14px;
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 14px;
+    min-width: 220px; max-width: 280px;
+    box-shadow: var(--shadow);
+  }
+  .legend-h { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 12px; margin-bottom: 10px; color: var(--text); }
+  .legend-h .ind { font-family: 'JetBrains Mono', monospace; font-size: 10px; background: var(--accent-soft); color: var(--accent); padding: 2px 6px; border-radius: 4px; }
+  .legend-title { flex: 1; }
+  .legend-toggle {
+    border: 0; background: transparent; color: var(--text-soft);
+    cursor: pointer; padding: 0; width: 22px; height: 22px;
+    border-radius: 4px; display: grid; place-items: center;
+    margin-left: 2px;
+  }
+  .legend-toggle:hover { background: var(--bg-soft); color: var(--text); }
+  .legend-collapsed-icon { display: none; }
+  .legend.collapsed {
+    min-width: auto; max-width: 40px;
+    padding: 8px; cursor: pointer;
+    display: grid; place-items: center;
+  }
+  .legend.collapsed:hover { background: var(--bg-soft); color: var(--accent); }
+  .legend.collapsed .legend-h,
+  .legend.collapsed #legendBody { display: none; }
+  .legend.collapsed .legend-collapsed-icon { display: grid; place-items: center; color: var(--text); }
+  .legend-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 11.5px; color: var(--text-soft); }
+  .legend-row .sw { width: 14px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+  .legend-row .pct { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--text-dim); }
+  .map-tools { top: 14px; right: 14px; display: flex; flex-direction: column; gap: 6px; }
+  .map-tools .iconbtn { background: var(--bg-elev); border: 1px solid var(--border); box-shadow: var(--shadow); }
+  .map-tools .iconbtn:hover { background: var(--bg-soft); }
+  .basemap-switch {
+    bottom: 14px; right: 14px;
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 8px; padding: 4px;
+    display: flex; gap: 2px; box-shadow: var(--shadow);
+  }
+  .basemap-switch button { border: 0; background: transparent; color: var(--text-soft); padding: 6px 12px; font-family: inherit; font-size: 11.5px; border-radius: 5px; cursor: pointer; font-weight: 500; }
+  .basemap-switch button.active { background: var(--accent-soft); color: var(--accent); }
+  .scale-bar {
+    bottom: 14px; left: 14px;
+    background: var(--bg-elev); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 10px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10.5px;
+    color: var(--text-soft); display: flex; align-items: center; gap: 8px;
+    box-shadow: var(--shadow);
+  }
+  .scale-bar .bar { width: 60px; height: 4px; border: 1px solid var(--text-soft); border-top: 0; position: relative; }
+  .scale-bar .bar::before, .scale-bar .bar::after { content: ""; position: absolute; top: 0; bottom: 0; width: 1px; background: var(--text-soft); }
+  .scale-bar .bar::before { left: 0; }
+  .scale-bar .bar::after  { right: 0; }
+  .right { background: var(--bg-panel); border-left: 1px solid var(--border); overflow-y: auto; overflow-x: hidden; transition: opacity .2s; }
+  .app.right-collapsed aside.right { opacity: 0; pointer-events: none; border-left: 0; }
+  .panel-section .panel-h { cursor: pointer; user-select: none; }
+  .panel-section .panel-h .caret { width: 14px; height: 14px; display: inline-block; margin-right: 4px; transition: transform .2s; color: var(--text-dim); }
+  .panel-section.collapsed .panel-h .caret { transform: rotate(-90deg); }
+  .panel-section.collapsed .section-body { display: none; }
+  .panel-h-left { display: flex; align-items: center; }
+  .info-h { padding: 14px 16px 4px; display: flex; align-items: center; justify-content: space-between; }
+  .info-h h3 { margin: 0; font-size: 15px; font-weight: 600; }
+  .info-h .badge { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; padding: 3px 7px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .info-sub { padding: 0 16px 12px; color: var(--text-soft); font-size: 12px; }
+  .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 16px 16px; }
+  .kpi { background: var(--bg-soft); border: 1px solid var(--border); border-radius: 8px; padding: 10px 11px; }
+  .kpi .lbl { font-size: 10.5px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px; }
+  .kpi .val { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 600; color: var(--text); }
+  .kpi .unit { font-size: 10px; color: var(--text-dim); font-weight: 400; margin-left: 3px; }
+  .kpi .trend { margin-top: 6px; font-size: 10.5px; display: flex; align-items: center; gap: 3px; }
+  .kpi .trend.up   { color: var(--danger); }
+  .kpi .trend.down { color: var(--accent); }
+  .donut-card { margin: 0 16px 16px; padding: 14px; background: var(--bg-soft); border: 1px solid var(--border); border-radius: 8px; }
+  .donut-card h4 { margin: 0 0 12px; font-size: 12px; color: var(--text-soft); font-weight: 600; display: flex; align-items: center; justify-content: space-between; }
+  .donut-wrap { display: flex; align-items: center; gap: 14px; }
+  .donut { width: 110px; height: 110px; flex-shrink: 0; }
+  .donut-legend { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+  .donut-legend .row { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--text-soft); }
+  .donut-legend .dot { width: 9px; height: 9px; border-radius: 50%; }
+  .donut-legend .pct { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--text); font-weight: 600; }
+  .ts-card { margin: 0 16px 16px; padding: 14px; background: var(--bg-soft); border: 1px solid var(--border); border-radius: 8px; }
+  .ts-card h4 { margin: 0 0 6px; font-size: 12px; color: var(--text-soft); font-weight: 600; }
+  .ts-card .ts-val { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+  .breakdown-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  .breakdown-table thead th {
+    position: sticky; top: 0; background: var(--bg-soft); z-index: 1;
+    color: var(--text-soft); font-weight: 600; padding: 6px 6px;
+    border-bottom: 1px solid var(--border); font-size: 10.5px;
+    text-transform: uppercase; letter-spacing: .5px;
+  }
+  .breakdown-table tbody td { padding: 5px 6px; border-bottom: 1px solid rgba(0,0,0,.04); vertical-align: middle; }
+  .breakdown-table tbody tr:last-child td { border-bottom: 0; }
+  .breakdown-table .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+  .breakdown-table .num { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--text); }
+  .breakdown-table .sp-name { color: var(--text); }
+  .breakdown-table .sp-name.italic { font-style: italic; }
+  .breakdown-table .empty { text-align: center; color: var(--text-dim); padding: 14px 6px; font-size: 11px; }
+  .statusbar { display: flex; align-items: center; padding: 0 14px; background: var(--bg-elev); border-top: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--text-dim); gap: 16px; }
+  .statusbar .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 5px; display: inline-block; box-shadow: 0 0 6px var(--accent); }
+  .statusbar .right-status { margin-left: auto; display: flex; gap: 14px; }
+  .leaflet-control-zoom { display: none !important; }
+  .leaflet-control-attribution { background: var(--bg-elev) !important; color: var(--text-dim) !important; font-family: 'JetBrains Mono', monospace !important; font-size: 9.5px !important; border-radius: 4px 0 0 0 !important; padding: 2px 8px !important; }
+  .leaflet-control-attribution a { color: var(--text-soft) !important; }
+  .leaflet-popup-content-wrapper { background: var(--bg-elev) !important; color: var(--text) !important; border-radius: 8px !important; box-shadow: var(--shadow) !important; border: 1px solid var(--border) !important; }
+  .leaflet-popup-tip { background: var(--bg-elev) !important; border: 1px solid var(--border) !important; }
+  .leaflet-popup-content { margin: 10px 14px !important; font-family: 'Inter', sans-serif !important; font-size: 12px !important; }
+  .leaflet-popup-content b { color: var(--accent); }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  .feature-popup h5 { margin: 0 0 6px; font-size: 13px; }
+  .feature-popup table { font-size: 11px; }
+  .feature-popup td { padding: 2px 6px 2px 0; }
+  .feature-popup td:first-child { color: var(--text-dim); }
+</style>
+</head>
+<body data-theme="light">
+<svg width="0" height="0" style="position:absolute;left:-9999px;top:-9999px" aria-hidden="true">
+  <defs>
+    <pattern id="ap-pat-1f6b3a" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#1f6b3a" stroke-width="3"/></pattern>
+    <pattern id="ap-pat-7fa860" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#7fa860" stroke-width="3"/></pattern>
+    <pattern id="ap-pat-4ec97a" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#4ec97a" stroke-width="3"/></pattern>
+    <pattern id="ap-pat-9ec979" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#9ec979" stroke-width="3"/></pattern>
+    <pattern id="ap-pat-b06e3a" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#b06e3a" stroke-width="3"/></pattern>
+    <pattern id="ap-pat-2c8a4d" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#2c8a4d" stroke-width="3"/></pattern>
+  </defs>
+</svg>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark"><span>PFP</span></div>
+      <div class="brand-text">
+        <div class="t1">Geoportal PFP</div>
+        <div class="t2">Áreas Protegidas · Bolivia</div>
+      </div>
+    </div>
+    <div class="topbar-search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input type="text" placeholder="Buscar área protegida, territorio, especie…" />
+      <span class="kbd">⌘K</span>
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-actions">
+      <button class="iconbtn" title="Compartir vista">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>
+      </button>
+      <button class="iconbtn" title="Descargar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m-5-5 5 5 5-5M5 21h14"/></svg>
+      </button>
+      <button class="iconbtn" title="Idioma">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+      </button>
+      <button class="iconbtn" id="themeToggle" title="Cambiar tema">
+        <svg id="iconSun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/></svg>
+        <svg id="iconMoon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </div>
+    <div class="partners">
+      <span class="lbl">En colaboración con</span>
+      <img src="assets/Cinta_Logos.png" alt="howwe · SERNAP · WWF" />
+    </div>
+  </header>
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-mod="1"><span class="tab-dot" style="background:#6e8a55"></span><span class="tab-num">M1</span>Marco espacial base</button>
+    <button class="tab" data-mod="2"><span class="tab-dot" style="background:#7c5fb5"></span><span class="tab-num">M2</span>Distribución de especies</button>
+    <button class="tab" data-mod="3"><span class="tab-dot" style="background:#d6452c"></span><span class="tab-num">M3</span>Amenazas críticas</button>
+    <button class="tab" data-mod="4"><span class="tab-dot" style="background:#2374b5"></span><span class="tab-num">M4</span>Ecosistemas y agua</button>
+    <button class="tab" data-mod="5"><span class="tab-dot" style="background:#e8a417"></span><span class="tab-num">M5</span>Cambio climático</button>
+    <button class="tab" data-mod="6"><span class="tab-dot" style="background:#4a8aa8"></span><span class="tab-num">M6</span>Comunidades y bienestar</button>
+  </nav>
+  <main class="main">
+    <aside class="left">
+      <div class="panel-section">
+        <div class="module-title">
+          <div class="module-icon" id="modIcon" style="background:#6e8a55">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2 4 7v10l8 5 8-5V7z"/><path d="m4 7 8 5 8-5M12 12v10"/></svg>
+          </div>
+          <div>
+            <h2 id="modTitle">Marco espacial base</h2>
+            <div class="sub" id="modSub">Polígonos, zonificación, límites administrativos</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel-section" data-collapse>
+        <div class="panel-h">
+          <span class="panel-h-left"><svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>Capas del módulo</span>
+          <span class="mono" style="font-size:10px;color:var(--text-dim)" id="layerCount">6 capas</span>
+        </div>
+        <div class="section-body"><div class="layer-list" id="layerList"></div></div>
+      </div>
+      <div class="panel-section" data-collapse>
+        <div class="panel-h"><span class="panel-h-left"><svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>Áreas Protegidas (22)</span></div>
+        <div class="section-body"><div class="ap-list" id="apList"></div></div>
+      </div>
+    </aside>
+    <section class="map-wrap">
+      <div id="map"></div>
+      <div class="map-overlay crumbs">
+        <span class="c-region">Bolivia</span><span class="sep">›</span>
+        <span class="c-area" id="crumbArea">22 Áreas Protegidas Nacionales</span>
+      </div>
+      <div class="map-overlay map-tools">
+        <button class="iconbtn" id="zoomIn" title="Acercar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button>
+        <button class="iconbtn" id="zoomOut" title="Alejar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg></button>
+        <button class="iconbtn" id="resetView" title="Vista inicial"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg></button>
+        <button class="iconbtn" title="Medir"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m4 20 16-16M8 6l2 2M11 9l2 2M14 12l2 2M17 15l2 2"/></svg></button>
+        <button class="iconbtn" title="Pantalla completa"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      </div>
+      <div class="map-overlay legend" id="legend">
+        <div class="legend-collapsed-icon" title="Mostrar leyenda">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18M3 12h18M3 17h12"/></svg>
+        </div>
+        <div class="legend-h">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18M3 12h18M3 17h12"/></svg>
+          <span class="legend-title" id="legendTitle">Categorías SERNAP</span>
+          <span class="ind" id="legendInd">I.6</span>
+          <button class="legend-toggle" id="legendToggle" title="Minimizar leyenda">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14"/></svg>
+          </button>
+        </div>
+        <div id="legendBody"></div>
+      </div>
+      <div class="map-overlay scale-bar">
+        <div class="bar"></div><span>200 km</span>
+        <span style="opacity:.5">·</span>
+        <span id="latlon">-16.85, -63.91</span>
+      </div>
+      <div class="map-overlay basemap-switch">
+        <button data-bm="terrain" class="active">Relieve</button>
+        <button data-bm="satellite">Satélite</button>
+        <button data-bm="streets">Calles</button>
+      </div>
+    </section>
+    <aside class="right" id="right">
+      <div class="info-h">
+        <h3 id="rightTitle">Bolivia</h3>
+        <span class="badge">Resumen</span>
+      </div>
+      <div class="info-sub" id="rightSub">Sistema Nacional de Áreas Protegidas — 22 APN</div>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="lbl">Superficie APN</div><div class="val">17.06<span class="unit">M ha</span></div><div class="trend down">▾ estable 2023</div></div>
+        <div class="kpi"><div class="lbl">Cobertura forestal</div><div class="val">51.1<span class="unit">%</span></div><div class="trend down">▾ −0.4% / año</div></div>
+        <div class="kpi"><div class="lbl">Focos de calor 2024</div><div class="val">12,847</div><div class="trend up">▴ +18% vs 2023</div></div>
+        <div class="kpi"><div class="lbl">Especies prioritarias</div><div class="val">14</div><div class="trend">de 187 spp. monitoreadas</div></div>
+      </div>
+      <div class="donut-card">
+        <h4>Cobertura de uso del suelo · 2023 <span class="mono" style="color:var(--text-dim);font-size:10px">MapBiomas</span></h4>
+        <div class="donut-wrap">
+          <svg class="donut" viewBox="0 0 42 42" id="donut"></svg>
+          <div class="donut-legend" id="donutLegend"></div>
+        </div>
+      </div>
+      <div class="ts-card" id="breakdownCard">
+        <h4 id="breakdownTitle">Desglose</h4>
+        <div id="breakdownWrap" style="max-height:300px;overflow-y:auto;margin-top:4px">
+          <table class="breakdown-table">
+            <thead>
+              <tr>
+                <th style="text-align:left">Especie</th>
+                <th style="text-align:right">Sup. (ha)</th>
+                <th style="text-align:right">%</th>
+              </tr>
+            </thead>
+            <tbody id="breakdownTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </aside>
+  </main>
+  <button class="sb-toggle left" id="toggleLeft" title="Panel izquierdo">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+  </button>
+  <button class="sb-toggle right" id="toggleRight" title="Panel derecho">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+  </button>
+  <footer class="statusbar">
+    <span><span class="dot"></span>Servicios activos: OSM · ESRI · MapTiler · FIRMS</span>
+    <span>EPSG:4326 (WGS84)</span>
+    <span id="zoomLevel">z: 6</span>
+    <div class="right-status">
+      <span id="layerStatus">3 capas activas</span>
+      <span>Última actualización: 11 may 2026</span>
+      <span>v0.4.2-beta</span>
+    </div>
+  </footer>
+</div>
+<script>
+const MODULES = {
+  '1': { title:'Marco espacial base', sub:'Polígonos oficiales SERNAP · límite nacional', color:'#6e8a55',
+    icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2 4 7v10l8 5 8-5V7z"/><path d="m4 7 8 5 8-5M12 12v10"/></svg>',
+    layers:[
+      {id:'apn',   name:'Áreas Protegidas (33 polígonos)',  color:'#2c8a4d',opacity:100,on:true},
+      {id:'limite',name:'Límite Bolivia',                    color:'#6a6a6a',opacity:80,on:true},
+      {id:'zon',   name:'Zonificación interna',              color:'#7fa860',opacity:50,on:false},
+      {id:'amort', name:'Zonas de amortiguamiento',          color:'#c5d39a',opacity:40,on:false},
+      {id:'tioc',  name:'TIOCs y territorios indígenas',    color:'#b06e3a',opacity:45,on:false},
+      {id:'eco',   name:'Ecorregiones',                      color:'#4a8aa8',opacity:30,on:false},
+    ],
+    legend:{title:'Categorías SERNAP',ind:'I.6',items:[
+      {c:'#1f6b3a',l:'Parque Nacional',v:'9 áreas'},
+      {c:'#4ec97a',l:'Reserva de la Biosfera',v:'3 áreas'},
+      {c:'#9ec979',l:'Reserva Nacional',v:'4 áreas'},
+      {c:'#7fa860',l:'Área Natural de Manejo Integrado',v:'10 áreas'},
+      {c:'#b06e3a',l:'Otras categorías',v:'7 áreas'},
+    ]}
+  },
+  '2': { title:'Distribución de especies', sub:'IUCN Red List · BirdLife · datos actualizados', color:'#7c5fb5',
+    icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M3 11c0-4 4-7 9-7s9 3 9 7-4 7-9 7c-1.7 0-3.3-.3-4.7-.9L3 19l1.5-3.4C3.5 14.4 3 12.8 3 11z"/></svg>',
+    layers:[
+      {id:'apn',       name:'Áreas Protegidas',  group:'Marco espacial',          color:'#2c8a4d',opacity:100,on:true},
+      {id:'jaguar',    name:'Jaguar',            group:'Objetos de conservación', color:'#7fa860',opacity:50,on:true,  iucn:'NT',sci:'Panthera onca'},
+      {id:'paraba_bb', name:'Paraba Barba Azul', group:'Objetos de conservación', color:'#7a1a1a',opacity:50,on:false, iucn:'CR',sci:'Ara glaucogularis'},
+      {id:'bufeo',     name:'Bufeo',             group:'Objetos de conservación', color:'#c54a2c',opacity:50,on:false, iucn:'EN',sci:'Inia geoffrensis'},
+      {id:'londra',    name:'Londra',            group:'Objetos de conservación', color:'#c54a2c',opacity:50,on:false, iucn:'EN',sci:'Pteronura brasiliensis'},
+      {id:'paraba_fr', name:'Paraba Frente Roja',group:'Objetos de conservación', color:'#c54a2c',opacity:50,on:false, iucn:'EN',sci:'Ara rubrogenys'},
+      {id:'jucumari',  name:'Jucumari',          group:'Objetos de conservación', color:'#e8a417',opacity:50,on:false, iucn:'VU',sci:'Tremarctos ornatus'},
+      {id:'dorado',    name:'Dorado',            group:'Objetos de conservación', color:'#e8a417',opacity:50,on:false, iucn:'VU',sci:'Brachyplatystoma rousseauxii'},
+      {id:'paraba_az', name:'Paraba Azul',       group:'Objetos de conservación', color:'#e8a417',opacity:50,on:false, iucn:'VU',sci:'Anodorhynchus hyacinthinus'},
+      {id:'fl_andino', name:'Flamenco Andino',   group:'Objetos de conservación', color:'#e8a417',opacity:50,on:false, iucn:'VU',sci:'Phoenicoparrus andinus'},
+      {id:'condor',    name:'Cóndor Andino',     group:'Objetos de conservación', color:'#e8a417',opacity:50,on:false, iucn:'VU',sci:'Vultur gryphus'},
+      {id:'borochi',   name:'Borochi',           group:'Objetos de conservación', color:'#7fa860',opacity:50,on:false, iucn:'NT',sci:'Chrysocyon brachyurus'},
+      {id:'fl_james',  name:'Flamenco James',    group:'Objetos de conservación', color:'#4aa3e3',opacity:50,on:false, iucn:'NT',sci:'Phoenicoparrus jamesi'},
+      {id:'guanaco',   name:'Guanaco',           group:'Objetos de conservación', color:'#4ec97a',opacity:50,on:false, iucn:'LC',sci:'Lama guanicoe'},
+      {id:'vicuna',    name:'Vicuña',            group:'Objetos de conservación', color:'#4ec97a',opacity:50,on:false, iucn:'LC',sci:'Vicugna vicugna'},
+      {id:'brycon',        name:'Sábalo',                group:'Propuesta de objetos de conservación', color:'#5fa3b5',opacity:50,on:false, iucn:'LC',sci:'Brycon amazonicus'},
+      {id:'colossoma',     name:'Pacú',                  group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:50,on:false, iucn:'NT',sci:'Colossoma macropomum'},
+      {id:'riq_orestias',  name:'Riqueza Orestias',      group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
+      {id:'riq_rivulidae', name:'Riqueza Rivulidae',     group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
+      {id:'riq_trichomy',  name:'Riqueza Trichomycterus',group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
+    ],
+    legend:{title:'Estado de conservación IUCN',ind:'I.7',items:[
+      {c:'#7a1a1a',l:'En peligro crítico (CR)',v:'1 spp.'},
+      {c:'#c54a2c',l:'En peligro (EN)',v:'3 spp.'},
+      {c:'#e8a417',l:'Vulnerable (VU)',v:'5 spp.'},
+      {c:'#7fa860',l:'Casi amenazada (NT)',v:'3 spp.'},
+      {c:'#4ec97a',l:'Preocupación menor (LC)',v:'2 spp.'},
+    ]}
+  },
+  '3': { title:'Amenazas críticas', sub:'Incendios, deforestación, minería, infraestructura', color:'#d6452c',
+    icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="m12 2 10 18H2z"/><path d="M12 9v5M12 17v.5"/></svg>',
+    layers:[
+      {id:'apn',      name:'Áreas Protegidas',             color:'#2c8a4d',opacity:100,on:true},
+      {id:'fires',    name:'Incendios históricos (FIRMS)', color:'#d6452c',opacity:70,on:true},
+      {id:'defor',    name:'Deforestación anual (GFW)',    color:'#a8341f',opacity:65,on:true},
+      {id:'mining-l', name:'Concesiones mineras legales',  color:'#8a6a3a',opacity:60,on:false},
+      {id:'mining-il',name:'Minería ilegal',               color:'#5a3a1a',opacity:75,on:false},
+      {id:'aop',      name:'AOPs cat. 1 y 2',             color:'#3a3a3a',opacity:80,on:false},
+      {id:'agro',     name:'Expansión agrícola/pecuaria',  color:'#e8a417',opacity:50,on:false},
+    ],
+    legend:{title:'Amenazas activas',ind:'I.10',items:[
+      {c:'#d6452c',l:'Foco de incendio activo',v:'2,341'},
+      {c:'#a8341f',l:'Pérdida de bosque ≤1 año',v:'285k ha'},
+      {c:'#8a6a3a',l:'Concesión minera',v:'127 polígonos'},
+      {c:'#3a3a3a',l:'Infraestructura AOP',v:'43 obras'},
+    ]}
+  },
+  '4': { title:'Ecosistemas y agua', sub:'Humedales, cuencas, glaciares, conectividad', color:'#2374b5',
+    icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 3s-7 8-7 13a7 7 0 1 0 14 0c0-5-7-13-7-13z"/></svg>',
+    layers:[
+      {id:'apn',    name:'Áreas Protegidas',              color:'#2c8a4d',opacity:100,on:true},
+      {id:'wet',    name:'Humedales (bofedales, lagunas)',color:'#2374b5',opacity:65,on:true},
+      {id:'ramsar', name:'Sitios Ramsar',                 color:'#4aa3e3',opacity:70,on:true},
+      {id:'basins', name:'Cuencas hidrográficas',         color:'#7fb5d6',opacity:35,on:false},
+      {id:'glac',   name:'Glaciares y recarga',           color:'#c5e3f0',opacity:80,on:false},
+      {id:'forest', name:'Cobertura boscosa',             color:'#2c8a4d',opacity:45,on:false},
+      {id:'fluvial',name:'Conectividad fluvial',          color:'#5fa3b5',opacity:70,on:false},
+    ],
+    legend:{title:'Indicador agua y bosques',ind:'I.5 · I.6',items:[
+      {c:'#2374b5',l:'Humedal permanente',v:'4.2M ha'},
+      {c:'#7fb5d6',l:'Humedal estacional',v:'1.8M ha'},
+      {c:'#4aa3e3',l:'Sitio Ramsar',v:'11 sitios'},
+      {c:'#c5e3f0',l:'Glaciar (>10ha)',v:'481 km²'},
+    ]}
+  },
+  '5': { title:'Cambio climático', sub:'Escenarios, vulnerabilidad, conectividad climática', color:'#e8a417',
+    icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19"/></svg>',
+    layers:[
+      {id:'apn', name:'Áreas Protegidas',               color:'#2c8a4d',opacity:100,on:true},
+      {id:'temp',name:'Escenarios temperatura',         color:'#d6452c',opacity:55,on:true},
+      {id:'prec',name:'Escenarios precipitación',       color:'#2374b5',opacity:45,on:false},
+      {id:'vuln',name:'Vulnerabilidad climática',       color:'#e8a417',opacity:65,on:true},
+      {id:'ref', name:'Zonas de refugio climático',     color:'#4ec97a',opacity:50,on:false},
+      {id:'corr',name:'Corredores de conectividad',     color:'#7c5fb5',opacity:60,on:false},
+      {id:'spi', name:'Tendencias de sequía (SPI/NDVI)',color:'#b06e3a',opacity:55,on:false},
+    ],
+    legend:{title:'Vulnerabilidad climática',ind:'meta-eco',items:[
+      {c:'#7a1a1a',l:'Muy alta',v:'12% AP'},
+      {c:'#d6452c',l:'Alta',v:'28% AP'},
+      {c:'#e8a417',l:'Media',v:'34% AP'},
+      {c:'#7fa860',l:'Baja',v:'26% AP'},
+    ]}
+  },
+  '6': { title:'Comunidades y bienestar', sub:'Comunidades, sitios sagrados, turismo', color:'#4a8aa8',
+    icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c0-3 3-5 6-5s6 2 6 5M14 19c0-2 2-4 5-4s5 1 5 4"/></svg>',
+    layers:[
+      {id:'apn',  name:'Áreas Protegidas',            color:'#2c8a4d',opacity:100,on:true},
+      {id:'com',  name:'Comunidades dentro AP',       color:'#4a8aa8',opacity:70,on:true},
+      {id:'sac',  name:'Sitios sagrados',             color:'#7c5fb5',opacity:80,on:false},
+      {id:'inf',  name:'Infraestructura comunitaria', color:'#6a6a6a',opacity:65,on:false},
+      {id:'tur',  name:'Rutas de acceso y turismo',   color:'#e8a417',opacity:75,on:true},
+      {id:'tradi',name:'Uso tradicional de recursos', color:'#b06e3a',opacity:55,on:false},
+    ],
+    legend:{title:'Bienestar I.1–I.4',ind:'I.1—I.4',items:[
+      {c:'#4a8aa8',l:'Comunidad indígena',v:'187'},
+      {c:'#7fa860',l:'Comunidad campesina',v:'243'},
+      {c:'#e8a417',l:'Ruta de turismo activa',v:'24 rutas'},
+      {c:'#7c5fb5',l:'Sitio sagrado',v:'61 sitios'},
+    ]}
+  }
+};
+let APN = [
+  {code:'AP-0101',name:'Sajama',                      cat:'Parque Nacional',                              center:[-18.1,-68.9]},
+  {code:'AP-0201',name:'Tunari',                       cat:'Parque Nacional',                              center:[-17.1,-66.3]},
+  {code:'AP-0301',name:'Isiboro Securé (TIPNIS)',      cat:'Parque Nacional y Territorio Indígena',        center:[-15.7,-66.0]},
+  {code:'AP-0405',name:'Apolobamba',                   cat:'Área Natural de Manejo Integrado Nacional',    center:[-14.7,-69.0]},
+  {code:'AP-0504',name:'Eduardo Avaroa',               cat:'Reserva Nacional de Fauna Andina',             center:[-22.6,-67.6]},
+  {code:'AP-0604',name:'Manuripi',                     cat:'Reserva Nacional de Vida Silvestre Amazónica', center:[-11.5,-68.5]},
+  {code:'AP-0701',name:'Noel Kempff Mercado',          cat:'Parque Nacional',                              center:[-14.3,-60.7]},
+  {code:'AP-0805',name:'Estación Biológica del Beni',  cat:'Reserva de la Biosfera',                       center:[-14.6,-66.3]},
+  {code:'AP-0901',name:'Amboró',                       cat:'Parque Nacional',                              center:[-17.7,-63.9]},
+  {code:'AP-1001',name:'Toro Toro',                    cat:'Parque Nacional',                              center:[-18.1,-65.7]},
+  {code:'AP-1104',name:'Tariquía',                     cat:'Reserva Nacional de Flora y Fauna',            center:[-22.0,-64.2]},
+  {code:'AP-1204',name:'Cordillera de Sama',           cat:'Reserva Biológica',                            center:[-21.5,-65.0]},
+  {code:'AP-1301',name:'Carrasco',                     cat:'Parque Nacional',                              center:[-17.4,-65.2]},
+  {code:'AP-1405',name:'Pilón Lajas',                  cat:'Reserva de la Biosfera y Territorio Indígena', center:[-15.0,-67.1]},
+  {code:'AP-1501',name:'Cotapata',                     cat:'Parque Nacional',                              center:[-16.2,-68.0]},
+  {code:'AP-1601',name:'Madidi',                       cat:'Parque Nacional',                              center:[-13.9,-68.4]},
+  {code:'AP-1701',name:'Kaa-Iya del Gran Chaco',       cat:'Parque Nacional',                              center:[-19.2,-61.7]},
+  {code:'AP-1805',name:'El Palmar',                    cat:'Área Natural de Manejo Integrado',             center:[-19.2,-64.8]},
+  {code:'AP-1905',name:'San Matías',                   cat:'Área Natural de Manejo Integrado',             center:[-16.8,-58.4]},
+  {code:'AP-2001',name:'Otuquis',                      cat:'Parque Nacional',                              center:[-19.7,-58.5]},
+  {code:'AP-2101',name:'Aguaragüe',                    cat:'Parque Nacional',                              center:[-21.0,-63.7]},
+  {code:'AP-2201',name:'Iñao',                         cat:'Parque Nacional',                              center:[-19.7,-63.7]},
+  {code:'AP-2305',name:'El Cardón',                    cat:'Parque Natural y Area de Manejo Integrado',    center:[-21.6,-64.5]},
+];
+const map = L.map('map',{zoomControl:false,attributionControl:true,worldCopyJump:true}).setView([-16.5,-64.5],5);
+const TILES = {
+  terrain:{
+    light:L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{attribution:'© OpenTopoMap · OSM',maxZoom:17}),
+    dark:L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',{attribution:'© CARTO · OSM',subdomains:'abcd',maxZoom:19})
+  },
+  satellite:{
+    light:L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri World Imagery'}),
+    dark:L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri World Imagery'})
+  },
+  streets:{
+    light:L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',{attribution:'© CARTO · OSM',subdomains:'abcd'}),
+    dark:L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',{attribution:'© CARTO · OSM',subdomains:'abcd'})
+  }
+};
+let currentBM='terrain', currentTheme='light', activeTileLayer=null;
+function setBasemap(bm){
+  currentBM=bm;
+  if(activeTileLayer) map.removeLayer(activeTileLayer);
+  activeTileLayer=TILES[bm][currentTheme];
+  activeTileLayer.addTo(map);
+  document.querySelectorAll('.basemap-switch button').forEach(b=>b.classList.toggle('active',b.dataset.bm===bm));
+}
+setBasemap('terrain');
+// === GeoJSON real layers ===
+const DATA_FILES = {
+  'apn':      'assets/capas/AreasProtegidas_Bolivia.geojson',
+  'limite':   'assets/capas/Bolivia_limite.geojson',
+  'jaguar':   'assets/capas/Panthera_onca_Jaguar.geojson',
+  'borochi':  'assets/capas/Chrysocyon_brachyurus_Borochi.geojson',
+  'bufeo':    'assets/capas/Inia_geoffrensis_Bufeo.geojson',
+  'londra':   'assets/capas/Pteronura_brasiliensis_Londra.geojson',
+  'jucumari': 'assets/capas/Tremarctos_ornatus_Jucumari.geojson',
+  'dorado':   'assets/capas/Brachyplatystoma_rousseauxii_Dorado.geojson',
+  'guanaco':  'assets/capas/Lama_guanicoe_Guanaco.geojson',
+  'vicuna':   'assets/capas/Vicugna_vicugna_Vicuna.geojson',
+  'paraba_az':'assets/capas/Anodorhynchus_hyacinthinus_ParabaAzul.geojson',
+  'paraba_bb':'assets/capas/Ara_glaucogularis_ParabaBarbaAzul.geojson',
+  'paraba_fr':'assets/capas/Ara_rubrogenys_ParabaFrenteRoja.geojson',
+  'fl_andino':'assets/capas/Phoenicoparrus_andinus_FlamencoAndino.geojson',
+  'fl_james': 'assets/capas/Phoenicoparrus_jamesi_FlamencoJames.geojson',
+  'condor':   'assets/capas/Vultur_gryphus_Condor.geojson',
+  'brycon':        'assets/capas/Grupos/Brycon_amazonicus.geojson',
+  'colossoma':     'assets/capas/Grupos/Colossoma_macropomum.geojson',
+  'riq_orestias':  'assets/capas/Grupos/Riqueza_Orestias.geojson',
+  'riq_rivulidae': 'assets/capas/Grupos/Riqueza_Rivulidae.geojson',
+  'riq_trichomy':  'assets/capas/Grupos/Riqueza_Trichomycterus.geojson',
+};
+const IUCN_COLORS = {'CR':'#7a1a1a','EN':'#c54a2c','VU':'#e8a417','NT':'#7fa860','LC':'#4ec97a'};
+const AP_CAT_COLORS = {
+  'Parque Nacional':'#1f6b3a',
+  'Parque Nacional y Territorio Indígena':'#1f6b3a',
+  'Área Natural de Manejo Integrado':'#7fa860',
+  'Área Natural de Manejo Integrado Nacional':'#7fa860',
+  'Parque Natural y Area de Manejo Integrado':'#7fa860',
+  'Reserva de la Biosfera':'#4ec97a',
+  'Reserva de la Biosfera y Territorio Indígena':'#4ec97a',
+  'Reserva Nacional de Fauna Andina':'#9ec979',
+  'Reserva Nacional de Vida Silvestre Amazónica':'#9ec979',
+  'Reserva Nacional de Flora y Fauna':'#9ec979',
+  'Reserva Biológica':'#9ec979',
+  'Indigena':'#b06e3a',
+  'Area de vida':'#b06e3a',
+  'Área Guaraní del Manejo del Agua':'#b06e3a',
+};
+const CAT_ACRONYMS = {
+  'Parque Nacional':'PN',
+  'Parque Nacional y Territorio Indígena':'PN-TI',
+  'Área Natural de Manejo Integrado':'ANMI',
+  'Área Natural de Manejo Integrado Nacional':'ANMI',
+  'Parque Natural y Area de Manejo Integrado':'PN-ANMI',
+  'Reserva de la Biosfera':'RB',
+  'Reserva de la Biosfera y Territorio Indígena':'RB-TI',
+  'Reserva Nacional de Fauna Andina':'RNFA',
+  'Reserva Nacional de Vida Silvestre Amazónica':'RNVSA',
+  'Reserva Nacional de Flora y Fauna':'RNFF',
+  'Reserva Biológica':'RBio',
+  'Indigena':'TI',
+  'Area de vida':'AdV',
+  'Área Guaraní del Manejo del Agua':'AGMA',
+};
+function catAcronym(c){return CAT_ACRONYMS[c]||(c?c.split(' ').map(w=>w[0]).join('').toUpperCase():'—');}
+const SERNAP_LEGEND=[
+  {c:'#1f6b3a',l:'Parque Nacional',v:'9 áreas'},
+  {c:'#4ec97a',l:'Reserva de la Biosfera',v:'3 áreas'},
+  {c:'#9ec979',l:'Reserva Nacional',v:'4 áreas'},
+  {c:'#7fa860',l:'Área Natural de Manejo Integrado',v:'10 áreas'},
+  {c:'#b06e3a',l:'Otras categorías',v:'7 áreas'},
+];
+
+// === Selección de APs y cálculos geoespaciales ===
+const selectedAPs = new Set();
+const speciesAreaCache = {};      // {speciesId: area_km2}
+const speciesAPPresence = {};     // {speciesId: Set<nombre_ap>}
+const riquezaSpeciesByAP = {};    // {speciesId: {nombre_ap: Set<species>}}
+
+function ringAreaKm2(ring){
+  if(!ring||ring.length<3) return 0;
+  const R=6371; let t=0;
+  for(let i=0;i<ring.length;i++){
+    const a=ring[i], b=ring[(i+1)%ring.length];
+    t += (b[0]-a[0])*Math.PI/180*(2+Math.sin(a[1]*Math.PI/180)+Math.sin(b[1]*Math.PI/180));
+  }
+  return Math.abs(t*R*R/2);
+}
+function geometryAreaKm2(g){
+  if(!g) return 0;
+  if(g.type==='Polygon'){
+    let a=ringAreaKm2(g.coordinates[0]);
+    for(let i=1;i<g.coordinates.length;i++) a-=ringAreaKm2(g.coordinates[i]);
+    return Math.max(0,a);
+  }
+  if(g.type==='MultiPolygon'){
+    let s=0;
+    g.coordinates.forEach(poly=>{
+      let a=ringAreaKm2(poly[0]);
+      for(let i=1;i<poly.length;i++) a-=ringAreaKm2(poly[i]);
+      s+=Math.max(0,a);
+    });
+    return s;
+  }
+  return 0;
+}
+function featureCollectionAreaKm2(fc){
+  return (fc.features||[]).reduce((s,f)=>s+geometryAreaKm2(f.geometry),0);
+}
+function featureBBox(g){
+  let w=Infinity,s=Infinity,e=-Infinity,n=-Infinity;
+  const walk=c=>{
+    if(typeof c[0]==='number'){
+      if(c[0]<w)w=c[0]; if(c[0]>e)e=c[0];
+      if(c[1]<s)s=c[1]; if(c[1]>n)n=c[1];
+    } else c.forEach(walk);
+  };
+  if(g&&g.coordinates) walk(g.coordinates);
+  return [w,s,e,n];
+}
+function bboxIntersect(a,b){return !(b[0]>a[2]||b[2]<a[0]||b[1]>a[3]||b[3]<a[1]);}
+
+// Punto-en-polígono (ray casting). Acepta arrays de [lng,lat]
+function pointInRing(p, ring){
+  let inside=false; const px=p[0], py=p[1];
+  for(let i=0,j=ring.length-1; i<ring.length; j=i++){
+    const xi=ring[i][0], yi=ring[i][1];
+    const xj=ring[j][0], yj=ring[j][1];
+    if(((yi>py)!==(yj>py)) && (px < (xj-xi)*(py-yi)/(yj-yi)+xi)) inside=!inside;
+  }
+  return inside;
+}
+function pointInPolygon(p, rings){
+  if(!rings || rings.length===0) return false;
+  if(!pointInRing(p, rings[0])) return false;
+  // Restar huecos
+  for(let i=1;i<rings.length;i++){ if(pointInRing(p, rings[i])) return false; }
+  return true;
+}
+function pointInGeometry(p, geom){
+  if(!geom) return false;
+  if(geom.type==='Polygon') return pointInPolygon(p, geom.coordinates);
+  if(geom.type==='MultiPolygon') return geom.coordinates.some(poly => pointInPolygon(p, poly));
+  return false;
+}
+function getPolygonCentroid(geom){
+  // Centroide simple (promedio de vértices)
+  let sx=0, sy=0, n=0;
+  const walk=c=>{
+    if(typeof c[0]==='number'){ sx+=c[0]; sy+=c[1]; n++; }
+    else c.forEach(walk);
+  };
+  if(geom && geom.coordinates) walk(geom.coordinates);
+  return n===0 ? [0,0] : [sx/n, sy/n];
+}
+function generateGridPoints(bbox, n){
+  const [w,s,e,nn]=bbox; const pts=[];
+  for(let i=0;i<n;i++){
+    for(let j=0;j<n;j++){
+      pts.push([w+(e-w)*(i+0.5)/n, s+(nn-s)*(j+0.5)/n]);
+    }
+  }
+  return pts;
+}
+
+// Precomputo de muestras dentro de cada AP (sample points para Monte Carlo)
+const apSamplePoints={};      // {nombre_ap: [[lng,lat], ...]}
+const speciesAPCoverage={};   // {speciesId: {nombre_ap: ratio_0_a_1}}
+
+function precomputeAPSamples(){
+  if(!geoData['apn']) return;
+  geoData['apn'].features.forEach(ap=>{
+    const apName=ap.properties.nombre_ap; if(!apName) return;
+    const bbox=featureBBox(ap.geometry);
+    const grid=generateGridPoints(bbox, 7); // 49 puntos por bbox
+    const inside=grid.filter(p=>pointInGeometry(p, ap.geometry));
+    apSamplePoints[apName]=inside;
+  });
+}
+
+function precomputeSpeciesCoverage(){
+  Object.keys(DATA_FILES).forEach(sid=>{
+    if(sid==='apn'||sid==='limite'||sid.startsWith('riq_')) return;
+    const sData=geoData[sid]; if(!sData) return;
+    const cov={};
+    Object.entries(apSamplePoints).forEach(([apName, pts])=>{
+      if(pts.length===0){ cov[apName]=0; return; }
+      let hit=0;
+      for(let i=0;i<pts.length;i++){
+        if(sData.features.some(sf=>pointInGeometry(pts[i], sf.geometry))) hit++;
+      }
+      cov[apName] = hit/pts.length;
+    });
+    speciesAPCoverage[sid]=cov;
+  });
+}
+
+function computeSpeciesAPPresence(){
+  if(!geoData['apn']) return;
+  const aps = geoData['apn'].features
+    .filter(f=>f.properties.nombre_ap)
+    .map(f=>({name:f.properties.nombre_ap, bbox:featureBBox(f.geometry)}));
+  Object.keys(DATA_FILES).forEach(sid=>{
+    if(sid==='apn'||sid==='limite') return;
+    const d=geoData[sid]; if(!d) return;
+    if(sid.startsWith('riq_')){
+      // Para capas riqueza: para cada AP, recoger especies cuyas features (centroide) caen dentro
+      const byAP={};
+      geoData['apn'].features.forEach(ap=>{
+        const apName=ap.properties.nombre_ap; if(!apName) return;
+        const especiesSet=new Set();
+        d.features.forEach(f=>{
+          const c=getPolygonCentroid(f.geometry);
+          if(pointInGeometry(c, ap.geometry)){
+            (f.properties.ESPECIES||'').split(';').map(s=>s.trim()).filter(Boolean)
+              .forEach(s=>especiesSet.add(s));
+          }
+        });
+        if(especiesSet.size>0) byAP[apName]=especiesSet;
+      });
+      riquezaSpeciesByAP[sid]=byAP;
+      speciesAPPresence[sid]=new Set(Object.keys(byAP));
+    } else {
+      // Para especies normales: usar la cobertura precomputada (Monte Carlo)
+      const cov=speciesAPCoverage[sid]||{};
+      const presence=new Set();
+      Object.entries(cov).forEach(([apName, ratio])=>{ if(ratio>0) presence.add(apName); });
+      speciesAPPresence[sid]=presence;
+    }
+  });
+}
+
+function getSpeciesAreaKm2(sid){
+  if(speciesAreaCache[sid]!==undefined) return speciesAreaCache[sid];
+  const d=geoData[sid];
+  speciesAreaCache[sid] = d ? featureCollectionAreaKm2(d) : 0;
+  return speciesAreaCache[sid];
+}
+
+function formatHa(ha){
+  if(!isFinite(ha)||ha<=0) return '0';
+  if(ha>=1e6) return (ha/1e6).toFixed(2);
+  if(ha>=1e4) return (ha/1e3).toFixed(0)+'k';
+  return Math.round(ha).toLocaleString('es-BO');
+}
+function haUnitLabel(ha){
+  if(ha>=1e6) return 'M ha';
+  return 'ha';
+}
+
+function updateAPMapFilter(){
+  Object.entries(moduleLayers).forEach(([key,layer])=>{
+    if(!key.endsWith(':apn')) return;
+    const modId=key.split(':')[0];
+    const ld=MODULES[modId].layers.find(l=>l.id==='apn');
+    if(ld) applyLayerOpacity('apn', layer, ld.opacity);
+  });
+}
+
+function toggleAPSelection(name){
+  if(selectedAPs.has(name)) selectedAPs.delete(name);
+  else selectedAPs.add(name);
+  updateAPMapFilter();
+  renderAPList();
+  if(currentModule==='2'){ renderM2Stats(); renderM2Donut(); }
+}
+const geoData = {};
+
+async function loadAllGeoData(){
+  // Primero carga desde variables globales (file:// protocol)
+  for(const id of Object.keys(DATA_FILES)){
+    const g=window['GEOLAY_'+id];
+    if(g){geoData[id]=g; continue;}
+    // Fallback fetch (servidor HTTP)
+    try{const r=await fetch(DATA_FILES[id]);if(r.ok)geoData[id]=await r.json();}
+    catch(e){console.warn('No se pudo cargar',DATA_FILES[id]);}
+  }
+}
+
+function buildAPNFromGeoData(){
+  if(!geoData['apn']) return;
+  const seen=new Set(); const list=[];
+  for(const f of geoData['apn'].features){
+    const p=f.properties;
+    if(!p.nombre_ap) continue;
+    if(seen.has(p.nombre_ap)) continue;
+    seen.add(p.nombre_ap);
+    try{
+      const b=L.geoJSON(f).getBounds(); const c=b.getCenter();
+      list.push({code:p.cod_ap||'',name:p.nombre_ap,cat:p.categoria,center:[c.lat,c.lng],sup_ha:p.sup_ha,dep:p.dep,base_leg:p.base_leg});
+    }catch(e){list.push({code:p.cod_ap||'',name:p.nombre_ap,cat:p.categoria,center:[-16.5,-64.5]});}
+  }
+  list.sort((a,b)=>a.name.localeCompare(b.name));
+  APN.length=0; APN.push(...list);
+  document.querySelector('.panel-section .panel-h span.panel-h-left')?.parentElement
+    ?.querySelector('span.panel-h-left')?.closest('.panel-section')
+    ?.querySelector('.panel-h span:last-child');
+  const apHeader=document.querySelectorAll('.panel-section .panel-h')[1];
+  if(apHeader){const s=apHeader.querySelector('.panel-h-left');if(s)s.innerHTML=s.innerHTML.replace(/\(\d+\)/,`(${list.length})`);}
+}
+
+// URL del pattern SVG por color de categoría AP
+function patternUrl(color){
+  return `url(#ap-pat-${(color||'#2c8a4d').replace('#','')})`;
+}
+
+// Gradiente azul: blanco-azul claro → azul oscuro
+function blueGradient(t){
+  t=Math.max(0,Math.min(1,t));
+  const r=Math.round(232-t*219); // 232 → 13
+  const g=Math.round(244-t*175); // 244 → 69
+  const b=Math.round(255-t*136); // 255 → 119
+  return `rgb(${r},${g},${b})`;
+}
+
+function createGeoJSONLayer(id, layerDef){
+  const data=geoData[id];
+  if(!data) return L.layerGroup();
+  // Capas de riqueza: gradiente por N_ESP, popup con lista de especies
+  if(id.startsWith('riq_')){
+    const nesps=data.features.map(f=>+f.properties.N_ESP||0);
+    const minN=Math.min(...nesps);
+    const maxN=Math.max(1,...nesps);
+    const range=Math.max(1, maxN-minN);
+    return L.geoJSON(data,{
+      style:f=>{
+        const n=+f.properties.N_ESP||0;
+        const t=(n-minN)/range;
+        const fill=blueGradient(t);
+        return{color:'#0d4577',weight:0.7,fillColor:fill,fillOpacity:1,opacity:1};
+      },
+      onEachFeature:(f,l)=>{
+        const p=f.properties;
+        const especies=(p.ESPECIES||'').split(';').map(s=>s.trim()).filter(Boolean);
+        const listHTML=especies.length
+          ? `<ul style="margin:4px 0 0 0;padding-left:14px;max-height:160px;overflow-y:auto;font-size:11px;line-height:1.45">${especies.map(s=>`<li><i>${s}</i></li>`).join('')}</ul>`
+          : '—';
+        l.bindPopup(`<div class="feature-popup"><h5>Riqueza de especies</h5><table>
+          <tr><td>N° especies</td><td><b style="color:#0d4577;font-size:13px">${p.N_ESP||0}</b></td></tr>
+          <tr><td>Especies</td></tr></table>${listHTML}</div>`,{maxWidth:300});
+      }
+    });
+  }
+  if(id==='limite'){
+    return L.geoJSON(data,{style:{color:layerDef.color,weight:2.5,fillOpacity:0,opacity:0.75,dashArray:'6,4'}});
+  }
+  if(id==='apn'){
+    return L.geoJSON(data,{
+      style:f=>{
+        const c=AP_CAT_COLORS[f.properties.categoria]||layerDef.color;
+        return{color:c,weight:1.5,fillColor:patternUrl(c),fillOpacity:1,opacity:1};
+      },
+      onEachFeature:(f,l)=>{
+        const p=f.properties; if(!p.nombre_ap) return;
+        const sup=p.sup_ha?(+p.sup_ha).toLocaleString('es-BO'):'—';
+        l.bindPopup(`<div class="feature-popup"><h5>${p.nombre_ap}</h5><table>
+          <tr><td>Código</td><td><b>${p.cod_ap||'—'}</b></td></tr>
+          <tr><td>Categoría</td><td>${p.categoria}</td></tr>
+          <tr><td>Superficie</td><td>${sup} ha</td></tr>
+          <tr><td>Departamento</td><td>${p.dep||'—'}</td></tr>
+          <tr><td>Marco legal</td><td style="max-width:160px;white-space:normal">${p.base_leg||'—'}</td></tr>
+        </table></div>`);
+        l.on('click',()=>{
+          const c=l.getBounds().getCenter();
+          selectAP({code:p.cod_ap||p.nombre_ap,name:p.nombre_ap,cat:p.categoria,center:[c.lat,c.lng],sup_ha:p.sup_ha,dep:p.dep});
+        });
+      }
+    });
+  }
+  // Species layers
+  const mod2Def=MODULES['2'].layers.find(ld=>ld.id===id);
+  const iucn=mod2Def?.iucn||'';
+  const sci=mod2Def?.sci||'';
+  const color=layerDef.color;
+  return L.geoJSON(data,{
+    style:{color,weight:1.5,fillColor:color,fillOpacity:0.28,opacity:0.75},
+    onEachFeature:(f,l)=>{
+      const p=f.properties;
+      const cat=p.category||iucn||'—';
+      const catColor=IUCN_COLORS[cat]||'#888';
+      l.bindPopup(`<div class="feature-popup"><h5><i>${p.sci_name||sci}</i></h5><table>
+        <tr><td>Estado IUCN</td><td><b style="color:${catColor}">${cat}</b></td></tr>
+        <tr><td>Distribución</td><td>${p.legend||'Distribución confirmada'}</td></tr>
+        <tr><td>Fuente</td><td style="max-width:160px;white-space:normal">${p.source||p.citation||'—'}</td></tr>
+        <tr><td>Año</td><td>${p.yrcompiled||'—'}</td></tr>
+      </table></div>`);
+    }
+  });
+}
+
+const moduleLayers={};
+function buildModuleLayer(id,mod){
+  const layerDef=mod.layers.find(l=>l.id===id)||{color:'#888'};
+  if(id==='apn_lim'&&geoData['apn']){
+    return L.geoJSON(geoData['apn'],{
+      style:{color:layerDef.color,weight:1.6,fillOpacity:0,opacity:0.85},
+      onEachFeature:(f,l)=>{
+        const p=f.properties; if(!p.nombre_ap) return;
+        l.bindTooltip(`<b>${p.nombre_ap}</b> · ${catAcronym(p.categoria)}`,{sticky:true,direction:'top',opacity:0.95});
+      }
+    });
+  }
+  if(DATA_FILES[id]&&geoData[id]) return createGeoJSONLayer(id,layerDef);
+  // Capas simuladas para módulos 3-6
+  const g=L.layerGroup();
+  const color=layerDef.color;
+  APN.forEach((ap,i)=>{
+    const seed=(id.charCodeAt(0)+id.length+i)%11;
+    if(['zon','amort','forest','wet','vuln','temp'].includes(id)){
+      L.circle(ap.center,{radius:50000+seed*8000,color,weight:1.2,fillColor:color,fillOpacity:0.25,opacity:.7}).addTo(g);
+    } else if(['fires','pts','com','sac','aop','mining-l','mining-il'].includes(id)){
+      for(let k=0;k<8+seed;k++) L.circleMarker([ap.center[0]+(Math.random()-.5)*1.4,ap.center[1]+(Math.random()-.5)*1.4],{radius:3,color,weight:0,fillColor:color,fillOpacity:.8}).addTo(g);
+    } else if(['migr','tur','corr','fluvial'].includes(id)){
+      L.polyline([ap.center,APN[(i+3)%APN.length].center],{color,weight:2,opacity:.55,dashArray:id==='migr'?'4,4':null}).addTo(g);
+    } else if(['adm','basins','eco','tioc'].includes(id)){
+      L.circle(ap.center,{radius:90000+seed*10000,color,weight:1,dashArray:'3,3',fillOpacity:0.08,opacity:.6}).addTo(g);
+    } else {
+      L.circle(ap.center,{radius:70000,color,weight:1,fillOpacity:0.18,opacity:.6}).addTo(g);
+    }
+  });
+  return g;
+}
+let currentModule='1', currentAP=null;
+const activeLayers=new Set();
+
+// Aplica opacidad sin tocar otros estilos (color, etc.)
+function applyLayerOpacity(layerId, leafletLayer, pct){
+  if(!leafletLayer || !leafletLayer.setStyle) return;
+  const o = Math.max(0, Math.min(1, pct/100));
+  // Caso especial: apn usa pattern SVG + filtro per-feature según selectedAPs
+  if(layerId==='apn' && leafletLayer.eachLayer){
+    leafletLayer.eachLayer(fl=>{
+      const p=fl.feature && fl.feature.properties;
+      if(!p||!fl.setStyle) return;
+      const visible = selectedAPs.size===0 || selectedAPs.has(p.nombre_ap);
+      const color = AP_CAT_COLORS[p.categoria] || '#2c8a4d';
+      fl.setStyle({
+        color, fillColor: patternUrl(color),
+        weight: visible ? 1.5 : 0,
+        opacity: visible ? o : 0,
+        fillOpacity: visible ? o : 0
+      });
+    });
+    return;
+  }
+  const outlineOnly = (layerId==='limite' || layerId==='apn_lim');
+  // Capas de riqueza usan fill 100% (no transparencia por defecto). Especies normales 55%.
+  const fillRatio = layerId.startsWith('riq_') ? 1.0 : 0.55;
+  try{
+    leafletLayer.setStyle({opacity: o, fillOpacity: outlineOnly ? 0 : o*fillRatio});
+  }catch(e){}
+}
+
+// Re-añade las capas activas al mapa según el orden actual (primer item = arriba)
+function reapplyLayerOrder(modId, mod){
+  // Quita TODAS las capas del módulo del mapa
+  mod.layers.forEach(l=>{
+    const key=modId+':'+l.id;
+    if(moduleLayers[key] && map.hasLayer(moduleLayers[key])){
+      map.removeLayer(moduleLayers[key]);
+    }
+  });
+  // Re-añade las activas en orden inverso (primer item de la lista = encima)
+  for(let i=mod.layers.length-1; i>=0; i--){
+    const l=mod.layers[i];
+    const key=modId+':'+l.id;
+    if(activeLayers.has(l.id) && moduleLayers[key]){
+      moduleLayers[key].addTo(map);
+    }
+  }
+}
+
+let _dragSrcIdx=null;
+
+function renderLayerList(modId, mod){
+  const ll=document.getElementById('layerList');
+  ll.innerHTML=''; activeLayers.clear();
+  let lastGroup=null;
+  mod.layers.forEach((l,idx)=>{
+    // Header de grupo si cambia
+    if(l.group && l.group!==lastGroup){
+      const h=document.createElement('div');
+      h.style.cssText='font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-dim);padding:10px 4px 4px;border-top:1px solid var(--border);margin-top:6px;';
+      h.textContent=l.group;
+      // El primero no necesita borde superior
+      if(lastGroup===null){h.style.borderTop='0';h.style.marginTop='0';h.style.paddingTop='2px';}
+      ll.appendChild(h);
+      lastGroup=l.group;
+    }
+    const row=document.createElement('div');
+    row.className='layer '+(l.on?'on':'off');
+    row.draggable=true; row.dataset.idx=idx; row.dataset.lid=l.id; row.dataset.group=l.group||'';
+    const badge=l.iucn?` <span style="font-size:9px;padding:1px 5px;border-radius:3px;background:${IUCN_COLORS[l.iucn]||'#888'};color:#fff;font-family:monospace;font-weight:600">${l.iucn}</span>`:'';
+    const sub=l.sci?`<span style="display:block;font-size:10px;color:var(--text-dim);font-style:italic;line-height:1.1">${l.sci}</span>`:'';
+    const swatchStyle = l.gradient
+      ? 'background:linear-gradient(90deg,#e8f4ff 0%,#7fb5e0 50%,#0d4577 100%)'
+      : `background:${l.color}`;
+    row.innerHTML=`
+      <div class="layer-main">
+        <span class="grip" title="Arrastra para reordenar">
+          <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor"><circle cx="2" cy="2" r="1.2"/><circle cx="8" cy="2" r="1.2"/><circle cx="2" cy="7" r="1.2"/><circle cx="8" cy="7" r="1.2"/><circle cx="2" cy="12" r="1.2"/><circle cx="8" cy="12" r="1.2"/></svg>
+        </span>
+        <span class="chk"></span>
+        <span class="swatch" style="${swatchStyle}"></span>
+        <span class="name" style="flex:1;min-width:0">${l.name}${badge}${sub}</span>
+        <span class="opacity mono">${l.opacity}%</span>
+        <button class="slider-btn" title="Ajustar transparencia">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+        </button>
+      </div>
+      <div class="layer-slider">
+        <input type="range" min="0" max="100" step="1" value="${l.opacity}">
+        <span class="opacity mono" style="min-width:32px;text-align:right">${l.opacity}%</span>
+      </div>
+    `;
+
+    // Toggle on/off al hacer click en el área principal (excluyendo controles)
+    row.querySelector('.layer-main').addEventListener('click',e=>{
+      if(e.target.closest('.slider-btn,.grip')) return;
+      toggleLayer(l.id,row);
+    });
+
+    // Botón slider
+    const sliderBtn=row.querySelector('.slider-btn');
+    sliderBtn.addEventListener('click',e=>{
+      e.stopPropagation();
+      row.classList.toggle('slider-open');
+      sliderBtn.classList.toggle('active', row.classList.contains('slider-open'));
+    });
+
+    // Input del slider
+    const rangeInput=row.querySelector('input[type=range]');
+    const opacityLabels=row.querySelectorAll('.opacity');
+    rangeInput.addEventListener('input',e=>{
+      const v=+e.target.value;
+      l.opacity=v;
+      opacityLabels.forEach(s=>s.textContent=v+'%');
+      const key=modId+':'+l.id;
+      applyLayerOpacity(l.id, moduleLayers[key], v);
+    });
+    rangeInput.addEventListener('click',e=>e.stopPropagation());
+
+    // No iniciar drag desde el slider/botón
+    row.querySelector('.layer-slider').addEventListener('mousedown',e=>e.stopPropagation());
+    sliderBtn.addEventListener('mousedown',e=>e.stopPropagation());
+
+    // Drag-and-drop
+    row.addEventListener('dragstart',e=>{
+      _dragSrcIdx=idx;
+      row.classList.add('dragging');
+      e.dataTransfer.effectAllowed='move';
+      try{e.dataTransfer.setData('text/plain',String(idx));}catch(_){}
+    });
+    row.addEventListener('dragend',()=>{
+      row.classList.remove('dragging');
+      document.querySelectorAll('.layer.drop-before,.layer.drop-after').forEach(r=>r.classList.remove('drop-before','drop-after'));
+    });
+    row.addEventListener('dragover',e=>{
+      // Solo permitir drop dentro del mismo grupo
+      const srcGroup = _dragSrcIdx!==null ? (mod.layers[_dragSrcIdx]?.group||'') : '';
+      if(srcGroup !== (l.group||'')) { e.dataTransfer.dropEffect='none'; return; }
+      e.preventDefault(); e.dataTransfer.dropEffect='move';
+      const rect=row.getBoundingClientRect();
+      const before=(e.clientY-rect.top)<(rect.height/2);
+      row.classList.toggle('drop-before',before);
+      row.classList.toggle('drop-after',!before);
+    });
+    row.addEventListener('dragleave',e=>{
+      if(!row.contains(e.relatedTarget)) row.classList.remove('drop-before','drop-after');
+    });
+    row.addEventListener('drop',e=>{
+      e.preventDefault();
+      const before=row.classList.contains('drop-before');
+      row.classList.remove('drop-before','drop-after');
+      if(_dragSrcIdx===null||_dragSrcIdx===idx){_dragSrcIdx=null; return;}
+      // Bloquear drop entre grupos
+      const srcGroup = mod.layers[_dragSrcIdx]?.group||'';
+      if(srcGroup !== (l.group||'')){_dragSrcIdx=null; return;}
+      const moved=mod.layers.splice(_dragSrcIdx,1)[0];
+      let target=idx;
+      if(_dragSrcIdx<idx) target--;
+      if(!before) target++;
+      target=Math.max(0,Math.min(mod.layers.length,target));
+      mod.layers.splice(target,0,moved);
+      _dragSrcIdx=null;
+      renderLayerList(modId,mod);
+      reapplyLayerOrder(modId,mod);
+    });
+
+    ll.appendChild(row);
+
+    const key=modId+':'+l.id;
+    if(!moduleLayers[key]) moduleLayers[key]=buildModuleLayer(l.id,mod);
+    if(l.on){activeLayers.add(l.id);}
+    // Aplica opacidad guardada al construir
+    applyLayerOpacity(l.id, moduleLayers[key], l.opacity);
+  });
+  // Añade capas activas en el orden correcto al mapa
+  reapplyLayerOrder(modId,mod);
+}
+
+// Guardar HTML original de las tarjetas KPI y título del donut para restaurar al salir de M2
+let _defaultKPIGridHTML=null;
+let _defaultDonutH4HTML=null;
+function _saveDefaultKPIs(){
+  if(_defaultKPIGridHTML===null){
+    const g=document.querySelector('.kpi-grid');
+    if(g) _defaultKPIGridHTML=g.innerHTML;
+  }
+  if(_defaultDonutH4HTML===null){
+    const h4=document.querySelector('.donut-card h4');
+    if(h4) _defaultDonutH4HTML=h4.innerHTML;
+  }
+}
+
+// Superficie aproximada de intersección entre una capa de especies y las APs (en ha)
+// Para especies normales: suma de sup_ha de APs donde la especie tiene presencia
+// Para capas riq_*: suma de áreas (calculadas) de features que intersectan APs activas
+function getSpeciesIntersectionWithAPs(sid){
+  if(!geoData['apn']) return 0;
+  if(sid.startsWith('riq_')){
+    // Riqueza: si el centroide de la feature cae dentro de una AP filtrada, sumar su área
+    const data=geoData[sid]; if(!data) return 0;
+    let totalHa=0;
+    data.features.forEach(f=>{
+      const c=getPolygonCentroid(f.geometry);
+      const inAnyAP=geoData['apn'].features.some(ap=>{
+        const apName=ap.properties.nombre_ap; if(!apName) return false;
+        if(selectedAPs.size>0 && !selectedAPs.has(apName)) return false;
+        return pointInGeometry(c, ap.geometry);
+      });
+      if(inAnyAP) totalHa += geometryAreaKm2(f.geometry)*100;
+    });
+    return totalHa;
+  }
+  // Especies normales: usar la cobertura precomputada como proporción de cada AP
+  const cov=speciesAPCoverage[sid];
+  if(!cov) return 0;
+  let totalHa=0;
+  geoData['apn'].features.forEach(ap=>{
+    const apName=ap.properties.nombre_ap;
+    if(!apName) return;
+    if(selectedAPs.size>0 && !selectedAPs.has(apName)) return;
+    const ratio=cov[apName]||0;
+    if(ratio>0) totalHa += (parseFloat(ap.properties.sup_ha)||0) * ratio;
+  });
+  return totalHa;
+}
+
+// Genera paleta de azules distintivos para N especies de una capa de riqueza
+function generateBluePalette(n){
+  if(n<=0) return [];
+  const out=[];
+  for(let i=0;i<n;i++){
+    const t = n===1 ? 0.5 : i/(n-1);
+    const lightness = 28 + t*52; // 28% → 80%
+    const saturation = 75 - t*25; // 75 → 50
+    out.push(`hsl(210, ${saturation}%, ${lightness}%)`);
+  }
+  return out;
+}
+
+// Para una capa riq_*, devuelve {especie: ha} sumando áreas de features
+// que contienen esa especie y cuyo bbox intersecta con APs filtradas
+function getRiquezaSpeciesBreakdown(sid){
+  const data=geoData[sid];
+  if(!data||!geoData['apn']) return {};
+  const result={};
+  data.features.forEach(f=>{
+    const c=getPolygonCentroid(f.geometry);
+    const inAnyAP=geoData['apn'].features.some(ap=>{
+      const apName=ap.properties.nombre_ap; if(!apName) return false;
+      if(selectedAPs.size>0 && !selectedAPs.has(apName)) return false;
+      return pointInGeometry(c, ap.geometry);
+    });
+    if(inAnyAP){
+      const especies=(f.properties.ESPECIES||'').split(';').map(s=>s.trim()).filter(Boolean);
+      const fHa=geometryAreaKm2(f.geometry)*100;
+      especies.forEach(sp=>{ result[sp]=(result[sp]||0)+fHa; });
+    }
+  });
+  return result;
+}
+
+// Construye los items del desglose M2 (uno por especie individual)
+function getM2BreakdownItems(){
+  const activeSp=MODULES['2'].layers.filter(l=>activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite');
+  const items=[];
+  activeSp.forEach(s=>{
+    if(s.id.startsWith('riq_')){
+      const breakdown=getRiquezaSpeciesBreakdown(s.id);
+      const names=Object.keys(breakdown).filter(n=>breakdown[n]>0).sort();
+      const palette=generateBluePalette(names.length);
+      names.forEach((name,i)=>{
+        items.push({label:name, sci:name, italic:true, color:palette[i], ha:breakdown[name], source:s.name});
+      });
+    } else {
+      const ha=getSpeciesIntersectionWithAPs(s.id);
+      if(ha>0) items.push({label:s.name, sci:s.sci||'', italic:false, color:s.color, ha, source:''});
+    }
+  });
+  // Ordenar por área descendente
+  items.sort((a,b)=>b.ha-a.ha);
+  return items;
+}
+
+function drawDonutFromItems(items){
+  const svg=document.getElementById('donut'); if(!svg) return;
+  svg.innerHTML='';
+  const ns='http://www.w3.org/2000/svg';
+  const mk=(tag,attrs)=>{const el=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));return el;};
+  const cx=21,cy=21,r=15.9155;
+  svg.appendChild(mk('circle',{cx,cy,r,fill:'none',stroke:'var(--bg)','stroke-width':6}));
+  const total=items.reduce((s,i)=>s+i.ha,0);
+  if(total>0){
+    let cum=0;
+    items.forEach(it=>{
+      const pct=(it.ha/total)*100;
+      svg.appendChild(mk('circle',{cx,cy,r,fill:'none',stroke:it.color,'stroke-width':6,'stroke-dasharray':`${pct} ${100-pct}`,'stroke-dashoffset':25-cum}));
+      cum+=pct;
+    });
+  }
+  svg.appendChild(mk('circle',{cx,cy,r:9,fill:'var(--bg-soft)'}));
+  const lbl=mk('text',{x:cx,y:cy+0.6,'text-anchor':'middle','dominant-baseline':'middle',fill:'var(--text)','font-size':3.2,'font-family':'JetBrains Mono','font-weight':600});
+  lbl.textContent=formatHa(total); svg.appendChild(lbl);
+  const sub=mk('text',{x:cx,y:cy+4.5,'text-anchor':'middle',fill:'var(--text-dim)','font-size':2});
+  sub.textContent=haUnitLabel(total); svg.appendChild(sub);
+}
+
+function formatHaCell(ha){
+  if(!isFinite(ha)||ha<=0) return '0 ha';
+  if(ha>=1e6) return (ha/1e6).toFixed(2)+' M ha';
+  if(ha>=1e3) return (ha/1e3).toFixed(1)+' k ha';
+  return Math.round(ha).toLocaleString('es-BO')+' ha';
+}
+
+function renderBreakdownTable(items){
+  const tbody=document.getElementById('breakdownTbody'); if(!tbody) return;
+  if(!items || items.length===0){
+    tbody.innerHTML=`<tr><td colspan="3" class="empty">Sin datos. Activa una capa de especies.</td></tr>`;
+    return;
+  }
+  const total=items.reduce((s,i)=>s+i.ha,0);
+  tbody.innerHTML=items.map(it=>{
+    const pct=total>0?((it.ha/total)*100).toFixed(1):'0.0';
+    const cls=it.italic?'sp-name italic':'sp-name';
+    const title=it.source?`Capa: ${it.source}`:'';
+    return `<tr title="${title}"><td><span class="dot" style="background:${it.color}"></span><span class="${cls}">${it.label}</span></td><td class="num" style="text-align:right">${formatHaCell(it.ha)}</td><td class="num" style="text-align:right;color:var(--text);font-weight:600">${pct}%</td></tr>`;
+  }).join('');
+}
+
+function renderM2Donut(){
+  const card=document.querySelector('.donut-card'); if(!card) return;
+  const h4=card.querySelector('h4');
+  const legend=document.getElementById('donutLegend');
+
+  // Actualizar título donut y tabla
+  const scope = selectedAPs.size===0 ? 'todas las APs' : `${selectedAPs.size} AP${selectedAPs.size===1?'':'s'}`;
+  if(h4) h4.innerHTML=`Distribución × Áreas Protegidas <span class="mono" style="color:var(--text-dim);font-size:10px">${scope}</span>`;
+  const tableTitle=document.getElementById('breakdownTitle');
+  if(tableTitle) tableTitle.innerHTML=`Desglose por especie <span class="mono" style="color:var(--text-dim);font-size:10px">${scope}</span>`;
+
+  const items=getM2BreakdownItems();
+
+  // Donut
+  if(items.length===0){
+    document.getElementById('donut').innerHTML='';
+    if(legend) legend.innerHTML=`<div style="font-size:11px;color:var(--text-dim);text-align:center;padding:10px 6px;line-height:1.4">Activa una capa de especies para ver su intersección con las APs.</div>`;
+  } else {
+    drawDonutFromItems(items);
+    // Mini-leyenda del donut: solo top 5 + "otros"
+    const top=items.slice(0,5);
+    const rest=items.slice(5);
+    const total=items.reduce((s,i)=>s+i.ha,0);
+    if(legend){
+      legend.style.maxHeight='150px'; legend.style.overflowY='auto';
+      let html=top.map(it=>{
+        const pct=total>0?((it.ha/total)*100).toFixed(1):'0.0';
+        return `<div class="row" title="${it.sci}"><span class="dot" style="background:${it.color}"></span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${it.label}</span><span class="pct mono">${pct}%</span></div>`;
+      }).join('');
+      if(rest.length>0){
+        const restHa=rest.reduce((s,i)=>s+i.ha,0);
+        const pct=total>0?((restHa/total)*100).toFixed(1):'0.0';
+        html += `<div class="row" style="opacity:.8"><span class="dot" style="background:#a0a0a0"></span><span>+ ${rest.length} más</span><span class="pct mono">${pct}%</span></div>`;
+      }
+      legend.innerHTML=html;
+    }
+  }
+
+  // Tabla
+  renderBreakdownTable(items);
+}
+
+function renderM2Stats(){
+  const grid=document.querySelector('.kpi-grid'); if(!grid) return;
+  // Superficie AP (de sup_ha en GeoJSON)
+  let supAP=0, apCount=0;
+  if(geoData['apn']){
+    geoData['apn'].features.forEach(f=>{
+      const p=f.properties; if(!p.nombre_ap) return;
+      const inSel = selectedAPs.size===0 || selectedAPs.has(p.nombre_ap);
+      if(inSel){ supAP += (parseFloat(p.sup_ha)||0); apCount++; }
+    });
+  }
+  // Superficie distribución (suma de capas de especies activas)
+  const activeSp = MODULES['2'].layers.filter(l=> activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite');
+  let supDistKm2=0;
+  activeSp.forEach(s=>{ supDistKm2 += getSpeciesAreaKm2(s.id); });
+  const supDistHa = supDistKm2*100;
+  // # especies con presencia en APs (seleccionadas o todas)
+  let countSpInAP=0;
+  const uniqueRiquezaSp=new Set();
+  activeSp.forEach(s=>{
+    if(s.id.startsWith('riq_')){
+      const byAP=riquezaSpeciesByAP[s.id]; if(!byAP) return;
+      const targetAPs=selectedAPs.size===0 ? Object.keys(byAP) : Array.from(selectedAPs);
+      targetAPs.forEach(ap=>{ const set=byAP[ap]; if(set) set.forEach(sp=>uniqueRiquezaSp.add(sp)); });
+    } else {
+      const pres=speciesAPPresence[s.id]; if(!pres) return;
+      if(selectedAPs.size===0){
+        if(pres.size>0) countSpInAP++;
+      } else {
+        for(const ap of selectedAPs){ if(pres.has(ap)){ countSpInAP++; break; } }
+      }
+    }
+  });
+  countSpInAP += uniqueRiquezaSp.size;
+  const scope = selectedAPs.size===0 ? `${apCount} áreas (todas)` : `${selectedAPs.size} AP${selectedAPs.size===1?'':'s'} seleccionadas`;
+  const supAPDisplay = formatHa(supAP);
+  const supAPUnit = haUnitLabel(supAP);
+  const supDistDisplay = formatHa(supDistHa);
+  const supDistUnit = haUnitLabel(supDistHa);
+  grid.innerHTML = `
+    <div class="kpi">
+      <div class="lbl">Superficie de las APs</div>
+      <div class="val">${supAPDisplay}<span class="unit">${supAPUnit}</span></div>
+      <div class="trend">${scope}</div>
+    </div>
+    <div class="kpi">
+      <div class="lbl">Sup. distribución activa</div>
+      <div class="val">${supDistDisplay}<span class="unit">${supDistUnit}</span></div>
+      <div class="trend">${activeSp.length} especie${activeSp.length===1?'':'s'} activa${activeSp.length===1?'':'s'}</div>
+    </div>
+    <div class="kpi" style="grid-column:span 2">
+      <div class="lbl">Especies con presencia en APs</div>
+      <div class="val">${countSpInAP}<span class="unit">/ ${activeSp.length||0} activas</span></div>
+      <div class="trend">${selectedAPs.size===0 ? 'En toda Bolivia' : 'En APs seleccionadas'}${selectedAPs.size>0?` · <a href="#" id="clearAPSel" style="color:var(--accent)">limpiar</a>`:''}</div>
+    </div>
+  `;
+  const clr=document.getElementById('clearAPSel');
+  if(clr) clr.addEventListener('click',e=>{
+    e.preventDefault();
+    selectedAPs.clear();
+    updateAPMapFilter();
+    renderAPList();
+    renderM2Stats();
+    renderM2Donut();
+  });
+}
+
+function renderRightPanelKPIs(modId){
+  _saveDefaultKPIs();
+  const grid=document.querySelector('.kpi-grid'); if(!grid) return;
+  if(modId==='2'){
+    renderM2Stats();
+    renderM2Donut();
+  } else {
+    if(_defaultKPIGridHTML!==null) grid.innerHTML=_defaultKPIGridHTML;
+    const h4=document.querySelector('.donut-card h4');
+    if(h4 && _defaultDonutH4HTML!==null) h4.innerHTML=_defaultDonutH4HTML;
+    const legend=document.getElementById('donutLegend');
+    if(legend){ legend.style.maxHeight=''; legend.style.overflowY=''; }
+    drawDonut();
+    // Tabla con datos MapBiomas (cobertura uso del suelo)
+    const tableTitle=document.getElementById('breakdownTitle');
+    if(tableTitle) tableTitle.innerHTML=`Cobertura de uso del suelo <span class="mono" style="color:var(--text-dim);font-size:10px">MapBiomas 2023</span>`;
+    const mapBiomasItems=[
+      {label:'Bosque',          italic:false, color:'#2c8a4d', ha:8717160},
+      {label:'Sabana/pastizal', italic:false, color:'#d8c87a', ha:5390960},
+      {label:'Agropecuario',    italic:false, color:'#e8a417', ha:2081320},
+      {label:'No-vegetado',     italic:false, color:'#c5b5a8', ha:665340},
+      {label:'Agua',            italic:false, color:'#4aa3e3', ha:204720},
+    ];
+    renderBreakdownTable(mapBiomasItems);
+  }
+}
+
+function renderModule(modId){
+  Object.values(moduleLayers).forEach(l=>{if(map.hasLayer(l))map.removeLayer(l);});
+  currentModule=modId;
+  const mod=MODULES[modId];
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.mod===modId));
+  document.getElementById('modIcon').innerHTML=mod.icon;
+  document.getElementById('modIcon').style.background=mod.color;
+  document.getElementById('modTitle').textContent=mod.title;
+  document.getElementById('modSub').textContent=mod.sub;
+  document.getElementById('layerCount').textContent=`${mod.layers.length} capas`;
+  renderLayerList(modId, mod);
+  renderRightPanelKPIs(modId);
+  document.getElementById('legendTitle').textContent=mod.legend.title;
+  document.getElementById('legendInd').textContent=mod.legend.ind;
+  const rowHTML=it=>`<div class="legend-row"><span class="sw" style="background:${it.c}"></span><span>${it.l}</span><span class="pct mono">${it.v}</span></div>`;
+  let legendHTML=mod.legend.items.map(rowHTML).join('');
+  if(modId!=='1'){
+    legendHTML+=`<div style="font-size:10px;font-weight:600;color:var(--text-soft);margin-top:10px;padding-top:8px;border-top:1px solid var(--border);text-transform:uppercase;letter-spacing:.8px">Categorías SERNAP</div>`;
+    legendHTML+=SERNAP_LEGEND.map(rowHTML).join('');
+  }
+  document.getElementById('legendBody').innerHTML=legendHTML;
+  updateStatusLayers();
+}
+function toggleLayer(layerId,rowEl){
+  const key=currentModule+':'+layerId;
+  const layer=moduleLayers[key];
+  const isOn=rowEl.classList.contains('on');
+  rowEl.classList.toggle('on',!isOn); rowEl.classList.toggle('off',isOn);
+  if(isOn){if(layer&&map.hasLayer(layer))map.removeLayer(layer);activeLayers.delete(layerId);}
+  else{
+    if(layer){
+      // Aplicar opacidad guardada y re-establecer orden completo
+      const mod=MODULES[currentModule];
+      const ld=mod.layers.find(x=>x.id===layerId);
+      activeLayers.add(layerId);
+      reapplyLayerOrder(currentModule,mod);
+      if(ld) applyLayerOpacity(layerId, layer, ld.opacity);
+    }
+  }
+  updateStatusLayers();
+  if(currentModule==='2'){ renderM2Stats(); renderM2Donut(); }
+}
+function updateStatusLayers(){
+  const n=activeLayers.size+userLayers.length;
+  document.getElementById('layerStatus').textContent=`${n} capa${n===1?'':'s'} activa${n===1?'':'s'}`;
+}
+function renderAPList(){
+  const el=document.getElementById('apList'); el.innerHTML='';
+  APN.forEach(ap=>{
+    const r=document.createElement('div');
+    const isSel=selectedAPs.has(ap.name);
+    r.className='ap-item'+(isSel?' selected':'');
+    r.innerHTML=`<span style="flex:1;min-width:0;line-height:1.3;white-space:normal;word-break:break-word">${ap.name}</span><span class="cat mono" style="flex-shrink:0" title="${ap.cat||''}">${catAcronym(ap.cat)}</span>`;
+    r.addEventListener('click',e=>{
+      if(e.shiftKey){ selectAP(ap); return; } // Shift+click = vuela y abre popup
+      toggleAPSelection(ap.name);
+    });
+    el.appendChild(r);
+  });
+  // Actualiza encabezado con conteo de selección
+  const apHeader=document.querySelectorAll('.panel-section .panel-h')[1];
+  if(apHeader){
+    const span=apHeader.querySelector('.panel-h-left');
+    if(span){
+      const total=APN.length;
+      const sel=selectedAPs.size;
+      const txt = sel===0 ? `Áreas Protegidas (${total})` : `Áreas Protegidas (${sel}/${total})`;
+      span.innerHTML = span.innerHTML.replace(/Áreas Protegidas[^<]*/,'')+txt;
+      // El caret quedó, asegurar que esté
+      if(!span.querySelector('svg')){
+        span.innerHTML='<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>'+txt;
+      }
+    }
+  }
+}
+function selectAP(ap){
+  currentAP=ap;
+  document.getElementById('crumbArea').textContent=`${ap.name} · ${ap.cat}`;
+  document.getElementById('rightTitle').textContent=ap.name;
+  const sup=ap.sup_ha?(+ap.sup_ha).toLocaleString('es-BO')+' ha':'';
+  document.getElementById('rightSub').textContent=`${ap.cat}${ap.dep?' · '+ap.dep:''}${sup?' · '+sup:''}`;
+  map.flyTo(ap.center,7,{duration:.9});
+  renderAPList();
+}
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>renderModule(t.dataset.mod)));
+// Toggle de leyenda (minimizar / expandir)
+(function(){
+  const legend=document.getElementById('legend');
+  const btn=document.getElementById('legendToggle');
+  if(btn) btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    legend.classList.toggle('collapsed');
+    btn.title = legend.classList.contains('collapsed') ? 'Expandir leyenda' : 'Minimizar leyenda';
+  });
+  if(legend) legend.addEventListener('click',e=>{
+    if(legend.classList.contains('collapsed')){
+      legend.classList.remove('collapsed');
+      if(btn) btn.title='Minimizar leyenda';
+    }
+  });
+})();
+document.getElementById('themeToggle').addEventListener('click',()=>{
+  currentTheme=currentTheme==='light'?'dark':'light';
+  document.body.setAttribute('data-theme',currentTheme);
+  document.getElementById('iconSun').style.display=currentTheme==='light'?'block':'none';
+  document.getElementById('iconMoon').style.display=currentTheme==='dark'?'block':'none';
+  setBasemap(currentBM);
+});
+document.querySelectorAll('.basemap-switch button').forEach(b=>b.addEventListener('click',()=>setBasemap(b.dataset.bm)));
+document.getElementById('zoomIn').addEventListener('click',()=>map.zoomIn());
+document.getElementById('zoomOut').addEventListener('click',()=>map.zoomOut());
+document.getElementById('resetView').addEventListener('click',()=>{
+  map.flyTo([-16.5,-64.5],5); currentAP=null;
+  document.getElementById('crumbArea').textContent=`${APN.length} Áreas Protegidas`;
+  document.getElementById('rightTitle').textContent='Bolivia';
+  document.getElementById('rightSub').textContent='Sistema Nacional de Áreas Protegidas · SERNAP';
+  renderAPList();
+});
+map.on('mousemove',e=>document.getElementById('latlon').textContent=`${e.latlng.lat.toFixed(2)}, ${e.latlng.lng.toFixed(2)}`);
+map.on('zoomend',()=>document.getElementById('zoomLevel').textContent='z: '+map.getZoom());
+const userLayers=[];
+function drawDonut(){
+  const data=[{l:'Bosque',v:51.1,c:'#2c8a4d'},{l:'Sabana/pastizal',v:31.6,c:'#d8c87a'},{l:'Agropecuario',v:12.2,c:'#e8a417'},{l:'No-vegetado',v:3.9,c:'#c5b5a8'},{l:'Agua',v:1.2,c:'#4aa3e3'}];
+  const svg=document.getElementById('donut'); svg.innerHTML='';
+  const cx=21,cy=21,r=15.9155; let cum=0;
+  const ns='http://www.w3.org/2000/svg';
+  const mk=(tag,attrs)=>{const el=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,v));return el;};
+  svg.appendChild(mk('circle',{cx,cy,r,fill:'none',stroke:'var(--bg)','stroke-width':6}));
+  data.forEach(d=>{svg.appendChild(mk('circle',{cx,cy,r,fill:'none',stroke:d.c,'stroke-width':6,'stroke-dasharray':`${d.v} ${100-d.v}`,'stroke-dashoffset':25-cum}));cum+=d.v;});
+  svg.appendChild(mk('circle',{cx,cy,r:9,fill:'var(--bg-soft)'}));
+  const lbl=mk('text',{x:cx,y:cy+1,'text-anchor':'middle','dominant-baseline':'middle',fill:'var(--text)','font-size':3,'font-family':'JetBrains Mono','font-weight':600});
+  lbl.textContent='17.06M'; svg.appendChild(lbl);
+  const sub=mk('text',{x:cx,y:cy+4.5,'text-anchor':'middle',fill:'var(--text-dim)','font-size':2});
+  sub.textContent='ha'; svg.appendChild(sub);
+  document.getElementById('donutLegend').innerHTML=data.map(d=>`<div class="row"><span class="dot" style="background:${d.c}"></span><span>${d.l}</span><span class="pct mono">${d.v.toFixed(1)}%</span></div>`).join('');
+}
+drawDonut();
+const appEl=document.querySelector('.app');
+const btnL=document.getElementById('toggleLeft');
+const btnR=document.getElementById('toggleRight');
+L.DomEvent.disableClickPropagation(btnL);
+L.DomEvent.disableClickPropagation(btnR);
+btnL.addEventListener('click',e=>{e.stopPropagation();appEl.classList.toggle('left-collapsed');btnL.classList.toggle('panel-hidden');setTimeout(()=>map.invalidateSize(),300);});
+btnR.addEventListener('click',e=>{e.stopPropagation();appEl.classList.toggle('right-collapsed');btnR.classList.toggle('panel-hidden');setTimeout(()=>map.invalidateSize(),300);});
+document.querySelectorAll('.panel-section[data-collapse] .panel-h').forEach(h=>{
+  h.addEventListener('click',e=>{if(e.target.closest('input,.upload,.layer,.ap-item'))return;h.parentElement.classList.toggle('collapsed');});
+});
+renderAPList();
+renderModule('1');
+// Carga asíncrona de capas reales — re-renderiza al completar
+loadAllGeoData().then(()=>{
+  buildAPNFromGeoData();
+  precomputeAPSamples();
+  precomputeSpeciesCoverage();
+  computeSpeciesAPPresence();
+  // Destruir capas simuladas del módulo activo para recrearlas con datos reales
+  Object.keys(moduleLayers).forEach(k=>{
+    if(map.hasLayer(moduleLayers[k]))map.removeLayer(moduleLayers[k]);
+    delete moduleLayers[k];
+  });
+  renderModule(currentModule);
+  renderAPList();
+  document.getElementById('crumbArea').textContent=`${APN.length} Áreas Protegidas`;
+});
+</script>
+</body>
+</html>
