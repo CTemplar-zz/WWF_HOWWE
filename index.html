@@ -514,8 +514,8 @@
     </div>
   </header>
   <nav class="tabs" id="tabs">
-    <button class="tab active" data-mod="1"><span class="tab-dot" style="background:#6e8a55"></span><span class="tab-num">M1</span>Marco espacial base</button>
-    <button class="tab" data-mod="2"><span class="tab-dot" style="background:#7c5fb5"></span><span class="tab-num">M2</span>Distribución de especies</button>
+    <button class="tab" data-mod="1"><span class="tab-dot" style="background:#6e8a55"></span><span class="tab-num">M1</span>Marco espacial base</button>
+    <button class="tab active" data-mod="2"><span class="tab-dot" style="background:#7c5fb5"></span><span class="tab-num">M2</span>Distribución de especies</button>
     <button class="tab" data-mod="3"><span class="tab-dot" style="background:#d6452c"></span><span class="tab-num">M3</span>Amenazas críticas</button>
     <button class="tab" data-mod="4"><span class="tab-dot" style="background:#2374b5"></span><span class="tab-num">M4</span>Ecosistemas y agua</button>
     <button class="tab" data-mod="5"><span class="tab-dot" style="background:#e8a417"></span><span class="tab-num">M5</span>Cambio climático</button>
@@ -579,9 +579,9 @@
         <span id="latlon">-16.85, -63.91</span>
       </div>
       <div class="map-overlay basemap-switch">
-        <button data-bm="terrain" class="active">Relieve</button>
+        <button data-bm="terrain">Relieve</button>
         <button data-bm="satellite">Satélite</button>
-        <button data-bm="streets">Calles</button>
+        <button data-bm="streets" class="active">Calles</button>
       </div>
     </section>
     <aside class="right" id="right">
@@ -807,7 +807,7 @@ const TILES = {
     dark:L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',{attribution:'© CARTO · OSM',subdomains:'abcd'})
   }
 };
-let currentBM='terrain', currentTheme='light', activeTileLayer=null;
+let currentBM='streets', currentTheme='light', activeTileLayer=null;
 function setBasemap(bm){
   currentBM=bm;
   if(activeTileLayer) map.removeLayer(activeTileLayer);
@@ -815,7 +815,7 @@ function setBasemap(bm){
   activeTileLayer.addTo(map);
   document.querySelectorAll('.basemap-switch button').forEach(b=>b.classList.toggle('active',b.dataset.bm===bm));
 }
-setBasemap('terrain');
+setBasemap('streets');
 // === GeoJSON real layers ===
 const DATA_FILES = {
   'apn':      'assets/capas/AreasProtegidas_Bolivia.geojson',
@@ -1200,7 +1200,7 @@ function buildModuleLayer(id,mod){
   });
   return g;
 }
-let currentModule='1', currentAP=null;
+let currentModule='2', currentAP=null;
 const activeLayers=new Set();
 
 // Aplica opacidad sin tocar otros estilos (color, etc.)
@@ -1756,7 +1756,7 @@ document.querySelectorAll('.panel-section[data-collapse] .panel-h').forEach(h=>{
   h.addEventListener('click',e=>{if(e.target.closest('input,.upload,.layer,.ap-item'))return;h.parentElement.classList.toggle('collapsed');});
 });
 renderAPList();
-renderModule('1');
+renderModule('2');
 // Carga asíncrona de capas reales — re-renderiza al completar
 // Indexar datos de intersección ArcGIS apenas se cargue el script (síncrono)
 buildIntersectionIndex();
