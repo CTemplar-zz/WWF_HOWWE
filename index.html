@@ -29,6 +29,10 @@
 <script src="assets/capas/geo_riq_orestias.js"></script>
 <script src="assets/capas/geo_riq_rivulidae.js"></script>
 <script src="assets/capas/geo_riq_trichomy.js"></script>
+<script src="assets/capas/geo_prochilodus.js"></script>
+<script src="assets/capas/geo_riq_pimelodella.js"></script>
+<script src="assets/capas/geo_riq_pimelodus.js"></script>
+<script src="assets/capas/geo_riq_rhamdia.js"></script>
 <script src="assets/capas/geo_intersection.js"></script>
 <style>
   :root {
@@ -682,6 +686,10 @@ const MODULES = {
       {id:'riq_orestias',  name:'Riqueza Orestias',      group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
       {id:'riq_rivulidae', name:'Riqueza Rivulidae',     group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
       {id:'riq_trichomy',  name:'Riqueza Trichomycterus',group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
+      {id:'prochilodus',     name:'Sábalo del Plata',    group:'Propuesta de objetos de conservación', color:'#5fa3b5',opacity:50, on:false, iucn:'LC', sci:'Prochilodus lineatus'},
+      {id:'riq_pimelodella', name:'Riqueza Pimelodella', group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
+      {id:'riq_pimelodus',   name:'Riqueza Pimelodus',   group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
+      {id:'riq_rhamdia',     name:'Riqueza Rhamdia',     group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
     ],
     legend:{title:'Estado de conservación IUCN',ind:'I.7',items:[
       {c:'#7a1a1a',l:'En peligro crítico (CR)',v:'1 spp.'},
@@ -840,6 +848,10 @@ const DATA_FILES = {
   'riq_orestias':  'assets/capas/Grupos/Riqueza_Orestias.geojson',
   'riq_rivulidae': 'assets/capas/Grupos/Riqueza_Rivulidae.geojson',
   'riq_trichomy':  'assets/capas/Grupos/Riqueza_Trichomycterus.geojson',
+  'prochilodus':     'assets/capas/Prochilodus_lineatus.geojson',
+  'riq_pimelodella': 'assets/capas/Riqueza_Pimelodella.geojson',
+  'riq_pimelodus':   'assets/capas/Riqueza_Pimelodus.geojson',
+  'riq_rhamdia':     'assets/capas/Riqueza_Rhamdia.geojson',
 };
 const IUCN_COLORS = {'CR':'#7a1a1a','EN':'#c54a2c','VU':'#e8a417','NT':'#7fa860','LC':'#4ec97a'};
 const AP_CAT_COLORS = {

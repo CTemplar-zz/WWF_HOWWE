@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "generated_at": "2026-05-14 09:00:07",
+  "version": 2,
+  "generated_at": "2026-05-31 19:00:30",
   "aps": [
     {
       "name": "Estación Biológica del Beni",
@@ -203,6 +203,114 @@
   ],
   "species": [
     {
+      "sci_name": "Rhamdia quelen",
+      "layer_id": "riq_rhamdia",
+      "group": "propuesta",
+      "parent_layer": "Rhamdia",
+      "by_ap": {
+        "Estación Biológica del Beni": 134837.16,
+        "Amboró": 178067.0,
+        "Toro Toro": 16802.81,
+        "Carrasco": 691696.18,
+        "Otuquis": 881031.52,
+        "Aguarague": 69859.78,
+        "Sajama": 94814.86,
+        "Tunari": 328099.36,
+        "Isiboro Securé": 1300853.37,
+        "Apolobamba": 474053.41,
+        "Serranía del Aguarague": 41204.24,
+        "Iñao": 172839.93,
+        "Eduardo Avaroa": 684399.61,
+        "Manuripi": 740611.19,
+        "Noel Kempff Mercado": 1583233.72,
+        "Cordillera de Sama": 106783.91,
+        "Pilón Lajas": 405085.91,
+        "Cotapata": 38823.58,
+        "Madidi": 603826.0,
+        "Kaa-iya del Gran Chaco": 1491779.6,
+        "El Palmar": 60265.96,
+        "San Matias": 2917843.02,
+        "El Cardon": 36029.34,
+        "Tariquía": 247555.34,
+        "Ñembi Guasu": 1202211.49,
+        "Guajukaka": 285130.99,
+        "Serranía Irenda": 143083.13
+      },
+      "total_ha": 14930822.41,
+      "ap_count": 27
+    },
+    {
+      "sci_name": "Pimelodus ornatus",
+      "layer_id": "riq_pimelodus",
+      "group": "propuesta",
+      "parent_layer": "Pimelodus",
+      "by_ap": {
+        "Estación Biológica del Beni": 134837.16,
+        "Amboró": 178067.0,
+        "Toro Toro": 16802.81,
+        "Carrasco": 691696.18,
+        "Otuquis": 898214.85,
+        "Aguarague": 69859.78,
+        "Tunari": 328099.36,
+        "Isiboro Securé": 1300853.37,
+        "Apolobamba": 367344.44,
+        "Serranía del Aguarague": 41204.24,
+        "Iñao": 172839.93,
+        "Manuripi": 740611.19,
+        "Noel Kempff Mercado": 1583233.72,
+        "Cordillera de Sama": 106783.91,
+        "Pilón Lajas": 405085.91,
+        "Cotapata": 38823.58,
+        "Madidi": 603826.0,
+        "Kaa-iya del Gran Chaco": 1491756.53,
+        "El Palmar": 60265.96,
+        "San Matias": 2921233.4,
+        "El Cardon": 36029.34,
+        "Tariquía": 247555.11,
+        "Ñembi Guasu": 1202919.15,
+        "Guajukaka": 285150.32,
+        "Serranía Irenda": 143083.13
+      },
+      "total_ha": 14066176.37,
+      "ap_count": 25
+    },
+    {
+      "sci_name": "Pimelodella cristata",
+      "layer_id": "riq_pimelodella",
+      "group": "propuesta",
+      "parent_layer": "Pimelodella",
+      "by_ap": {
+        "Estación Biológica del Beni": 134837.16,
+        "Amboró": 178066.99,
+        "Toro Toro": 16802.81,
+        "Carrasco": 691693.28,
+        "Otuquis": 756187.27,
+        "Aguarague": 68603.35,
+        "Sajama": 25791.08,
+        "Tunari": 328099.36,
+        "Isiboro Securé": 1300853.37,
+        "Apolobamba": 474053.42,
+        "Serranía del Aguarague": 40147.37,
+        "Iñao": 172839.93,
+        "Manuripi": 740593.71,
+        "Noel Kempff Mercado": 1583233.72,
+        "Cordillera de Sama": 70897.86,
+        "Pilón Lajas": 405085.91,
+        "Cotapata": 38823.58,
+        "Madidi": 603826.0,
+        "Kaa-iya del Gran Chaco": 1434617.9,
+        "El Palmar": 60265.96,
+        "San Matias": 2921191.95,
+        "El Cardon": 7251.4,
+        "Tariquía": 93233.26,
+        "Ñembi Guasu": 777714.72,
+        "Guajukaka": 274667.73,
+        "Serranía Irenda": 143083.13
+      },
+      "total_ha": 13342462.22,
+      "ap_count": 26
+    },
+    {
       "sci_name": "Panthera onca",
       "layer_id": "jaguar",
       "group": "objetos",
@@ -235,6 +343,38 @@
       "ap_count": 22
     },
     {
+      "sci_name": "Pimelodella griffini",
+      "layer_id": "riq_pimelodella",
+      "group": "propuesta",
+      "parent_layer": "Pimelodella",
+      "by_ap": {
+        "Estación Biológica del Beni": 134837.16,
+        "Amboró": 178066.99,
+        "Toro Toro": 16802.81,
+        "Carrasco": 691693.28,
+        "Otuquis": 897706.28,
+        "Aguarague": 69859.78,
+        "Tunari": 328099.36,
+        "Isiboro Securé": 1300853.37,
+        "Serranía del Aguarague": 41204.24,
+        "Iñao": 172839.93,
+        "Noel Kempff Mercado": 912352.3,
+        "Cordillera de Sama": 79742.59,
+        "Pilón Lajas": 359569.69,
+        "Madidi": 47648.38,
+        "Kaa-iya del Gran Chaco": 1491739.09,
+        "El Palmar": 60265.96,
+        "San Matias": 2921191.95,
+        "El Cardon": 21434.33,
+        "Tariquía": 247558.33,
+        "Ñembi Guasu": 1203042.43,
+        "Guajukaka": 285150.32,
+        "Serranía Irenda": 143083.13
+      },
+      "total_ha": 11604741.7,
+      "ap_count": 22
+    },
+    {
       "sci_name": "Brachyplatystoma rousseauxii",
       "layer_id": "dorado",
       "group": "objetos",
@@ -262,6 +402,72 @@
       "ap_count": 17
     },
     {
+      "sci_name": "Pimelodus blochii",
+      "layer_id": "riq_pimelodus",
+      "group": "propuesta",
+      "parent_layer": "Pimelodus",
+      "by_ap": {
+        "Estación Biológica del Beni": 134837.16,
+        "Amboró": 178067.0,
+        "Toro Toro": 16802.81,
+        "Carrasco": 691696.18,
+        "Tunari": 328099.36,
+        "Isiboro Securé": 1300853.37,
+        "Apolobamba": 367344.44,
+        "Iñao": 172839.93,
+        "Manuripi": 740611.19,
+        "Noel Kempff Mercado": 1583233.72,
+        "Pilón Lajas": 405085.91,
+        "Cotapata": 38823.58,
+        "Madidi": 603826.0,
+        "Kaa-iya del Gran Chaco": 1097656.68,
+        "El Palmar": 60265.96,
+        "Ñembi Guasu": 102574.62,
+        "Serranía Irenda": 139055.46
+      },
+      "total_ha": 7961673.37,
+      "ap_count": 17
+    },
+    {
+      "sci_name": "Prochilodus lineatus",
+      "layer_id": "prochilodus",
+      "group": "propuesta",
+      "parent_layer": null,
+      "by_ap": {
+        "Otuquis": 898205.05,
+        "Aguarague": 69859.78,
+        "Serranía del Aguarague": 41204.24,
+        "Kaa-iya del Gran Chaco": 394099.84,
+        "San Matias": 2921311.64,
+        "Tariquía": 247444.05,
+        "Ñembi Guasu": 1100344.53,
+        "Guajukaka": 285130.99,
+        "Serranía Irenda": 4027.67
+      },
+      "total_ha": 5961627.79,
+      "ap_count": 9
+    },
+    {
+      "sci_name": "Pimelodella howesi",
+      "layer_id": "riq_pimelodella",
+      "group": "propuesta",
+      "parent_layer": "Pimelodella",
+      "by_ap": {
+        "Estación Biológica del Beni": 134837.16,
+        "Amboró": 47917.37,
+        "Carrasco": 601480.08,
+        "Tunari": 109955.95,
+        "Isiboro Securé": 1300853.37,
+        "Apolobamba": 217951.81,
+        "Manuripi": 740593.71,
+        "Noel Kempff Mercado": 1583233.72,
+        "Pilón Lajas": 405085.91,
+        "Madidi": 603826.0
+      },
+      "total_ha": 5745735.08,
+      "ap_count": 10
+    },
+    {
       "sci_name": "Chrysocyon brachyurus",
       "layer_id": "borochi",
       "group": "objetos",
@@ -276,6 +482,24 @@
       },
       "total_ha": 5121290.72,
       "ap_count": 6
+    },
+    {
+      "sci_name": "Pimelodus argenteus",
+      "layer_id": "riq_pimelodus",
+      "group": "propuesta",
+      "parent_layer": "Pimelodus",
+      "by_ap": {
+        "Otuquis": 898214.85,
+        "Aguarague": 7570.97,
+        "Serranía del Aguarague": 3321.83,
+        "Kaa-iya del Gran Chaco": 269467.68,
+        "San Matias": 2367969.55,
+        "Tariquía": 6005.65,
+        "Ñembi Guasu": 1100344.53,
+        "Guajukaka": 10482.59
+      },
+      "total_ha": 4663377.65,
+      "ap_count": 8
     },
     {
       "sci_name": "Pteronura brasiliensis",
@@ -296,7 +520,7 @@
     {
       "sci_name": "Colossoma macropomum",
       "layer_id": "colossoma",
-      "group": "objetos",
+      "group": "propuesta",
       "parent_layer": null,
       "by_ap": {
         "Estación Biológica del Beni": 134837.16,
@@ -389,7 +613,7 @@
     {
       "sci_name": "Brycon amazonicus",
       "layer_id": "brycon",
-      "group": "objetos",
+      "group": "propuesta",
       "parent_layer": null,
       "by_ap": {
         "Estación Biológica del Beni": 106611.14,
@@ -470,6 +694,19 @@
       },
       "total_ha": 2209012.98,
       "ap_count": 12
+    },
+    {
+      "sci_name": "Pimelodella boliviana",
+      "layer_id": "riq_pimelodella",
+      "group": "propuesta",
+      "parent_layer": "Pimelodella",
+      "by_ap": {
+        "Amboró": 116538.0,
+        "Manuripi": 385539.21,
+        "Noel Kempff Mercado": 1583233.72
+      },
+      "total_ha": 2085310.93,
+      "ap_count": 3
     },
     {
       "sci_name": "Trichomycterus vittatus",
@@ -556,6 +793,20 @@
       "ap_count": 10
     },
     {
+      "sci_name": "Pimelodella serrata",
+      "layer_id": "riq_pimelodella",
+      "group": "propuesta",
+      "parent_layer": "Pimelodella",
+      "by_ap": {
+        "Estación Biológica del Beni": 134837.16,
+        "Manuripi": 740593.71,
+        "Pilón Lajas": 43943.07,
+        "Madidi": 534848.66
+      },
+      "total_ha": 1454222.6,
+      "ap_count": 4
+    },
+    {
       "sci_name": "Tremarctos ornatus",
       "layer_id": "jucumari",
       "group": "objetos",
@@ -573,6 +824,20 @@
       },
       "total_ha": 1370902.32,
       "ap_count": 9
+    },
+    {
+      "sci_name": "Pimelodella hasemani",
+      "layer_id": "riq_pimelodella",
+      "group": "propuesta",
+      "parent_layer": "Pimelodella",
+      "by_ap": {
+        "Estación Biológica del Beni": 134837.16,
+        "Manuripi": 740593.71,
+        "Pilón Lajas": 43943.07,
+        "Madidi": 274166.67
+      },
+      "total_ha": 1193540.61,
+      "ap_count": 4
     },
     {
       "sci_name": "Vicugna vicugna",
@@ -624,6 +889,30 @@
       },
       "total_ha": 992442.7,
       "ap_count": 8
+    },
+    {
+      "sci_name": "Pimelodus altissimus",
+      "layer_id": "riq_pimelodus",
+      "group": "propuesta",
+      "parent_layer": "Pimelodus",
+      "by_ap": {
+        "Manuripi": 740611.19,
+        "Madidi": 235209.19
+      },
+      "total_ha": 975820.38,
+      "ap_count": 2
+    },
+    {
+      "sci_name": "Pimelodus pictus",
+      "layer_id": "riq_pimelodus",
+      "group": "propuesta",
+      "parent_layer": "Pimelodus",
+      "by_ap": {
+        "Manuripi": 740611.19,
+        "Madidi": 235209.19
+      },
+      "total_ha": 975820.38,
+      "ap_count": 2
     },
     {
       "sci_name": "Pterolebias longipinnis",
@@ -682,6 +971,18 @@
       "ap_count": 2
     },
     {
+      "sci_name": "Pimelodus absconditus",
+      "layer_id": "riq_pimelodus",
+      "group": "propuesta",
+      "parent_layer": "Pimelodus",
+      "by_ap": {
+        "Otuquis": 261513.6,
+        "San Matias": 482422.36
+      },
+      "total_ha": 743935.96,
+      "ap_count": 2
+    },
+    {
       "sci_name": "Anodorhynchus hyacinthinus",
       "layer_id": "paraba_az",
       "group": "objetos",
@@ -692,6 +993,33 @@
       },
       "total_ha": 607902.2,
       "ap_count": 2
+    },
+    {
+      "sci_name": "Pimelodus mysteriosus",
+      "layer_id": "riq_pimelodus",
+      "group": "propuesta",
+      "parent_layer": "Pimelodus",
+      "by_ap": {
+        "Otuquis": 225446.34,
+        "San Matias": 303754.2
+      },
+      "total_ha": 529200.54,
+      "ap_count": 2
+    },
+    {
+      "sci_name": "Pimelodella laticeps",
+      "layer_id": "riq_pimelodella",
+      "group": "propuesta",
+      "parent_layer": "Pimelodella",
+      "by_ap": {
+        "Aguarague": 69859.78,
+        "Serranía del Aguarague": 41204.24,
+        "Cordillera de Sama": 106782.89,
+        "El Cardon": 36029.34,
+        "Tariquía": 247558.33
+      },
+      "total_ha": 501434.58,
+      "ap_count": 5
     },
     {
       "sci_name": "Moema pepotei",
@@ -749,6 +1077,17 @@
       "ap_count": 5
     },
     {
+      "sci_name": "Pimelodella taeniophora",
+      "layer_id": "riq_pimelodella",
+      "group": "propuesta",
+      "parent_layer": "Pimelodella",
+      "by_ap": {
+        "San Matias": 117171.29
+      },
+      "total_ha": 117171.29,
+      "ap_count": 1
+    },
+    {
       "sci_name": "Ara rubrogenys",
       "layer_id": "paraba_fr",
       "group": "objetos",
@@ -763,6 +1102,18 @@
       "ap_count": 4
     },
     {
+      "sci_name": "Pimelodella mucosa",
+      "layer_id": "riq_pimelodella",
+      "group": "propuesta",
+      "parent_layer": "Pimelodella",
+      "by_ap": {
+        "Otuquis": 1865.39,
+        "San Matias": 68177.77
+      },
+      "total_ha": 70043.16,
+      "ap_count": 2
+    },
+    {
       "sci_name": "Inia geoffrensis",
       "layer_id": "bufeo",
       "group": "objetos",
@@ -771,6 +1122,17 @@
         "Isiboro Securé": 14490.45
       },
       "total_ha": 14490.45,
+      "ap_count": 1
+    },
+    {
+      "sci_name": "Pimelodella roccae",
+      "layer_id": "riq_pimelodella",
+      "group": "propuesta",
+      "parent_layer": "Pimelodella",
+      "by_ap": {
+        "Pilón Lajas": 13831.26
+      },
+      "total_ha": 13831.26,
       "ap_count": 1
     },
     {
@@ -793,6 +1155,17 @@
         "Apolobamba": 507.18
       },
       "total_ha": 507.18,
+      "ap_count": 1
+    },
+    {
+      "sci_name": "Pimelodella notomelas",
+      "layer_id": "riq_pimelodella",
+      "group": "propuesta",
+      "parent_layer": "Pimelodella",
+      "by_ap": {
+        "San Matias": 204.2
+      },
+      "total_ha": 204.2,
       "ap_count": 1
     },
     {
@@ -852,25 +1225,36 @@
     }
   ],
   "_timings_seconds": {
-    "colossoma": 2.96,
-    "brycon": 1.39,
-    "bufeo": 0.08,
-    "londra": 3.0,
-    "condor": 1.06,
-    "paraba_fr": 0.62,
-    "paraba_az": 0.06,
-    "fl_andino": 0.08,
-    "fl_james": 0.09,
-    "paraba_bb": 0.36,
-    "jaguar": 5.31,
-    "jucumari": 0.92,
-    "borochi": 1.77,
-    "vicuna": 0.79,
-    "guanaco": 0.46,
-    "dorado": 3.02,
-    "riq_orestias": 0.59,
-    "riq_rivulidae": 5.75,
-    "riq_trichomy": 22.22
+    "colossoma": 1.94,
+    "brycon": 1.25,
+    "bufeo": 0.07,
+    "londra": 2.77,
+    "condor": 0.99,
+    "paraba_fr": 0.46,
+    "paraba_az": 0.04,
+    "fl_andino": 0.06,
+    "fl_james": 0.07,
+    "paraba_bb": 0.26,
+    "jaguar": 4.81,
+    "jucumari": 0.87,
+    "borochi": 1.63,
+    "vicuna": 0.7,
+    "guanaco": 0.43,
+    "dorado": 2.82,
+    "prochilodus": 0.58,
+    "riq_orestias": 0.58,
+    "riq_rivulidae": 5.43,
+    "riq_trichomy": 21.17,
+    "riq_pimelodella": 10.95,
+    "riq_pimelodus": 5.87,
+    "riq_rhamdia": 5.14
   },
-  "_total_seconds": 50.75
+  "_total_seconds": 71.24,
+  "_new_layers_timings": {
+    "prochilodus": 0.62,
+    "riq_pimelodella": 11.26,
+    "riq_pimelodus": 5.98,
+    "riq_rhamdia": 5.09
+  },
+  "_new_layers_total_s": 25.24
 }
