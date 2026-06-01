@@ -883,36 +883,61 @@ const DATA_FILES = {
 };
 const IUCN_COLORS = {'CR':'#7a1a1a','EN':'#c54a2c','VU':'#e8a417','NT':'#7fa860','LC':'#4ec97a'};
 const AP_CAT_COLORS = {
+  // Parque Nacional (verde oscuro)
   'Parque Nacional':'#1f6b3a',
   'Parque Nacional y Territorio Indígena':'#1f6b3a',
+  'Parque Nacional y Territorio Indigena':'#1f6b3a',
+  // ANMI / Área Natural Manejo Integrado (verde medio)
   'Área Natural de Manejo Integrado':'#7fa860',
   'Área Natural de Manejo Integrado Nacional':'#7fa860',
+  'Area Natural de Manejo Integrado':'#7fa860',
+  'Area Natural de Manejo Integado':'#7fa860',
   'Parque Natural y Area de Manejo Integrado':'#7fa860',
+  'Parque Natural y Área Natural de Manejo Integrado':'#7fa860',
+  // Reserva de la Biosfera (verde claro)
   'Reserva de la Biosfera':'#4ec97a',
+  'Reserva de la Biósfera':'#4ec97a',
   'Reserva de la Biosfera y Territorio Indígena':'#4ec97a',
+  'Reserva de la Biósfera y Territorio Indígena':'#4ec97a',
+  'Reserva de la Biósfera y Estación Biológica':'#4ec97a',
+  // Reservas nacionales (verde claro más amarillento)
   'Reserva Nacional de Fauna Andina':'#9ec979',
   'Reserva Nacional de Vida Silvestre Amazónica':'#9ec979',
   'Reserva Nacional de Flora y Fauna':'#9ec979',
   'Reserva Biológica':'#9ec979',
+  // Otras categorías (marrón)
   'Indigena':'#b06e3a',
   'Area de vida':'#b06e3a',
+  'Área de Vida':'#b06e3a',
   'Área Guaraní del Manejo del Agua':'#b06e3a',
+  'Área de Manejo del Agua':'#b06e3a',
+  'Área de Conservación e Importancia Ecológica':'#b06e3a',
 };
 const CAT_ACRONYMS = {
   'Parque Nacional':'PN',
   'Parque Nacional y Territorio Indígena':'PN-TI',
+  'Parque Nacional y Territorio Indigena':'PN-TI',
   'Área Natural de Manejo Integrado':'ANMI',
   'Área Natural de Manejo Integrado Nacional':'ANMI',
+  'Area Natural de Manejo Integrado':'ANMI',
+  'Area Natural de Manejo Integado':'ANMI',
   'Parque Natural y Area de Manejo Integrado':'PN-ANMI',
+  'Parque Natural y Área Natural de Manejo Integrado':'PN-ANMI',
   'Reserva de la Biosfera':'RB',
+  'Reserva de la Biósfera':'RB',
   'Reserva de la Biosfera y Territorio Indígena':'RB-TI',
+  'Reserva de la Biósfera y Territorio Indígena':'RB-TI',
+  'Reserva de la Biósfera y Estación Biológica':'RB-EB',
   'Reserva Nacional de Fauna Andina':'RNFA',
   'Reserva Nacional de Vida Silvestre Amazónica':'RNVSA',
   'Reserva Nacional de Flora y Fauna':'RNFF',
   'Reserva Biológica':'RBio',
   'Indigena':'TI',
   'Area de vida':'AdV',
+  'Área de Vida':'AdV',
   'Área Guaraní del Manejo del Agua':'AGMA',
+  'Área de Manejo del Agua':'AMA',
+  'Área de Conservación e Importancia Ecológica':'ACIE',
 };
 function catAcronym(c){return CAT_ACRONYMS[c]||(c?c.split(' ').map(w=>w[0]).join('').toUpperCase():'—');}
 const SERNAP_LEGEND=[
