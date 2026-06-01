@@ -33,6 +33,8 @@
 <script src="assets/capas/geo_riq_pimelodella.js"></script>
 <script src="assets/capas/geo_riq_pimelodus.js"></script>
 <script src="assets/capas/geo_riq_rhamdia.js"></script>
+<script src="assets/capas/geo_humedales.js"></script>
+<script src="assets/capas/geo_ramsar.js"></script>
 <script src="assets/capas/geo_intersection.js"></script>
 <style>
   :root {
@@ -723,18 +725,22 @@ const MODULES = {
     layers:[
       {id:'departamentos',name:'Departamentos de Bolivia',color:'#000000',opacity:100,on:true},
       {id:'apn',    name:'Áreas Protegidas',              color:'#2c8a4d',opacity:100,on:true},
-      {id:'wet',    name:'Humedales (bofedales, lagunas)',color:'#2374b5',opacity:65,on:true},
-      {id:'ramsar', name:'Sitios Ramsar',                 color:'#4aa3e3',opacity:70,on:true},
+      {id:'humedales', name:'Humedales (meses inundados)', color:'#2271ae',opacity:90,on:true, gradient:true},
+      {id:'ramsar',    name:'Sitios Ramsar (11 sitios)',    color:'#4aa3e3',opacity:90,on:true},
       {id:'basins', name:'Cuencas hidrográficas',         color:'#7fb5d6',opacity:35,on:false},
       {id:'glac',   name:'Glaciares y recarga',           color:'#c5e3f0',opacity:80,on:false},
       {id:'forest', name:'Cobertura boscosa',             color:'#2c8a4d',opacity:45,on:false},
       {id:'fluvial',name:'Conectividad fluvial',          color:'#5fa3b5',opacity:70,on:false},
     ],
-    legend:{title:'Indicador agua y bosques',ind:'I.5 · I.6',items:[
-      {c:'#2374b5',l:'Humedal permanente',v:'4.2M ha'},
-      {c:'#7fb5d6',l:'Humedal estacional',v:'1.8M ha'},
+    legend:{title:'Humedales · meses inundados',ind:'I.5',items:[
+      {c:'#E8F4FB',l:'0 — 1 mes',v:''},
+      {c:'#C9E2F2',l:'2 meses',v:''},
+      {c:'#9FCBE5',l:'3 meses',v:''},
+      {c:'#74B3D5',l:'4 meses',v:''},
+      {c:'#4A95C3',l:'5 meses',v:''},
+      {c:'#2271AE',l:'6 meses',v:''},
+      {c:'#084B8A',l:'Más de 6 meses',v:''},
       {c:'#4aa3e3',l:'Sitio Ramsar',v:'11 sitios'},
-      {c:'#c5e3f0',l:'Glaciar (>10ha)',v:'481 km²'},
     ]}
   },
   '5': { title:'Cambio climático', sub:'Escenarios, vulnerabilidad, conectividad climática', color:'#e8a417',
@@ -852,6 +858,8 @@ const DATA_FILES = {
   'riq_pimelodella': 'assets/capas/Riqueza_Pimelodella.geojson',
   'riq_pimelodus':   'assets/capas/Riqueza_Pimelodus.geojson',
   'riq_rhamdia':     'assets/capas/Riqueza_Rhamdia.geojson',
+  'humedales':       'assets/capas/Humedales.geojson',
+  'ramsar':          'assets/capas/RAMSAR_SITES.geojson',
 };
 const IUCN_COLORS = {'CR':'#7a1a1a','EN':'#c54a2c','VU':'#e8a417','NT':'#7fa860','LC':'#4ec97a'};
 const AP_CAT_COLORS = {
@@ -1136,6 +1144,44 @@ function createGeoJSONLayer(id, layerDef){
       style:{color:'#000000',weight:1.4,fillOpacity:0,opacity:0.9,interactive:false}
     });
   }
+  if(id==='humedales'){
+    const colorByMeses = m => {
+      const v = +m || 0;
+      return v <= 1 ? '#E8F4FB' :
+             v <= 2 ? '#C9E2F2' :
+             v <= 3 ? '#9FCBE5' :
+             v <= 4 ? '#74B3D5' :
+             v <= 5 ? '#4A95C3' :
+             v <= 6 ? '#2271AE' : '#084B8A';
+    };
+    return L.geoJSON(data,{
+      style: f => ({
+        color:'#1a4a7a', weight:0.3, opacity:0.55,
+        fillColor: colorByMeses(f.properties.Meses), fillOpacity:0.85
+      }),
+      onEachFeature:(f,l)=>{
+        const m = f.properties.Meses;
+        const txt = m===0||m===1 ? '0 — 1 mes'
+                  : m>6 ? 'Más de 6 meses ('+m+')'
+                  : m+' meses';
+        l.bindTooltip(`<b>Humedal</b><br>${txt} inundados/año`,{sticky:true,direction:'top',opacity:0.92});
+      }
+    });
+  }
+  if(id==='ramsar'){
+    return L.geoJSON(data,{
+      style:{color:'#0d4577', weight:2, fillColor:'#4aa3e3', fillOpacity:0.4, opacity:0.95},
+      onEachFeature:(f,l)=>{
+        const p=f.properties;
+        const name = p.name || 'Sitio Ramsar';
+        l.bindPopup(`<div class="feature-popup"><h5>${name}</h5><table>
+          <tr><td>Tipo</td><td><b>Sitio Ramsar</b></td></tr>
+          <tr><td>ID</td><td>${p.id||'—'}</td></tr>
+          <tr><td>Geocode</td><td>${p.geocode||'—'}</td></tr>
+        </table></div>`);
+      }
+    });
+  }
   if(id==='apn'){
     return L.geoJSON(data,{
       style:f=>{
@@ -1219,6 +1265,23 @@ const activeLayers=new Set();
 function applyLayerOpacity(layerId, leafletLayer, pct){
   if(!leafletLayer || !leafletLayer.setStyle) return;
   const o = Math.max(0, Math.min(1, pct/100));
+  // Caso especial: humedales usa color per-feature según Meses
+  if(layerId==='humedales' && leafletLayer.eachLayer){
+    const colorByMeses = m => {
+      const v = +m || 0;
+      return v <= 1 ? '#E8F4FB' : v <= 2 ? '#C9E2F2' : v <= 3 ? '#9FCBE5'
+           : v <= 4 ? '#74B3D5' : v <= 5 ? '#4A95C3' : v <= 6 ? '#2271AE' : '#084B8A';
+    };
+    leafletLayer.eachLayer(fl=>{
+      if(!fl.feature || !fl.setStyle) return;
+      fl.setStyle({
+        color:'#1a4a7a', weight:0.3,
+        fillColor: colorByMeses(fl.feature.properties.Meses),
+        opacity: o*0.55, fillOpacity: o*0.85
+      });
+    });
+    return;
+  }
   // Caso especial: apn usa pattern SVG + filtro per-feature según selectedAPs
   if(layerId==='apn' && leafletLayer.eachLayer){
     leafletLayer.eachLayer(fl=>{
