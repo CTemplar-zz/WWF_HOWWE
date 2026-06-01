@@ -692,6 +692,8 @@ const MODULES = {
       {id:'riq_pimelodella', name:'Riqueza Pimelodella', group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
       {id:'riq_pimelodus',   name:'Riqueza Pimelodus',   group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
       {id:'riq_rhamdia',     name:'Riqueza Rhamdia',     group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
+      {id:'humedales',       name:'Humedales (meses inundados)', group:'Hidrología', color:'#2271ae',opacity:80,on:false, gradient:true},
+      {id:'ramsar',          name:'Sitios Ramsar (11 sitios)',    group:'Hidrología', color:'#4aa3e3',opacity:80,on:false},
     ],
     legend:{title:'Estado de conservación IUCN',ind:'I.7',items:[
       {c:'#7a1a1a',l:'En peligro crítico (CR)',v:'1 spp.'},
@@ -1497,7 +1499,7 @@ function getRiquezaSpeciesBreakdown(sid){
 
 // Construye los items del desglose M2 (uno por especie individual)
 function getM2BreakdownItems(){
-  const activeSp=MODULES['2'].layers.filter(l=>activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos');
+  const activeSp=MODULES['2'].layers.filter(l=>activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar');
   const items=[];
   activeSp.forEach(s=>{
     if(s.id.startsWith('riq_')){
@@ -1615,7 +1617,7 @@ function renderM2Stats(){
       if(inSel){ supAP += (parseFloat(p.sup_ha)||0); apCount++; }
     });
   }
-  const activeSp = MODULES['2'].layers.filter(l=> activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos');
+  const activeSp = MODULES['2'].layers.filter(l=> activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar');
   // Superficie de intersección (ha) — datos reales de ArcGIS, filtrados por APs
   let supInterHa = 0;
   activeSp.forEach(s=>{ supInterHa += getLayerIntersectedHa(s.id); });
