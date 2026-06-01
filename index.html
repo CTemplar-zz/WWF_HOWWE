@@ -36,6 +36,7 @@
 <script src="assets/capas/geo_humedales.js"></script>
 <script src="assets/capas/geo_ramsar.js"></script>
 <script src="assets/capas/geo_cuencas.js"></script>
+<script src="assets/capas/geo_ffr.js"></script>
 <script src="assets/capas/geo_intersection.js"></script>
 <style>
   :root {
@@ -671,6 +672,7 @@ const MODULES = {
       {id:'departamentos',name:'Departamentos de Bolivia', group:'Marco espacial',          color:'#000000',opacity:100,on:true},
       {id:'apn',       name:'Áreas Protegidas',  group:'Marco espacial',          color:'#2c8a4d',opacity:100,on:true},
       {id:'cuencas',         name:'Cuencas (balance hídrico)',    group:'Hidrología', color:'#005ce6',opacity:80,on:false},
+      {id:'ffr',             name:'Ríos FFR (estado conectividad)', group:'Hidrología', color:'#2c8a4d',opacity:90,on:false, gradient:true},
       {id:'humedales',       name:'Humedales (meses inundados)', group:'Hidrología', color:'#2271ae',opacity:80,on:false, gradient:true},
       {id:'ramsar',          name:'Sitios Ramsar (11 sitios)',    group:'Hidrología', color:'#4aa3e3',opacity:80,on:false},
       {id:'jaguar',    name:'Jaguar',            group:'Objetos de conservación', color:'#7fa860',opacity:50,on:true,  iucn:'NT',sci:'Panthera onca'},
@@ -734,7 +736,7 @@ const MODULES = {
       {id:'cuencas',name:'Cuencas (balance hídrico)',     color:'#005ce6',opacity:80,on:false},
       {id:'glac',   name:'Glaciares y recarga',           color:'#c5e3f0',opacity:80,on:false},
       {id:'forest', name:'Cobertura boscosa',             color:'#2c8a4d',opacity:45,on:false},
-      {id:'fluvial',name:'Conectividad fluvial',          color:'#5fa3b5',opacity:70,on:false},
+      {id:'ffr',    name:'Ríos FFR (estado conectividad)', color:'#2c8a4d',opacity:90,on:false},
     ],
     legend:{title:'Humedales · meses inundados',ind:'I.5',items:[
       {c:'#E8F4FB',l:'0 — 1 mes',v:''},
@@ -865,6 +867,7 @@ const DATA_FILES = {
   'humedales':       'assets/capas/Humedales.geojson',
   'ramsar':          'assets/capas/RAMSAR_SITES.geojson',
   'cuencas':         'assets/capas/Cuencas.geojson',
+  'ffr':             'assets/capas/FFR_Bolivia.geojson',
 };
 const IUCN_COLORS = {'CR':'#7a1a1a','EN':'#c54a2c','VU':'#e8a417','NT':'#7fa860','LC':'#4ec97a'};
 const AP_CAT_COLORS = {
@@ -1173,6 +1176,49 @@ function createGeoJSONLayer(id, layerDef){
       }
     });
   }
+  if(id==='ffr'){
+    // FFR: color por CSI_FF2, grosor por RIV_ORD, gradiente por CSI
+    // CSI_FF2: 1=Free-flowing (verde), 2=Buena conectividad (amarillo), 3=Impactado (rojo)
+    // RIV_ORD: 2 = ríos gigantes, 10 = arroyos
+    // CSI: 0-100, gradiente de lightness (alto CSI = más pálido, bajo = más vivido)
+    const widths = {2:4.5, 3:3.5, 4:2.5, 5:1.8, 6:1.2, 7:0.8, 8:0.5, 9:0.3, 10:0.25};
+    const ffrColor = (csi_ff2, csi) => {
+      const hue = csi_ff2===1 ? 130 : csi_ff2===2 ? 45 : 0;
+      const c = Math.min(100, Math.max(0, +csi || 0));
+      const lightness = 35 + (c/100) * 25; // bajo CSI = vivido, alto = pálido
+      return `hsl(${hue}, 75%, ${lightness}%)`;
+    };
+    return L.geoJSON(data, {
+      style: f => {
+        const p = f.properties;
+        return {
+          color: ffrColor(p.CSI_FF2, p.CSI),
+          weight: widths[+p.RIV_ORD] || 0.4,
+          opacity: 0.9,
+          fillOpacity: 0,
+          lineCap: 'round'
+        };
+      },
+      onEachFeature: (f, l) => {
+        const p = f.properties;
+        const status = p.CSI_FF2===1 ? 'Río libre' : p.CSI_FF2===2 ? 'Buena conectividad' : 'Impactado';
+        const statusColor = p.CSI_FF2===1 ? '#2c8a4d' : p.CSI_FF2===2 ? '#c7a020' : '#c54a2c';
+        const name = p.BB_NAME || 'Sin nombre';
+        const basin = p.BAS_NAME || '—';
+        const len = p.LENGTH_KM ? Number(p.LENGTH_KM).toFixed(2)+' km' : '—';
+        const csi = p.CSI != null ? Number(p.CSI).toFixed(1)+'%' : '—';
+        const dom = p.CSI_D || '—';
+        l.bindPopup(`<div class="feature-popup"><h5>${name}</h5><table>
+          <tr><td>Estado FFR</td><td><b style="color:${statusColor}">${status}</b></td></tr>
+          <tr><td>Cuenca</td><td>${basin}</td></tr>
+          <tr><td>Long. tramo</td><td>${len}</td></tr>
+          <tr><td>Orden río</td><td>${p.RIV_ORD||'—'}</td></tr>
+          <tr><td>CSI</td><td>${csi}</td></tr>
+          <tr><td>Presión dominante</td><td>${dom}</td></tr>
+        </table></div>`);
+      }
+    });
+  }
   if(id==='cuencas'){
     return L.geoJSON(data,{
       style:{color:'#005ce6', weight:1, fillColor:'#005ce6', fillOpacity:0.39, opacity:0.85},
@@ -1291,6 +1337,26 @@ const activeLayers=new Set();
 function applyLayerOpacity(layerId, leafletLayer, pct){
   if(!leafletLayer || !leafletLayer.setStyle) return;
   const o = Math.max(0, Math.min(1, pct/100));
+  // Caso especial: ffr — color/grosor per-feature (CSI_FF2, RIV_ORD, CSI)
+  if(layerId==='ffr' && leafletLayer.eachLayer){
+    const widths = {2:4.5, 3:3.5, 4:2.5, 5:1.8, 6:1.2, 7:0.8, 8:0.5, 9:0.3, 10:0.25};
+    const ffrColor = (csi_ff2, csi) => {
+      const hue = csi_ff2===1 ? 130 : csi_ff2===2 ? 45 : 0;
+      const c = Math.min(100, Math.max(0, +csi || 0));
+      return `hsl(${hue}, 75%, ${35 + (c/100)*25}%)`;
+    };
+    leafletLayer.eachLayer(fl=>{
+      if(!fl.feature || !fl.setStyle) return;
+      const p = fl.feature.properties;
+      fl.setStyle({
+        color: ffrColor(p.CSI_FF2, p.CSI),
+        weight: widths[+p.RIV_ORD] || 0.4,
+        opacity: o*0.9,
+        fillOpacity: 0
+      });
+    });
+    return;
+  }
   // Caso especial: humedales usa color per-feature según Meses
   if(layerId==='humedales' && leafletLayer.eachLayer){
     const colorByMeses = m => {
@@ -1523,7 +1589,7 @@ function getRiquezaSpeciesBreakdown(sid){
 
 // Construye los items del desglose M2 (uno por especie individual)
 function getM2BreakdownItems(){
-  const activeSp=MODULES['2'].layers.filter(l=>activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar' && l.id!=='cuencas');
+  const activeSp=MODULES['2'].layers.filter(l=>activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar' && l.id!=='cuencas' && l.id!=='ffr');
   const items=[];
   activeSp.forEach(s=>{
     if(s.id.startsWith('riq_')){
@@ -1641,7 +1707,7 @@ function renderM2Stats(){
       if(inSel){ supAP += (parseFloat(p.sup_ha)||0); apCount++; }
     });
   }
-  const activeSp = MODULES['2'].layers.filter(l=> activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar' && l.id!=='cuencas');
+  const activeSp = MODULES['2'].layers.filter(l=> activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar' && l.id!=='cuencas' && l.id!=='ffr');
   // Superficie de intersección (ha) — datos reales de ArcGIS, filtrados por APs
   let supInterHa = 0;
   activeSp.forEach(s=>{ supInterHa += getLayerIntersectedHa(s.id); });
