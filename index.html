@@ -38,6 +38,8 @@
 <script src="assets/capas/geo_cuencas.js"></script>
 <script src="assets/capas/geo_ffr.js"></script>
 <script src="assets/capas/geo_lagos.js"></script>
+<script src="assets/capas/geo_cuencas_n8.js"></script>
+<script src="assets/capas/geo_cuencas_n9.js"></script>
 <script src="assets/capas/geo_intersection.js"></script>
 <style>
   :root {
@@ -673,6 +675,8 @@ const MODULES = {
       {id:'departamentos',name:'Departamentos de Bolivia', group:'Marco espacial',          color:'#000000',opacity:100,on:true},
       {id:'apn',       name:'Áreas Protegidas',  group:'Marco espacial',          color:'#2c8a4d',opacity:100,on:true},
       {id:'cuencas',         name:'Cuencas (balance hídrico)',    group:'Hidrología', color:'#005ce6',opacity:80,on:false},
+      {id:'cuencas_n8',      name:'Sub-cuencas HydroBASINS nivel 8',group:'Hidrología', color:'#1e5694',opacity:85,on:false},
+      {id:'cuencas_n9',      name:'Sub-cuencas HydroBASINS nivel 9',group:'Hidrología', color:'#5b8db8',opacity:85,on:false},
       {id:'ffr',             name:'Ríos FFR (estado conectividad)', group:'Hidrología', color:'#1f6dc7',opacity:90,on:false, gradient:true},
       {id:'lagos',           name:'Lagos y lagunas 2016',          group:'Hidrología', color:'#2374b5',opacity:80,on:false},
       {id:'humedales',       name:'Humedales (meses inundados)', group:'Hidrología', color:'#2271ae',opacity:80,on:false, gradient:true},
@@ -737,6 +741,8 @@ const MODULES = {
       {id:'humedales', name:'Humedales (meses inundados)', color:'#2271ae',opacity:90,on:false, gradient:true},
       {id:'ramsar',    name:'Sitios Ramsar (11 sitios)',    color:'#4aa3e3',opacity:90,on:true},
       {id:'cuencas',name:'Cuencas (balance hídrico)',     color:'#005ce6',opacity:80,on:false},
+      {id:'cuencas_n8',name:'Sub-cuencas HydroBASINS nivel 8',color:'#1e5694',opacity:85,on:false},
+      {id:'cuencas_n9',name:'Sub-cuencas HydroBASINS nivel 9',color:'#5b8db8',opacity:85,on:false},
       {id:'glac',   name:'Glaciares y recarga',           color:'#c5e3f0',opacity:80,on:false},
       {id:'forest', name:'Cobertura boscosa',             color:'#2c8a4d',opacity:45,on:false},
       {id:'ffr',    name:'Ríos FFR (estado conectividad)', color:'#1f6dc7',opacity:90,on:false},
@@ -872,6 +878,8 @@ const DATA_FILES = {
   'cuencas':         'assets/capas/Cuencas.geojson',
   'ffr':             'assets/capas/FFR_Bolivia.geojson',
   'lagos':           'assets/capas/Lagos_2016.geojson',
+  'cuencas_n8':      'assets/capas/Cuencas_nivel_8.geojson',
+  'cuencas_n9':      'assets/capas/Cuencas_nivel_9.geojson',
 };
 const IUCN_COLORS = {'CR':'#7a1a1a','EN':'#c54a2c','VU':'#e8a417','NT':'#7fa860','LC':'#4ec97a'};
 const AP_CAT_COLORS = {
@@ -1177,6 +1185,30 @@ function createGeoJSONLayer(id, layerDef){
                   : m>6 ? 'Más de 6 meses ('+m+')'
                   : m+' meses';
         l.bindTooltip(`<b>Humedal</b><br>${txt} inundados/año`,{sticky:true,direction:'top',opacity:0.92});
+      }
+    });
+  }
+  if(id==='cuencas_n8' || id==='cuencas_n9'){
+    // HydroBASINS nivel 8 (1,331) y nivel 9 (3,974). Sólo contornos.
+    // Nivel 8: línea más gruesa azul medio. Nivel 9: línea fina azul claro.
+    const isN8 = id==='cuencas_n8';
+    const lineColor = isN8 ? '#1e5694' : '#5b8db8';
+    const weight    = isN8 ? 1.1 : 0.6;
+    return L.geoJSON(data, {
+      style: { color: lineColor, weight: weight, opacity: 0.85, fillColor: lineColor, fillOpacity: 0.05 },
+      onEachFeature: (f,l) => {
+        const p = f.properties;
+        const sub = p.SUB_AREA != null ? Number(p.SUB_AREA).toLocaleString('es-BO')+' km²' : '—';
+        const up  = p.UP_AREA  != null ? Number(p.UP_AREA).toLocaleString('es-BO')+' km²' : '—';
+        const endo = p.ENDO === 1 ? 'Endorreica' : 'Drenaje externo';
+        l.bindPopup(`<div class="feature-popup"><h5>Sub-cuenca HydroBASINS · Nivel ${isN8?8:9}</h5><table>
+          <tr><td>HYBAS_ID</td><td><b>${p.HYBAS_ID||'—'}</b></td></tr>
+          <tr><td>Pfafstetter</td><td>${p.PFAF_ID||'—'}</td></tr>
+          <tr><td>Área sub-cuenca</td><td><b>${sub}</b></td></tr>
+          <tr><td>Área aguas arriba</td><td>${up}</td></tr>
+          <tr><td>Orden</td><td>${p.ORDER||'—'}</td></tr>
+          <tr><td>Tipo</td><td>${endo}</td></tr>
+        </table></div>`);
       }
     });
   }
@@ -1616,7 +1648,7 @@ function getRiquezaSpeciesBreakdown(sid){
 
 // Construye los items del desglose M2 (uno por especie individual)
 function getM2BreakdownItems(){
-  const activeSp=MODULES['2'].layers.filter(l=>activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar' && l.id!=='cuencas' && l.id!=='ffr' && l.id!=='lagos');
+  const activeSp=MODULES['2'].layers.filter(l=>activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar' && l.id!=='cuencas' && l.id!=='ffr' && l.id!=='lagos' && l.id!=='cuencas_n8' && l.id!=='cuencas_n9');
   const items=[];
   activeSp.forEach(s=>{
     if(s.id.startsWith('riq_')){
@@ -1734,7 +1766,7 @@ function renderM2Stats(){
       if(inSel){ supAP += (parseFloat(p.sup_ha)||0); apCount++; }
     });
   }
-  const activeSp = MODULES['2'].layers.filter(l=> activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar' && l.id!=='cuencas' && l.id!=='ffr' && l.id!=='lagos');
+  const activeSp = MODULES['2'].layers.filter(l=> activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar' && l.id!=='cuencas' && l.id!=='ffr' && l.id!=='lagos' && l.id!=='cuencas_n8' && l.id!=='cuencas_n9');
   // Superficie de intersección (ha) — datos reales de ArcGIS, filtrados por APs
   let supInterHa = 0;
   activeSp.forEach(s=>{ supInterHa += getLayerIntersectedHa(s.id); });
