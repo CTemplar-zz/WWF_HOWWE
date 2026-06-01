@@ -7,6 +7,8 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/pmtiles@4.3.0/dist/pmtiles.js"></script>
+<script src="https://unpkg.com/protomaps-leaflet@5.0.1/dist/protomaps-leaflet.min.js"></script>
 <script src="assets/capas/geo_limite.js"></script>
 <script src="assets/capas/geo_departamentos.js"></script>
 <script src="assets/capas/geo_apn.js"></script>
@@ -33,7 +35,7 @@
 <script src="assets/capas/geo_riq_pimelodella.js"></script>
 <script src="assets/capas/geo_riq_pimelodus.js"></script>
 <script src="assets/capas/geo_riq_rhamdia.js"></script>
-<script src="assets/capas/geo_humedales.js"></script>
+<!-- geo_humedales.js removido: migrado a PMTiles en assets/tiles/humedales.pmtiles -->
 <script src="assets/capas/geo_ramsar.js"></script>
 <script src="assets/capas/geo_cuencas.js"></script>
 <script src="assets/capas/geo_ffr.js"></script>
@@ -679,7 +681,7 @@ const MODULES = {
       {id:'cuencas_n9',      name:'Sub-cuencas HydroBASINS nivel 9',group:'Hidrología', color:'#5b8db8',opacity:85,on:false},
       {id:'ffr',             name:'Ríos FFR (estado conectividad)', group:'Hidrología', color:'#1f6dc7',opacity:90,on:false, gradient:true},
       {id:'lagos',           name:'Lagos y lagunas 2016',          group:'Hidrología', color:'#2374b5',opacity:80,on:false},
-      {id:'humedales',       name:'Humedales (meses inundados)', group:'Hidrología', color:'#2271ae',opacity:80,on:false, gradient:true},
+      {id:'humedales',       name:'Humedales (meses inundados)', group:'Hidrología', color:'#2271ae',opacity:80,on:false, gradient:true, pmtiles:'assets/tiles/humedales.pmtiles', pmlayer:'humedales'},
       {id:'ramsar',          name:'Sitios Ramsar (11 sitios)',    group:'Hidrología', color:'#4aa3e3',opacity:80,on:false},
       {id:'jaguar',    name:'Jaguar',            group:'Objetos de conservación', color:'#7fa860',opacity:50,on:true,  iucn:'NT',sci:'Panthera onca'},
       {id:'paraba_bb', name:'Paraba Barba Azul', group:'Objetos de conservación', color:'#7a1a1a',opacity:50,on:false, iucn:'CR',sci:'Ara glaucogularis'},
@@ -738,7 +740,7 @@ const MODULES = {
       {id:'departamentos',name:'Departamentos de Bolivia',color:'#000000',opacity:100,on:true},
       {id:'apn',    name:'Áreas Protegidas',              color:'#2c8a4d',opacity:100,on:true},
       {id:'lagos',  name:'Lagos y lagunas 2016',            color:'#2374b5',opacity:80,on:false},
-      {id:'humedales', name:'Humedales (meses inundados)', color:'#2271ae',opacity:90,on:false, gradient:true},
+      {id:'humedales', name:'Humedales (meses inundados)', color:'#2271ae',opacity:90,on:false, gradient:true, pmtiles:'assets/tiles/humedales.pmtiles', pmlayer:'humedales'},
       {id:'ramsar',    name:'Sitios Ramsar (11 sitios)',    color:'#4aa3e3',opacity:90,on:true},
       {id:'cuencas',name:'Cuencas (balance hídrico)',     color:'#005ce6',opacity:80,on:false},
       {id:'cuencas_n8',name:'Sub-cuencas HydroBASINS nivel 8',color:'#1e5694',opacity:85,on:false},
@@ -873,7 +875,7 @@ const DATA_FILES = {
   'riq_pimelodella': 'assets/capas/Riqueza_Pimelodella.geojson',
   'riq_pimelodus':   'assets/capas/Riqueza_Pimelodus.geojson',
   'riq_rhamdia':     'assets/capas/Riqueza_Rhamdia.geojson',
-  'humedales':       'assets/capas/Humedales.geojson',
+  // humedales: ahora servido como vector tiles (assets/tiles/humedales.pmtiles)
   'ramsar':          'assets/capas/RAMSAR_SITES.geojson',
   'cuencas':         'assets/capas/Cuencas.geojson',
   'ffr':             'assets/capas/FFR_Bolivia.geojson',
@@ -1358,8 +1360,51 @@ function createGeoJSONLayer(id, layerDef){
 }
 
 const moduleLayers={};
+// === Vector tiles (PMTiles) ===
+function createPMTilesLayer(layerDef){
+  if(typeof protomapsL === 'undefined'){
+    console.warn('protomaps-leaflet no cargó'); return L.layerGroup();
+  }
+  const id = layerDef.id;
+  let paintRules;
+  if(id === 'humedales'){
+    const colorByMeses = m => {
+      const v = +m || 0;
+      return v <= 1 ? '#E8F4FB' : v <= 2 ? '#C9E2F2' : v <= 3 ? '#9FCBE5'
+           : v <= 4 ? '#74B3D5' : v <= 5 ? '#4A95C3' : v <= 6 ? '#2271AE' : '#084B8A';
+    };
+    paintRules = [{
+      dataLayer: layerDef.pmlayer || id,
+      symbolizer: new protomapsL.PolygonSymbolizer({
+        fill: (z,f) => colorByMeses(f.props.Meses),
+        opacity: 0.85,
+        stroke: '#1a4a7a',
+        width: 0.3
+      })
+    }];
+  } else {
+    // Default polygon style
+    paintRules = [{
+      dataLayer: layerDef.pmlayer || id,
+      symbolizer: new protomapsL.PolygonSymbolizer({
+        fill: layerDef.color || '#2374b5', opacity: 0.55,
+        stroke: layerDef.color || '#1a4a7a', width: 0.5
+      })
+    }];
+  }
+  return protomapsL.leafletLayer({
+    url: layerDef.pmtiles,
+    paintRules,
+    interactive: true,
+    maxDataZoom: 13,
+    attribution: '© PMTiles · datos: WWF / SERNAP'
+  });
+}
+
 function buildModuleLayer(id,mod){
   const layerDef=mod.layers.find(l=>l.id===id)||{color:'#888'};
+  // PMTiles (vector tiles)
+  if(layerDef.pmtiles) return createPMTilesLayer(layerDef);
   if(id==='apn_lim'&&geoData['apn']){
     return L.geoJSON(geoData['apn'],{
       style:{color:layerDef.color,weight:1.6,fillOpacity:0,opacity:0.85},
@@ -1394,8 +1439,15 @@ const activeLayers=new Set();
 
 // Aplica opacidad sin tocar otros estilos (color, etc.)
 function applyLayerOpacity(layerId, leafletLayer, pct){
-  if(!leafletLayer || !leafletLayer.setStyle) return;
+  if(!leafletLayer) return;
   const o = Math.max(0, Math.min(1, pct/100));
+  // Caso especial: PMTiles (vector tiles via protomaps-leaflet)
+  // Estos no tienen setStyle ni eachLayer — usan setOpacity heredado de GridLayer
+  if(!leafletLayer.setStyle && !leafletLayer.eachLayer && leafletLayer.setOpacity){
+    leafletLayer.setOpacity(o);
+    return;
+  }
+  if(!leafletLayer.setStyle) return;
   // Caso especial: ffr — color/grosor per-feature (CSI_FF2, RIV_ORD, CSI)
   if(layerId==='ffr' && leafletLayer.eachLayer){
     const widths = {2:4.5, 3:3.5, 4:2.5, 5:1.8, 6:1.2, 7:0.8, 8:0.5, 9:0.3, 10:0.25};
