@@ -1392,13 +1392,59 @@ function createPMTilesLayer(layerDef){
       })
     }];
   }
-  return protomapsL.leafletLayer({
+  const layer = protomapsL.leafletLayer({
     url: layerDef.pmtiles,
     paintRules,
     interactive: true,
     maxDataZoom: 13,
     attribution: '© PMTiles · datos: WWF / SERNAP'
   });
+
+  // Popup al click: query features en (lng,lat) via la API de protomaps-leaflet
+  layer.on('click', e => {
+    try {
+      if (!layer.views || !layer._map) return;
+      const z = layer._map.getZoom();
+      const lng = e.latlng.lng, lat = e.latlng.lat;
+      const found = [];
+      // layer.views es un Map<sourceName, View>
+      layer.views.forEach(view => {
+        try {
+          const results = view.queryFeatures(lng, lat, z, 4); // tolerancia 4 px
+          if (results && results.length) found.push(...results);
+        } catch(_) {}
+      });
+      if (!found.length) return;
+      const r = found[0];
+      const f = r.feature || r;
+      const props = (f && (f.properties || f.props)) || {};
+
+      let html;
+      if (id === 'humedales') {
+        const m = props.Meses;
+        const txt = (m === 0 || m === 1) ? '0 — 1 mes'
+                  : (m > 6) ? 'Más de 6 meses ('+m+')'
+                  : m + ' meses';
+        html = `<div class="feature-popup"><h5>Humedal</h5><table>
+          <tr><td>Meses inundados</td><td><b>${txt}</b></td></tr>
+          <tr><td>Días inundados</td><td>${props.IAF != null ? props.IAF : '—'}</td></tr>
+        </table></div>`;
+      } else {
+        // Genérico: muestra todas las propiedades
+        const rows = Object.entries(props).map(([k,v]) =>
+          `<tr><td>${k}</td><td>${String(v).slice(0,60)}</td></tr>`).join('');
+        html = `<div class="feature-popup"><h5>${layerDef.name}</h5><table>${rows}</table></div>`;
+      }
+      L.popup({maxWidth: 280})
+        .setLatLng(e.latlng)
+        .setContent(html)
+        .openOn(layer._map);
+    } catch (err) {
+      console.warn('PMTiles click error:', err);
+    }
+  });
+
+  return layer;
 }
 
 function buildModuleLayer(id,mod){
