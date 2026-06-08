@@ -49,7 +49,10 @@ class RangeRequestHandler(http.server.SimpleHTTPRequestHandler):
                         end = min(end, file_size - 1)
 
                     if start >= file_size or start > end:
-                        self.send_error(416, "Requested Range Not Satisfiable")
+                        self.send_response(416, "Requested Range Not Satisfiable")
+                        self.send_header("Content-Range", f"bytes */{file_size}")
+                        self.send_header("Content-Length", "0")
+                        self.end_headers()
                         f.close()
                         return None
 
@@ -62,15 +65,16 @@ class RangeRequestHandler(http.server.SimpleHTTPRequestHandler):
                     self.send_header("Last-Modified", self.date_time_string(int(fs.st_mtime)))
                     self.end_headers()
 
-                    f.seek(start)
-                    remaining = content_length
-                    chunk_size = 64 * 1024
-                    while remaining > 0:
-                        chunk = f.read(min(chunk_size, remaining))
-                        if not chunk:
-                            break
-                        self.wfile.write(chunk)
-                        remaining -= len(chunk)
+                    if self.command != 'HEAD':
+                        f.seek(start)
+                        remaining = content_length
+                        chunk_size = 64 * 1024
+                        while remaining > 0:
+                            chunk = f.read(min(chunk_size, remaining))
+                            if not chunk:
+                                break
+                            self.wfile.write(chunk)
+                            remaining -= len(chunk)
                     f.close()
                     return None
 

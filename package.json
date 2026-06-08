@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "geojson-vt": "^4.0.3",
+    "pmtiles": "^4.4.1",
+    "vt-pbf": "^3.1.3"
+  }
+}

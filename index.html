@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <title>Geoportal PFP — Áreas Protegidas Bolivia</title>
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="assets/lib/leaflet.css" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="assets/lib/leaflet.js"></script>
 <script src="assets/lib/pmtiles.js"></script>
 <script src="assets/lib/protomaps-leaflet.js"></script>
 <script src="assets/capas/geo_limite.js"></script>
@@ -14,7 +14,8 @@
 <script src="assets/capas/geo_apn.js"></script>
 <script src="assets/capas/geo_jaguar.js"></script>
 <script src="assets/capas/geo_borochi.js"></script>
-<script src="assets/capas/geo_bufeo.js"></script>
+<script src="assets/capas/geo_inia_bol.js"></script>
+<script src="assets/capas/geo_densidad_inia.js"></script>
 <script src="assets/capas/geo_londra.js"></script>
 <script src="assets/capas/geo_jucumari.js"></script>
 <script src="assets/capas/geo_dorado.js"></script>
@@ -40,9 +41,9 @@
 <script src="assets/capas/geo_cuencas.js"></script>
 <script src="assets/capas/geo_ffr.js"></script>
 <script src="assets/capas/geo_lagos.js"></script>
-<script src="assets/capas/geo_cuencas_n8.js"></script>
-<script src="assets/capas/geo_cuencas_n9.js"></script>
+<!-- geo_cuencas_n8.js y geo_cuencas_n9.js removidos: migrados a PMTiles en assets/tiles/ -->
 <script src="assets/capas/geo_intersection.js"></script>
+<!-- geo_sea.js removido: migrado a PMTiles en assets/tiles/sea.pmtiles -->
 <style>
   :root {
     --bg: #f5f6f3;
@@ -676,16 +677,19 @@ const MODULES = {
     layers:[
       {id:'departamentos',name:'Departamentos de Bolivia', group:'Marco espacial',          color:'#000000',opacity:100,on:true},
       {id:'apn',       name:'Áreas Protegidas',  group:'Marco espacial',          color:'#2c8a4d',opacity:100,on:true},
+      {id:'sea',       name:'Sistemas Ecológicos Acuáticos', group:'Marco espacial', color:'#49AE6F',opacity:70,on:false, pmtiles:'assets/tiles/sea.pmtiles', pmlayer:'sea', maxDataZoom:12},
       {id:'cuencas',         name:'Cuencas (balance hídrico)',    group:'Hidrología', color:'#005ce6',opacity:80,on:false},
-      {id:'cuencas_n8',      name:'Sub-cuencas HydroBASINS nivel 8',group:'Hidrología', color:'#1e5694',opacity:85,on:false},
-      {id:'cuencas_n9',      name:'Sub-cuencas HydroBASINS nivel 9',group:'Hidrología', color:'#5b8db8',opacity:85,on:false},
+      {id:'cuencas_n8',      name:'Sub-cuencas HydroBASINS nivel 8',group:'Hidrología', color:'#1e5694',opacity:85,on:false, pmtiles:'assets/tiles/cuencas_n8.pmtiles', pmlayer:'cuencas_n8', maxDataZoom:12},
+      {id:'cuencas_n9',      name:'Sub-cuencas HydroBASINS nivel 9',group:'Hidrología', color:'#5b8db8',opacity:85,on:false, pmtiles:'assets/tiles/cuencas_n9.pmtiles', pmlayer:'cuencas_n9', maxDataZoom:12},
       {id:'ffr',             name:'Ríos FFR (estado conectividad)', group:'Hidrología', color:'#1f6dc7',opacity:90,on:false, gradient:true},
       {id:'lagos',           name:'Lagos y lagunas 2016',          group:'Hidrología', color:'#2374b5',opacity:80,on:false},
-      {id:'humedales',       name:'Humedales (meses inundados)', group:'Hidrología', color:'#2271ae',opacity:80,on:false, gradient:true, pmtiles:'assets/tiles/humedales.pmtiles', pmlayer:'humedales'},
+      {id:'humedales',       name:'Humedales (meses inundados)', group:'Hidrología', color:'#2271ae',opacity:80,on:false, gradient:true, pmtiles:'assets/tiles/humedales.pmtiles', pmlayer:'humedales', maxDataZoom:12},
       {id:'ramsar',          name:'Sitios Ramsar (11 sitios)',    group:'Hidrología', color:'#4aa3e3',opacity:80,on:false},
-      {id:'jaguar',    name:'Jaguar',            group:'Objetos de conservación', color:'#7fa860',opacity:50,on:true,  iucn:'NT',sci:'Panthera onca'},
+      {id:'jaguar',    name:'Jaguar',            group:'Objetos de conservación', color:'#7fa860',opacity:50,on:false, iucn:'NT',sci:'Panthera onca'},
       {id:'paraba_bb', name:'Paraba Barba Azul', group:'Objetos de conservación', color:'#7a1a1a',opacity:50,on:false, iucn:'CR',sci:'Ara glaucogularis'},
-      {id:'bufeo',     name:'Bufeo',             group:'Objetos de conservación', color:'#c54a2c',opacity:50,on:false, iucn:'EN',sci:'Inia geoffrensis'},
+
+      {id:'densidad_inia',name:'Densidad estimada Inia boliviensis',group:'Objetos de conservación', color:'#BC5539',opacity:90,on:false, gradient:true},
+      {id:'inia_bol',  name:'Inia boliviensis (distribución)',group:'Objetos de conservación', color:'#004DA8',opacity:50,on:false, iucn:'EN',sci:'Inia boliviensis'},
       {id:'londra',    name:'Londra',            group:'Objetos de conservación', color:'#c54a2c',opacity:50,on:false, iucn:'EN',sci:'Pteronura brasiliensis'},
       {id:'paraba_fr', name:'Paraba Frente Roja',group:'Objetos de conservación', color:'#c54a2c',opacity:50,on:false, iucn:'EN',sci:'Ara rubrogenys'},
       {id:'jucumari',  name:'Jucumari',          group:'Objetos de conservación', color:'#e8a417',opacity:50,on:false, iucn:'VU',sci:'Tremarctos ornatus'},
@@ -740,11 +744,11 @@ const MODULES = {
       {id:'departamentos',name:'Departamentos de Bolivia',color:'#000000',opacity:100,on:true},
       {id:'apn',    name:'Áreas Protegidas',              color:'#2c8a4d',opacity:100,on:true},
       {id:'lagos',  name:'Lagos y lagunas 2016',            color:'#2374b5',opacity:80,on:false},
-      {id:'humedales', name:'Humedales (meses inundados)', color:'#2271ae',opacity:90,on:false, gradient:true, pmtiles:'assets/tiles/humedales.pmtiles', pmlayer:'humedales'},
+      {id:'humedales', name:'Humedales (meses inundados)', color:'#2271ae',opacity:90,on:false, gradient:true, pmtiles:'assets/tiles/humedales.pmtiles', pmlayer:'humedales', maxDataZoom:12},
       {id:'ramsar',    name:'Sitios Ramsar (11 sitios)',    color:'#4aa3e3',opacity:90,on:true},
       {id:'cuencas',name:'Cuencas (balance hídrico)',     color:'#005ce6',opacity:80,on:false},
-      {id:'cuencas_n8',name:'Sub-cuencas HydroBASINS nivel 8',color:'#1e5694',opacity:85,on:false},
-      {id:'cuencas_n9',name:'Sub-cuencas HydroBASINS nivel 9',color:'#5b8db8',opacity:85,on:false},
+      {id:'cuencas_n8',name:'Sub-cuencas HydroBASINS nivel 8',color:'#1e5694',opacity:85,on:false, pmtiles:'assets/tiles/cuencas_n8.pmtiles', pmlayer:'cuencas_n8', maxDataZoom:12},
+      {id:'cuencas_n9',name:'Sub-cuencas HydroBASINS nivel 9',color:'#5b8db8',opacity:85,on:false, pmtiles:'assets/tiles/cuencas_n9.pmtiles', pmlayer:'cuencas_n9', maxDataZoom:12},
       {id:'glac',   name:'Glaciares y recarga',           color:'#c5e3f0',opacity:80,on:false},
       {id:'forest', name:'Cobertura boscosa',             color:'#2c8a4d',opacity:45,on:false},
       {id:'ffr',    name:'Ríos FFR (estado conectividad)', color:'#1f6dc7',opacity:90,on:false},
@@ -854,7 +858,7 @@ const DATA_FILES = {
   'departamentos': 'assets/capas/Departamentos_Bolivia.geojson',
   'jaguar':   'assets/capas/Panthera_onca_Jaguar.geojson',
   'borochi':  'assets/capas/Chrysocyon_brachyurus_Borochi.geojson',
-  'bufeo':    'assets/capas/Inia_geoffrensis_Bufeo.geojson',
+
   'londra':   'assets/capas/Pteronura_brasiliensis_Londra.geojson',
   'jucumari': 'assets/capas/Tremarctos_ornatus_Jucumari.geojson',
   'dorado':   'assets/capas/Brachyplatystoma_rousseauxii_Dorado.geojson',
@@ -875,13 +879,15 @@ const DATA_FILES = {
   'riq_pimelodella': 'assets/capas/Riqueza_Pimelodella.geojson',
   'riq_pimelodus':   'assets/capas/Riqueza_Pimelodus.geojson',
   'riq_rhamdia':     'assets/capas/Riqueza_Rhamdia.geojson',
+  'inia_bol':        'assets/capas/inia_bol.geojson',
+  'densidad_inia':   'assets/capas/densidad_inia.geojson',
   // humedales: ahora servido como vector tiles (assets/tiles/humedales.pmtiles)
   'ramsar':          'assets/capas/RAMSAR_SITES.geojson',
   'cuencas':         'assets/capas/Cuencas.geojson',
   'ffr':             'assets/capas/FFR_Bolivia.geojson',
   'lagos':           'assets/capas/Lagos_2016.geojson',
-  'cuencas_n8':      'assets/capas/Cuencas_nivel_8.geojson',
-  'cuencas_n9':      'assets/capas/Cuencas_nivel_9.geojson',
+  // cuencas_n8 y cuencas_n9: ahora servidas como vector tiles (assets/tiles/cuencas_n*.pmtiles)
+  // sea: ahora servido como vector tiles (assets/tiles/sea.pmtiles)
 };
 const IUCN_COLORS = {'CR':'#7a1a1a','EN':'#c54a2c','VU':'#e8a417','NT':'#7fa860','LC':'#4ec97a'};
 const AP_CAT_COLORS = {
@@ -1191,6 +1197,39 @@ function createGeoJSONLayer(id, layerDef){
       style:{color:'#000000',weight:1.4,fillOpacity:0,opacity:0.9,interactive:false}
     });
   }
+  if(id==='sea'){
+    const SEA_COLORS={
+      'Altiplano BN6':'#49AE6F','Beni subandino BN4':'#3FF362','Llanura aluvial BN2':'#BBF6D8',
+      'Llanura aluvial IT5':'#B7505A','Llanura aluvial MD3':'#A87000','Llanura aluvial MM2':'#3A45C9',
+      'Llanura aluvial pluvial MM3':'#C2CDF8','Meseta IT3':'#EDC1B9','Montañas BN5':'#68F8AF',
+      'Piedemonte BN3':'#82A891','Piedemonte MM4':'#6B85DF','Planicies de inundación Itenez IT1':'#FA5638',
+      'Plenillanura alta IT6':'#ED3E5E','Plenillanura baja IT4':'#F3927D','Precambrico MD2':'#EC7132',
+      'Serrania Chiquitana IT8':'#D98999','Zona de inundación BN1':'#2DC35A','Zona de inundación MD1':'#F5B449',
+      'Zona de inundación MM1':'#3632F4','Altiplano AP1':'#CCCCCC','Altiplano PC5':'#8300A7',
+      'Altiplano norte TP2':'#006FFF','Chaco PR3':'#FFAA00','Chaco Xerico PC2':'#DE73FF',
+      'Cordillera occidental AP2':'#9C9C9C','Cordillera occidental TP4':'#002573',
+      'Cordillera oriental AP3':'#7671E4','Cordillera oriental MM6':'#00848B',
+      'Cordillera oriental PC4':'#A900E6','Cordillera oriental TP3':'#004CA7',
+      'Escudo precambrico alto PR5':'#A76F00','Escudo precambrico bajo PR2':'#FFD37E',
+      'Itenez xerica IT7':'#DE6F6F','Lago Poopo TP5':'#73DFFF','Lago Titicaca TP1':'#73DFFF',
+      'Mamore altiplano MM7':'#0D7286','Montañas BM1':'#A73700','Montañas altas BM2':'#732500',
+      'Parapetí montañas IT9':'#D90000','Planicie de inundación Izozog IT2':'#FFCCCC',
+      'Planicie de inundación PC1':'#E9C3FF','Serranias PR4':'#E69700','Subandino MM5':'#00B0B0',
+      'Subandino PC3':'#C400FF','Zona de inundación PR1':'#FFEBAF'
+    };
+    return L.geoJSON(data,{
+      style:f=>{
+        const cat=f.properties.TA_DATE||'';
+        return{color:'#555',weight:0.5,fillColor:SEA_COLORS[cat]||'#aaa',fillOpacity:0.72,opacity:0.6};
+      },
+      onEachFeature:(f,l)=>{
+        const cat=f.properties.TA_DATE||'—';
+        l.bindPopup(`<div class="feature-popup"><h5>Sistema Ecológico Acuático</h5><table>
+          <tr><td>Clase</td><td><b>${cat}</b></td></tr>
+        </table></div>`);
+      }
+    });
+  }
   if(id==='humedales'){
     const colorByMeses = m => {
       const v = +m || 0;
@@ -1219,10 +1258,10 @@ function createGeoJSONLayer(id, layerDef){
     // HydroBASINS nivel 8 (1,331) y nivel 9 (3,974). Sólo contornos.
     // Nivel 8: línea más gruesa azul medio. Nivel 9: línea fina azul claro.
     const isN8 = id==='cuencas_n8';
-    const lineColor = isN8 ? '#1e5694' : '#5b8db8';
-    const weight    = isN8 ? 1.1 : 0.6;
+    const lineColor = isN8 ? '#123f73' : '#2f77a8';
+    const weight    = isN8 ? 1.35 : 0.9;
     return L.geoJSON(data, {
-      style: { color: lineColor, weight: weight, opacity: 0.85, fillColor: lineColor, fillOpacity: 0.05 },
+      style: { color: lineColor, weight: weight, opacity: 0.95, fillColor: lineColor, fillOpacity: isN8 ? 0.14 : 0.1 },
       onEachFeature: (f,l) => {
         const p = f.properties;
         const sub = p.SUB_AREA != null ? Number(p.SUB_AREA).toLocaleString('es-BO')+' km²' : '—';
@@ -1363,6 +1402,51 @@ function createGeoJSONLayer(id, layerDef){
       }
     });
   }
+  if(id==='inia_bol'){
+    return L.geoJSON(data,{
+      style:{color:'#004DA8',weight:1.5,fillColor:'#BEE8FF',fillOpacity:0.30,opacity:0.85},
+      onEachFeature:(f,l)=>{
+        l.bindPopup(`<div class="feature-popup"><h5><i>Inia boliviensis</i></h5><table>
+          <tr><td>Estado IUCN</td><td><b style="color:#c54a2c">EN — En peligro</b></td></tr>
+          <tr><td>Tipo</td><td>Rango de distribución</td></tr>
+          <tr><td>Especie</td><td>Bufeo boliviano</td></tr>
+          <tr><td>Fuente</td><td>FAUNAGUA</td></tr>
+        </table></div>`);
+      }
+    });
+  }
+  if(id==='densidad_inia'){
+    const ABUND_BREAKS=[
+      {max:0.38, color:'#F4D5C1'},
+      {max:0.70, color:'#D2886F'},
+      {max:1.08, color:'#BC5539'},
+      {max:1.40, color:'#9B3926'},
+      {max:Infinity, color:'#7A1C13'},
+    ];
+    const abundColor=v=>(ABUND_BREAKS.find(b=>v<=b.max)||ABUND_BREAKS[4]).color;
+    const abundWeight=v=>v<=0.38?2:v<=0.70?3:v<=1.08?4:v<=1.40?5:6;
+    return L.geoJSON(data,{
+      style:f=>{
+        const a=+f.properties.Abund||0;
+        return{color:abundColor(a),weight:abundWeight(a),opacity:0.9,fillOpacity:0,lineCap:'round',lineJoin:'round'};
+      },
+      onEachFeature:(f,l)=>{
+        const p=f.properties;
+        const a=p.Abund!=null?Number(p.Abund).toFixed(2):'—';
+        const n=p.NroBufeos!=null?Math.round(Number(p.NroBufeos)).toLocaleString('es-BO'):'—';
+        const km=p.LongKm2!=null?Number(p.LongKm2).toFixed(1)+' km²':'—';
+        const prot=p.Protegida==='Dentro'
+          ?'<span style="color:#1f6b3a">✔ Dentro AP</span>'
+          :'<span style="color:#b06e3a">Fuera AP</span>';
+        l.bindPopup(`<div class="feature-popup"><h5>${p.Rio||'Río'}</h5><table>
+          <tr><td>Abundancia</td><td><b>${a} ind./km</b></td></tr>
+          <tr><td>Nro. bufeos est.</td><td><b>${n}</b></td></tr>
+          <tr><td>Longitud</td><td>${km}</td></tr>
+          <tr><td>Área protegida</td><td>${prot}</td></tr>
+        </table></div>`,{maxWidth:260});
+      }
+    });
+  }
   // Species layers
   const mod2Def=MODULES['2'].layers.find(ld=>ld.id===id);
   const iucn=mod2Def?.iucn||'';
@@ -1407,6 +1491,54 @@ function createPMTilesLayer(layerDef){
         width: 0.3
       })
     }];
+  } else if(id === 'sea'){
+    const seaColors = {
+      'Altiplano BN6':'#49AE6F','Beni subandino BN4':'#3FF362','Llanura aluvial BN2':'#BBF6D8',
+      'Llanura aluvial IT5':'#B7505A','Llanura aluvial MD3':'#A87000','Llanura aluvial MM2':'#3A45C9',
+      'Llanura aluvial pluvial MM3':'#C2CDF8','Meseta IT3':'#EDC1B9','MontaÃ±as BN5':'#68F8AF',
+      'Piedemonte BN3':'#82A891','Piedemonte MM4':'#6B85DF','Planicies de inundaciÃ³n Itenez IT1':'#FA5638',
+      'Plenillanura alta IT6':'#ED3E5E','Plenillanura baja IT4':'#F3927D','Precambrico MD2':'#EC7132',
+      'Serrania Chiquitana IT8':'#D98999','Zona de inundaciÃ³n BN1':'#2DC35A','Zona de inundaciÃ³n MD1':'#F5B449',
+      'Zona de inundaciÃ³n MM1':'#3632F4','Altiplano AP1':'#CCCCCC','Altiplano PC5':'#8300A7',
+      'Altiplano norte TP2':'#006FFF','Chaco PR3':'#FFAA00','Chaco Xerico PC2':'#DE73FF',
+      'Cordillera occidental AP2':'#9C9C9C','Cordillera occidental TP4':'#002573',
+      'Cordillera oriental AP3':'#7671E4','Cordillera oriental MM6':'#00848B',
+      'Cordillera oriental PC4':'#A900E6','Cordillera oriental TP3':'#004CA7',
+      'Escudo precambrico alto PR5':'#A76F00','Escudo precambrico bajo PR2':'#FFD37E',
+      'Itenez xerica IT7':'#DE6F6F','Lago Poopo TP5':'#73DFFF','Lago Titicaca TP1':'#73DFFF',
+      'Mamore altiplano MM7':'#0D7286','MontaÃ±as BM1':'#A73700','MontaÃ±as altas BM2':'#732500',
+      'ParapetÃ­ montaÃ±as IT9':'#D90000','Planicie de inundaciÃ³n Izozog IT2':'#FFCCCC',
+      'Planicie de inundaciÃ³n PC1':'#E9C3FF','Serranias PR4':'#E69700','Subandino MM5':'#00B0B0',
+      'Subandino PC3':'#C400FF','Zona de inundaciÃ³n PR1':'#FFEBAF'
+    };
+    const fallbackPalette = ['#49AE6F','#BBF6D8','#B7505A','#A87000','#3A45C9','#C2CDF8','#EDC1B9','#68F8AF','#82A891','#6B85DF','#FA5638','#ED3E5E','#F3927D','#EC7132','#D98999','#2DC35A','#F5B449','#3632F4','#CCCCCC','#8300A7','#006FFF','#FFAA00','#DE73FF','#9C9C9C','#002573','#7671E4','#00848B','#A900E6','#004CA7','#A76F00','#FFD37E','#DE6F6F','#73DFFF','#0D7286','#A73700','#732500','#D90000','#FFCCCC','#E9C3FF','#E69700','#00B0B0','#C400FF','#FFEBAF'];
+    const seaColor = cat => {
+      if (seaColors[cat]) return seaColors[cat];
+      let h = 0;
+      for (const ch of String(cat || '')) h = ((h << 5) - h + ch.charCodeAt(0)) | 0;
+      return fallbackPalette[Math.abs(h) % fallbackPalette.length];
+    };
+    paintRules = [{
+      dataLayer: layerDef.pmlayer || id,
+      symbolizer: new protomapsL.PolygonSymbolizer({
+        fill: (z,f) => seaColor(f.props.TA_DATE),
+        opacity: 0.72,
+        stroke: '#555',
+        width: 0.5
+      })
+    }];
+  } else if(id === 'cuencas_n8' || id === 'cuencas_n9'){
+    const isN8 = id === 'cuencas_n8';
+    const lineColor = isN8 ? '#123f73' : '#2f77a8';
+    paintRules = [{
+      dataLayer: layerDef.pmlayer || id,
+      symbolizer: new protomapsL.PolygonSymbolizer({
+        fill: lineColor,
+        opacity: isN8 ? 0.32 : 0.24,
+        stroke: lineColor,
+        width: isN8 ? 1.35 : 0.9
+      })
+    }];
   } else {
     // Default polygon style
     paintRules = [{
@@ -1421,12 +1553,12 @@ function createPMTilesLayer(layerDef){
     url: layerDef.pmtiles,
     paintRules,
     interactive: true,
-    maxDataZoom: 13,
+    maxDataZoom: layerDef.maxDataZoom || 12,
     attribution: '© PMTiles · datos: WWF / SERNAP'
   });
 
   // Popup al click: query features en (lng,lat) via la API de protomaps-leaflet
-  layer.on('click', e => {
+  const handlePMTilesClick = e => {
     try {
       if (!layer.views || !layer._map) return;
       const z = layer._map.getZoom();
@@ -1454,11 +1586,39 @@ function createPMTilesLayer(layerDef){
           <tr><td>Meses inundados</td><td><b>${txt}</b></td></tr>
           <tr><td>Días inundados</td><td>${props.IAF != null ? props.IAF : '—'}</td></tr>
         </table></div>`;
+      } else if (id === 'sea') {
+        html = `<div class="feature-popup"><h5>Sistema EcolÃ³gico AcuÃ¡tico</h5><table>
+          <tr><td>Clase</td><td><b>${props.TA_DATE || 'â€”'}</b></td></tr>
+          ${props.NOMBRE ? `<tr><td>Nombre</td><td>${props.NOMBRE}</td></tr>` : ''}
+          ${props.SEA ? `<tr><td>SEA</td><td>${props.SEA}</td></tr>` : ''}
+        </table></div>`;
       } else {
         // Genérico: muestra todas las propiedades
         const rows = Object.entries(props).map(([k,v]) =>
           `<tr><td>${k}</td><td>${String(v).slice(0,60)}</td></tr>`).join('');
         html = `<div class="feature-popup"><h5>${layerDef.name}</h5><table>${rows}</table></div>`;
+      }
+      if (id === 'sea') {
+        html = `<div class="feature-popup"><h5>Sistema Ecologico Acuatico</h5><table>
+          <tr><td>Clase</td><td><b>${props.TA_DATE || '-'}</b></td></tr>
+          ${props.NOMBRE ? `<tr><td>Nombre</td><td>${props.NOMBRE}</td></tr>` : ''}
+          ${props.SEA ? `<tr><td>SEA</td><td>${props.SEA}</td></tr>` : ''}
+        </table></div>`;
+      }
+      if (id === 'cuencas_n8' || id === 'cuencas_n9') {
+        const isN8 = id === 'cuencas_n8';
+        const sub = props.SUB_AREA != null ? Number(props.SUB_AREA).toLocaleString('es-BO') + ' km2' : '-';
+        const up = props.UP_AREA != null ? Number(props.UP_AREA).toLocaleString('es-BO') + ' km2' : '-';
+        const order = props.ORDER_ != null ? props.ORDER_ : (props.ORDER != null ? props.ORDER : '-');
+        const endo = Number(props.ENDO) === 1 ? 'Endorreica' : 'Drenaje externo';
+        html = `<div class="feature-popup"><h5>Sub-cuenca HydroBASINS Nivel ${isN8 ? 8 : 9}</h5><table>
+          <tr><td>HYBAS_ID</td><td><b>${props.HYBAS_ID || '-'}</b></td></tr>
+          <tr><td>Pfafstetter</td><td>${props.PFAF_ID || '-'}</td></tr>
+          <tr><td>Area sub-cuenca</td><td><b>${sub}</b></td></tr>
+          <tr><td>Area aguas arriba</td><td>${up}</td></tr>
+          <tr><td>Orden</td><td>${order}</td></tr>
+          <tr><td>Tipo</td><td>${endo}</td></tr>
+        </table></div>`;
       }
       L.popup({maxWidth: 280})
         .setLatLng(e.latlng)
@@ -1467,6 +1627,13 @@ function createPMTilesLayer(layerDef){
     } catch (err) {
       console.warn('PMTiles click error:', err);
     }
+  };
+
+  layer.on('add', () => {
+    if (layer._map) layer._map.on('click', handlePMTilesClick);
+  });
+  layer.on('remove', () => {
+    if (layer._map) layer._map.off('click', handlePMTilesClick);
   });
 
   return layer;
@@ -1771,7 +1938,7 @@ function getRiquezaSpeciesBreakdown(sid){
 
 // Construye los items del desglose M2 (uno por especie individual)
 function getM2BreakdownItems(){
-  const activeSp=MODULES['2'].layers.filter(l=>activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar' && l.id!=='cuencas' && l.id!=='ffr' && l.id!=='lagos' && l.id!=='cuencas_n8' && l.id!=='cuencas_n9');
+  const activeSp=MODULES['2'].layers.filter(l=>activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar' && l.id!=='cuencas' && l.id!=='ffr' && l.id!=='lagos' && l.id!=='cuencas_n8' && l.id!=='cuencas_n9' && l.id!=='sea');
   const items=[];
   activeSp.forEach(s=>{
     if(s.id.startsWith('riq_')){
@@ -1889,7 +2056,7 @@ function renderM2Stats(){
       if(inSel){ supAP += (parseFloat(p.sup_ha)||0); apCount++; }
     });
   }
-  const activeSp = MODULES['2'].layers.filter(l=> activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar' && l.id!=='cuencas' && l.id!=='ffr' && l.id!=='lagos' && l.id!=='cuencas_n8' && l.id!=='cuencas_n9');
+  const activeSp = MODULES['2'].layers.filter(l=> activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar' && l.id!=='cuencas' && l.id!=='ffr' && l.id!=='lagos' && l.id!=='cuencas_n8' && l.id!=='cuencas_n9' && l.id!=='sea');
   // Superficie de intersección (ha) — datos reales de ArcGIS, filtrados por APs
   let supInterHa = 0;
   activeSp.forEach(s=>{ supInterHa += getLayerIntersectedHa(s.id); });
