@@ -677,13 +677,13 @@ const MODULES = {
     layers:[
       {id:'departamentos',name:'Departamentos de Bolivia', group:'Marco espacial',          color:'#000000',opacity:100,on:true},
       {id:'apn',       name:'Áreas Protegidas',  group:'Marco espacial',          color:'#2c8a4d',opacity:100,on:true},
-      {id:'sea',       name:'Sistemas Ecológicos Acuáticos', group:'Marco espacial', color:'#49AE6F',opacity:70,on:false, pmtiles:'assets/tiles/sea.pmtiles', pmlayer:'sea', maxDataZoom:12},
+      {id:'sea',       name:'Sistemas Ecológicos Acuáticos', group:'Marco espacial', color:'#49AE6F',opacity:70,on:false, pmtiles:"https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/sea.pmtiles", pmlayer:'sea', maxDataZoom:12},
       {id:'cuencas',         name:'Cuencas (balance hídrico)',    group:'Hidrología', color:'#005ce6',opacity:80,on:false},
-      {id:'cuencas_n8',      name:'Sub-cuencas HydroBASINS nivel 8',group:'Hidrología', color:'#1e5694',opacity:85,on:false, pmtiles:'assets/tiles/cuencas_n8.pmtiles', pmlayer:'cuencas_n8', maxDataZoom:12},
-      {id:'cuencas_n9',      name:'Sub-cuencas HydroBASINS nivel 9',group:'Hidrología', color:'#5b8db8',opacity:85,on:false, pmtiles:'assets/tiles/cuencas_n9.pmtiles', pmlayer:'cuencas_n9', maxDataZoom:12},
+      {id:'cuencas_n8',      name:'Sub-cuencas HydroBASINS nivel 8',group:'Hidrología', color:'#1e5694',opacity:85,on:false, pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/cuencas_n8.pmtiles', pmlayer:'cuencas_n8', maxDataZoom:12},
+      {id:'cuencas_n9',      name:'Sub-cuencas HydroBASINS nivel 9',group:'Hidrología', color:'#5b8db8',opacity:85,on:false, pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/cuencas_n9.pmtiles', pmlayer:'cuencas_n9', maxDataZoom:12},
       {id:'ffr',             name:'Ríos FFR (estado conectividad)', group:'Hidrología', color:'#1f6dc7',opacity:90,on:false, gradient:true},
       {id:'lagos',           name:'Lagos y lagunas 2016',          group:'Hidrología', color:'#2374b5',opacity:80,on:false},
-      {id:'humedales',       name:'Humedales (meses inundados)', group:'Hidrología', color:'#2271ae',opacity:80,on:false, gradient:true, pmtiles:'assets/tiles/humedales.pmtiles', pmlayer:'humedales', maxDataZoom:12},
+      {id:'humedales',       name:'Humedales (meses inundados)', group:'Hidrología', color:'#2271ae',opacity:80,on:false, gradient:true, pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/humedales.pmtiles', pmlayer:'humedales', maxDataZoom:12},
       {id:'ramsar',          name:'Sitios Ramsar (11 sitios)',    group:'Hidrología', color:'#4aa3e3',opacity:80,on:false},
       {id:'jaguar',    name:'Jaguar',            group:'Objetos de conservación', color:'#7fa860',opacity:50,on:false, iucn:'NT',sci:'Panthera onca'},
       {id:'paraba_bb', name:'Paraba Barba Azul', group:'Objetos de conservación', color:'#7a1a1a',opacity:50,on:false, iucn:'CR',sci:'Ara glaucogularis'},
@@ -769,18 +769,15 @@ const MODULES = {
     layers:[
       {id:'departamentos',name:'Departamentos de Bolivia',color:'#000000',opacity:100,on:true},
       {id:'apn', name:'Áreas Protegidas',               color:'#2c8a4d',opacity:100,on:true},
-      {id:'temp',name:'Escenarios temperatura',         color:'#d6452c',opacity:55,on:true},
-      {id:'prec',name:'Escenarios precipitación',       color:'#2374b5',opacity:45,on:false},
-      {id:'vuln',name:'Vulnerabilidad climática',       color:'#e8a417',opacity:65,on:true},
-      {id:'ref', name:'Zonas de refugio climático',     color:'#4ec97a',opacity:50,on:false},
-      {id:'corr',name:'Corredores de conectividad',     color:'#7c5fb5',opacity:60,on:false},
-      {id:'spi', name:'Tendencias de sequía (SPI/NDVI)',color:'#b06e3a',opacity:55,on:false},
+      {id:'amenaza_sequia',name:'Amenaza de Sequía',    color:'#e69800',opacity:100,on:false, pmtiles:'assets/tiles/amenaza_sequia.pmtiles', pmlayer:'amenaza_sequia', maxDataZoom:12},
+      {id:'amenaza_sequia_mdryt',name:'Amenaza sequía MDRyT', color:'#a87000',opacity:100,on:false},
     ],
-    legend:{title:'Vulnerabilidad climática',ind:'meta-eco',items:[
-      {c:'#7a1a1a',l:'Muy alta',v:'12% AP'},
-      {c:'#d6452c',l:'Alta',v:'28% AP'},
-      {c:'#e8a417',l:'Media',v:'34% AP'},
-      {c:'#7fa860',l:'Baja',v:'26% AP'},
+    legend:{title:'Amenaza de sequía',ind:'M5',items:[
+      {c:'#a87000',l:'Muy alta / 4 de cada 5 años',v:''},
+      {c:'#e69800',l:'Alta / 1 de cada 2 años',v:''},
+      {c:'#ffd37f',l:'Media / 1 de cada 4 años',v:''},
+      {c:'#ffebbe',l:'Baja / 1 de cada 5 años',v:''},
+      {c:'#ffffff',l:'Muy baja',v:''},
     ]}
   },
   '6': { title:'Comunidades y bienestar', sub:'Comunidades, sitios sagrados, turismo', color:'#4a8aa8',
@@ -886,6 +883,8 @@ const DATA_FILES = {
   'cuencas':         'assets/capas/Cuencas.geojson',
   'ffr':             'assets/capas/FFR_Bolivia.geojson',
   'lagos':           'assets/capas/Lagos_2016.geojson',
+  // amenaza_sequia: ahora servida como vector tiles (assets/tiles/amenaza_sequia.pmtiles)
+  'amenaza_sequia_mdryt': 'assets/capas/amenaza_sequia_mdryt.geojson',
   // cuencas_n8 y cuencas_n9: ahora servidas como vector tiles (assets/tiles/cuencas_n*.pmtiles)
   // sea: ahora servido como vector tiles (assets/tiles/sea.pmtiles)
 };
@@ -1195,6 +1194,53 @@ function createGeoJSONLayer(id, layerDef){
     return L.geoJSON(data,{
       interactive:false,
       style:{color:'#000000',weight:1.4,fillOpacity:0,opacity:0.9,interactive:false}
+    });
+  }
+  if(id==='amenaza_sequia' || id==='amenaza_sequia_mdryt'){
+    const colorByAmenaza = value => {
+      const v = String(value || '').trim();
+      if(v === 'Muy Alto' || v === '4 de cada 5 anos con Sequia') return '#a87000';
+      if(v === 'Alto' || v === '1 de cada 2 anos con Sequia') return '#e69800';
+      if(v === 'Medio' || v === '1 de cada 4 anos con Sequia') return '#ffd37f';
+      if(v === 'Bajo' || v === '1 de cada 5 anos con Sequia') return '#ffebbe';
+      if(v === 'Muy Bajo') return '#ffffff';
+      return layerDef.color || '#e69800';
+    };
+    const outline = '#6e6e6e';
+    return L.geoJSON(data,{
+      style:f=>{
+        const p=f.properties||{};
+        const key = id==='amenaza_sequia' ? p.GRADO_AMEN : p.descripcio;
+        return {
+          color:outline,
+          weight:0.45,
+          opacity:1,
+          fillColor:colorByAmenaza(key),
+          fillOpacity:1
+        };
+      },
+      onEachFeature:(f,l)=>{
+        const p=f.properties||{};
+        if(id==='amenaza_sequia'){
+          const grado=p.GRADO_AMEN || '-';
+          const idx=p.INDICE_AME!=null ? Number(p.INDICE_AME).toFixed(3) : '-';
+          l.bindPopup(`<div class="feature-popup"><h5>Amenaza de Sequia</h5><table>
+            <tr><td>Municipio</td><td><b>${p.MUNICIPIO||'-'}</b></td></tr>
+            <tr><td>Provincia</td><td>${p.PROVINCIA||'-'}</td></tr>
+            <tr><td>Departamento</td><td>${p.DEPARTAMEN||'-'}</td></tr>
+            <tr><td>Grado</td><td><b>${grado}</b></td></tr>
+            <tr><td>Indice amenaza</td><td>${idx}</td></tr>
+            <tr><td>Codigo</td><td>${p.CODIGO||'-'}</td></tr>
+          </table></div>`,{maxWidth:280});
+        } else {
+          l.bindPopup(`<div class="feature-popup"><h5>Amenaza sequia MDRyT</h5><table>
+            <tr><td>Descripcion</td><td><b>${p.descripcio||'-'}</b></td></tr>
+            <tr><td>Grado</td><td>${p.grado||'-'}</td></tr>
+            <tr><td>Codigo</td><td>${p.CODIGO!=null?p.CODIGO:'-'}</td></tr>
+            <tr><td>Area</td><td>${p.AREA!=null?Number(p.AREA).toLocaleString('es-BO'):'-'}</td></tr>
+          </table></div>`,{maxWidth:280});
+        }
+      }
     });
   }
   if(id==='sea'){
@@ -1527,6 +1573,25 @@ function createPMTilesLayer(layerDef){
         width: 0.5
       })
     }];
+  } else if(id === 'amenaza_sequia'){
+    const colorByAmenaza = value => {
+      const v = String(value || '').trim();
+      if(v === 'Muy Alto') return '#a87000';
+      if(v === 'Alto') return '#e69800';
+      if(v === 'Medio') return '#ffd37f';
+      if(v === 'Bajo') return '#ffebbe';
+      if(v === 'Muy Bajo') return '#ffffff';
+      return layerDef.color || '#e69800';
+    };
+    paintRules = [{
+      dataLayer: layerDef.pmlayer || id,
+      symbolizer: new protomapsL.PolygonSymbolizer({
+        fill: (z,f) => colorByAmenaza(f.props.GRADO_AMEN),
+        opacity: 1,
+        stroke: '#6e6e6e',
+        width: 0.45
+      })
+    }];
   } else if(id === 'cuencas_n8' || id === 'cuencas_n9'){
     const isN8 = id === 'cuencas_n8';
     const lineColor = isN8 ? '#123f73' : '#2f77a8';
@@ -1591,6 +1656,17 @@ function createPMTilesLayer(layerDef){
           <tr><td>Clase</td><td><b>${props.TA_DATE || 'â€”'}</b></td></tr>
           ${props.NOMBRE ? `<tr><td>Nombre</td><td>${props.NOMBRE}</td></tr>` : ''}
           ${props.SEA ? `<tr><td>SEA</td><td>${props.SEA}</td></tr>` : ''}
+        </table></div>`;
+      } else if (id === 'amenaza_sequia') {
+        const grado = props.GRADO_AMEN || '-';
+        const idx = props.INDICE_AME != null ? Number(props.INDICE_AME).toFixed(3) : '-';
+        html = `<div class="feature-popup"><h5>Amenaza de Sequia</h5><table>
+          <tr><td>Municipio</td><td><b>${props.MUNICIPIO || '-'}</b></td></tr>
+          <tr><td>Provincia</td><td>${props.PROVINCIA || '-'}</td></tr>
+          <tr><td>Departamento</td><td>${props.DEPARTAMEN || '-'}</td></tr>
+          <tr><td>Grado</td><td><b>${grado}</b></td></tr>
+          <tr><td>Indice amenaza</td><td>${idx}</td></tr>
+          <tr><td>Codigo</td><td>${props.CODIGO || '-'}</td></tr>
         </table></div>`;
       } else {
         // Genérico: muestra todas las propiedades
@@ -1686,6 +1762,16 @@ function applyLayerOpacity(layerId, leafletLayer, pct){
     return;
   }
   if(!leafletLayer.setStyle) return;
+  if((layerId==='amenaza_sequia' || layerId==='amenaza_sequia_mdryt') && leafletLayer.eachLayer){
+    leafletLayer.eachLayer(fl=>{
+      if(!fl.feature || !fl.setStyle) return;
+      fl.setStyle({
+        opacity: o,
+        fillOpacity: o
+      });
+    });
+    return;
+  }
   // Caso especial: ffr — color/grosor per-feature (CSI_FF2, RIV_ORD, CSI)
   if(layerId==='ffr' && leafletLayer.eachLayer){
     const widths = {2:4.5, 3:3.5, 4:2.5, 5:1.8, 6:1.2, 7:0.8, 8:0.5, 9:0.3, 10:0.25};
