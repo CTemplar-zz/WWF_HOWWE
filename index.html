@@ -293,6 +293,17 @@
   }
   .layer .slider-btn:hover { background: var(--accent-soft); color: var(--accent); }
   .layer .slider-btn.active { background: var(--accent-soft); color: var(--accent); }
+  .layer .zoom-layer-btn,
+  .layer .download-layer-btn {
+    flex-shrink: 0; width: 22px; height: 22px;
+    display: grid; place-items: center;
+    border-radius: 4px; border: 0;
+    background: transparent; color: var(--text-soft);
+    text-decoration: none;
+    cursor: pointer; transition: background .12s, color .12s;
+  }
+  .layer .zoom-layer-btn:hover,
+  .layer .download-layer-btn:hover { background: var(--accent-soft); color: var(--accent); }
   .layer-slider { display: none; padding: 0 10px 10px 30px; gap: 8px; align-items: center; }
   .layer.slider-open .layer-slider { display: flex; }
   .layer-slider input[type=range] {
@@ -317,6 +328,21 @@
   .layer .swatch { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; border: 1px solid rgba(0,0,0,.15); }
   .layer .name { flex: 1; font-size: 13px; }
   .layer .opacity { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-dim); }
+  .layer-group-h {
+    display: flex; align-items: center; gap: 6px;
+    width: 100%; padding: 10px 4px 4px; margin-top: 6px;
+    border: 0; border-top: 1px solid var(--border);
+    background: transparent; color: var(--text-dim);
+    font-family: inherit; font-size: 10px; font-weight: 700;
+    letter-spacing: 1.2px; text-transform: uppercase;
+    cursor: pointer; user-select: none; text-align: left;
+  }
+  .layer-group-h:first-child { border-top: 0; margin-top: 0; padding-top: 2px; }
+  .layer-group-h:hover { color: var(--accent); }
+  .layer-group-h .group-caret { width: 12px; height: 12px; flex-shrink: 0; transition: transform .16s; }
+  .layer-group-h.collapsed .group-caret { transform: rotate(-90deg); }
+  .layer-group-h .group-title { flex: 1; min-width: 0; }
+  .layer-group-h .group-count { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; letter-spacing: 0; }
   .layer .chk {
     width: 16px; height: 16px; border-radius: 4px;
     border: 1.5px solid var(--border-strong);
@@ -652,6 +678,56 @@
   </footer>
 </div>
 <script>
+const R2_PMTILES_BASE = 'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES';
+const OVERLAP_BOUNDS = {
+  Allobates: [-68.578549, -17.46137, -60.248859, -12.613819],
+  Atelopus: [-69.067908, -17.714647, -64.658376, -13.599639],
+  Heleobia: [-69.40919, -22.818134, -67.763985, -15.539062],
+  Hyloscirtus: [-69.040806, -17.221553, -65.818053, -15.117923],
+  Knodus: [-68.104809, -17.041667, -65.170191, -15.841667],
+  Moema: [-66.670833, -16.858333, -63.416269, -14.570833],
+  Nymphargus: [-69.10112, -20.933035, -63.400567, -14.343421],
+  Orestias: [-69.40919, -21.970833, -66.861069, -14.857551],
+  Potamotrygon: [-68.933333, -20.165863, -57.454434, -12.416667],
+  Rhinella: [-66.958516, -18.057693, -63.863191, -16.328255],
+  Telmatobius: [-69.645246, -22.721197, -63.667491, -14.449523],
+  Trichomycterus: [-67.358951, -21.2125, -65.77048, -19.361883]
+};
+const SPECIES_DISTRIBUTION_TILES = [
+  {id:'dist_acanthochelys_pallidipectoris', name:'Acanthochelys pallidipectoris', file:'Acanthochelys_pallidipectoris.pmtiles', bounds:[-62.999999999900005,-22.252360224987243,-62.51543801556958,-21.645833332841974]},
+  {id:'dist_ameerega_boehmei', name:'Ameerega boehmei', file:'Ameerega_boehmei.pmtiles', bounds:[-60.22266789340851,-18.5706656936668,-59.04008227707538,-17.92957741436615]},
+  {id:'dist_ancistrus_bolivianus', name:'Ancistrus bolivianus', file:'Ancistrus_bolivianus.pmtiles', bounds:[-67.67499999955035,-16.042284308973684,-66.73333333356643,-15.029166667407667]},
+  {id:'dist_aphyocharax_gracilis', name:'Aphyocharax gracilis', file:'Aphyocharax_gracilis.pmtiles', bounds:[-63.779166667107944,-22.252360224987168,-62.614447342994616,-20.52916666720789]},
+  {id:'dist_austrolebias_vandenbergi', name:'Austrolebias vandenbergi', file:'Austrolebias_vandenbergi.pmtiles', bounds:[-63.63785332607013,-22.2523602249872,-60.887120735253866,-18.887499999924984]},
+  {id:'dist_brachyplatystoma_rousseauxii', name:'Brachyplatystoma rousseauxii', file:'Brachyplatystoma_rousseauxii.pmtiles', bounds:[-69.57474763891985,-20.479166667307787,-59.71285591761861,-9.669633002177584]},
+  {id:'dist_bujurquina_oenolaemus', name:'Bujurquina oenolaemus', file:'Bujurquina_oenolaemus.pmtiles', bounds:[-60.145833333241704,-19.029166668406962,-58.9999999989008,-18.095833332742085]},
+  {id:'dist_dendropsophus_rozenmani', name:'Dendropsophus rozenmani', file:'Dendropsophus_rozenmani.pmtiles', bounds:[-66.84552351599741,-15.10969364964213,-60.79602916291551,-11.981037653664705]},
+  {id:'dist_hemigrammus_changae', name:'Hemigrammus changae', file:'Hemigrammus_changae.pmtiles', bounds:[-69.06790794177304,-17.420833332292464,-63.7416666662836,-11.766673479669409]},
+  {id:'dist_jenynsia_alternimaculata', name:'Jenynsia alternimaculata', file:'Jenynsia_alternimaculata.pmtiles', bounds:[-64.65833333321672,-22.87423176523221,-64.07499999865094,-21.97452918337509]},
+  {id:'dist_microkayla_huayna', name:'Microkayla huayna', file:'Microkayla_huayna.pmtiles', bounds:[-68.1855890102246,-16.229036523216912,-68.10631003877721,-16.091574481177297]},
+  {id:'dist_nannophryne_apolobambica', name:'Nannophryne apolobambica', file:'Nannophryne_apolobambica.pmtiles', bounds:[-69.03086664957618,-14.844282745252412,-68.90143839616505,-14.7558982028397]},
+  {id:'dist_oligosarcus_schindleri', name:'Oligosarcus schindleri', file:'Oligosarcus_schindleri.pmtiles', bounds:[-65.92535332599516,-17.71249999957526,-65.25416666685813,-16.687499999825096]},
+  {id:'dist_papiliolebias_bitteri', name:'Papiliolebias bitteri', file:'Papiliolebias_bitteri.pmtiles', bounds:[-63.63785332607013,-22.25236022498724,-62.26066515925377,-20.77916666670822]},
+  {id:'dist_paratrygon_aiereba', name:'Paratrygon aiereba', file:'Paratrygon_aiereba.pmtiles', bounds:[-68.82499999995004,-14.558333334415822,-60.69943271214994,-9.669633002177616]},
+  {id:'dist_parodon_carrikeri', name:'Parodon carrikeri', file:'Parodon_carrikeri.pmtiles', bounds:[-64.65833333321672,-22.47535332559544,-63.3833333339662,-20.745833332841958]},
+  {id:'dist_phreatobius_sanguijuela', name:'Phreatobius sanguijuela', file:'Phreatobius_sanguijuela.pmtiles', bounds:[-61.466666666333516,-14.429733954658241,-61.195833332941895,-14.258333333216699]},
+  {id:'dist_piabina_thomasi', name:'Piabina thomasi', file:'Piabina_thomasi.pmtiles', bounds:[-64.52510332712376,-22.8742317652322,-64.3119327121249,-22.379166667107974]},
+  {id:'dist_pleurodema_marmoratum', name:'Pleurodema marmoratum', file:'Pleurodema_marmoratum.pmtiles', bounds:[-69.64524603576481,-22.276055361965316,-64.45308214002871,-14.57885271623754]},
+  {id:'dist_rhamphopoma_magnum', name:'Rhamphopoma magnum', file:'Rhamphopoma_magnum.pmtiles', bounds:[-69.40918998198394,-16.597790681394784,-68.56765489106033,-15.53687818060846]},
+  {id:'dist_spectrolebias_pilleti', name:'Spectrolebias pilleti', file:'Spectrolebias_pilleti.pmtiles', bounds:[-61.516666666233654,-17.887500000124902,-61.08333333316678,-17.37500000024973]},
+  {id:'dist_titanolebias_monstrosus', name:'Titanolebias monstrosus', file:'Titanolebias_monstrosus.pmtiles', bounds:[-63.63785332607013,-22.252360224987168,-60.38749999972517,-17.611882527956233]},
+  {id:'dist_trigonectes_aplocheiloides', name:'Trigonectes aplocheiloides', file:'Trigonectes_aplocheiloides.pmtiles', bounds:[-63.63785332607013,-22.252360224987207,-62.26066515925377,-20.61666666613374]}
+].map(layer => ({
+  ...layer,
+  group:'Sobreposición por género',
+  color:'#064e8a',
+  opacity:85,
+  on:false,
+  pmtiles:`${R2_PMTILES_BASE}/${layer.file}`,
+  pmlayer:'distribucion',
+  maxDataZoom:12,
+  speciesDistributionTiles:true
+}));
 const MODULES = {
   '1': { title:'Marco espacial base', sub:'Polígonos oficiales SERNAP · límite nacional', color:'#6e8a55',
     icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2 4 7v10l8 5 8-5V7z"/><path d="m4 7 8 5 8-5M12 12v10"/></svg>',
@@ -659,10 +735,6 @@ const MODULES = {
       {id:'departamentos',name:'Departamentos de Bolivia', color:'#000000',opacity:100,on:true},
       {id:'apn',   name:'Áreas Protegidas (33 polígonos)',  color:'#2c8a4d',opacity:100,on:true},
       {id:'limite',name:'Límite Bolivia',                    color:'#6a6a6a',opacity:80,on:true},
-      {id:'zon',   name:'Zonificación interna',              color:'#7fa860',opacity:50,on:false},
-      {id:'amort', name:'Zonas de amortiguamiento',          color:'#c5d39a',opacity:40,on:false},
-      {id:'tioc',  name:'TIOCs y territorios indígenas',    color:'#b06e3a',opacity:45,on:false},
-      {id:'eco',   name:'Ecorregiones',                      color:'#4a8aa8',opacity:30,on:false},
     ],
     legend:{title:'Categorías SERNAP',ind:'I.6',items:[
       {c:'#1f6b3a',l:'Parque Nacional',v:'9 áreas'},
@@ -710,6 +782,19 @@ const MODULES = {
       {id:'riq_pimelodella', name:'Riqueza Pimelodella', group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
       {id:'riq_pimelodus',   name:'Riqueza Pimelodus',   group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
       {id:'riq_rhamdia',     name:'Riqueza Rhamdia',     group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
+      {id:'sp_allobates',     name:'Allobates - sobreposición',     group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Allobates_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Allobates'},
+      {id:'sp_atelopus',      name:'Atelopus - sobreposición',      group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Atelopus_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Atelopus'},
+      {id:'sp_heleobia',      name:'Heleobia - sobreposición',      group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Heleobia_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Heleobia'},
+      {id:'sp_hyloscirtus',   name:'Hyloscirtus - sobreposición',   group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Hyloscirtus_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Hyloscirtus'},
+      {id:'sp_knodus',        name:'Knodus - sobreposición',        group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Knodus_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Knodus'},
+      {id:'sp_moema',         name:'Moema - sobreposición',         group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Moema_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Moema'},
+      {id:'sp_nymphargus',    name:'Nymphargus - sobreposición',    group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Nymphargus_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Nymphargus'},
+      {id:'sp_orestias',      name:'Orestias - sobreposición',      group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Orestias_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Orestias'},
+      {id:'sp_potamotrygon',  name:'Potamotrygon - sobreposición',  group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Potamotrygon_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Potamotrygon'},
+      {id:'sp_rhinella',      name:'Rhinella - sobreposición',      group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Rhinella_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Rhinella'},
+      {id:'sp_telmatobius',   name:'Telmatobius - sobreposición',   group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Telmatobius_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Telmatobius'},
+      {id:'sp_trichomycterus',name:'Trichomycterus - sobreposición',group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Trichomycterus_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Trichomycterus'},
+      ...SPECIES_DISTRIBUTION_TILES,
     ],
     legend:{title:'Estado de conservación IUCN',ind:'I.7',items:[
       {c:'#7a1a1a',l:'En peligro crítico (CR)',v:'1 spp.'},
@@ -724,18 +809,12 @@ const MODULES = {
     layers:[
       {id:'departamentos',name:'Departamentos de Bolivia',color:'#000000',opacity:100,on:true},
       {id:'apn',      name:'Áreas Protegidas',             color:'#2c8a4d',opacity:100,on:true},
-      {id:'fires',    name:'Incendios históricos (FIRMS)', color:'#d6452c',opacity:70,on:true},
-      {id:'defor',    name:'Deforestación anual (GFW)',    color:'#a8341f',opacity:65,on:true},
-      {id:'mining-l', name:'Concesiones mineras legales',  color:'#8a6a3a',opacity:60,on:false},
-      {id:'mining-il',name:'Minería ilegal',               color:'#5a3a1a',opacity:75,on:false},
-      {id:'aop',      name:'AOPs cat. 1 y 2',             color:'#3a3a3a',opacity:80,on:false},
-      {id:'agro',     name:'Expansión agrícola/pecuaria',  color:'#e8a417',opacity:50,on:false},
+
     ],
-    legend:{title:'Amenazas activas',ind:'I.10',items:[
-      {c:'#d6452c',l:'Foco de incendio activo',v:'2,341'},
-      {c:'#a8341f',l:'Pérdida de bosque ≤1 año',v:'285k ha'},
-      {c:'#8a6a3a',l:'Concesión minera',v:'127 polígonos'},
-      {c:'#3a3a3a',l:'Infraestructura AOP',v:'43 obras'},
+    legend:{title:'Marco espacial',ind:'M3',items:[
+      {c:'#000000',l:'Departamentos de Bolivia',v:''},
+      {c:'#2c8a4d',l:'Areas Protegidas',v:''},
+
     ]}
   },
   '4': { title:'Ecosistemas y agua', sub:'Humedales, cuencas, glaciares, conectividad', color:'#2374b5',
@@ -749,8 +828,6 @@ const MODULES = {
       {id:'cuencas',name:'Cuencas (balance hídrico)',     color:'#005ce6',opacity:80,on:false},
       {id:'cuencas_n8',name:'Sub-cuencas HydroBASINS nivel 8',color:'#1e5694',opacity:85,on:false, pmtiles:'assets/tiles/cuencas_n8.pmtiles', pmlayer:'cuencas_n8', maxDataZoom:12},
       {id:'cuencas_n9',name:'Sub-cuencas HydroBASINS nivel 9',color:'#5b8db8',opacity:85,on:false, pmtiles:'assets/tiles/cuencas_n9.pmtiles', pmlayer:'cuencas_n9', maxDataZoom:12},
-      {id:'glac',   name:'Glaciares y recarga',           color:'#c5e3f0',opacity:80,on:false},
-      {id:'forest', name:'Cobertura boscosa',             color:'#2c8a4d',opacity:45,on:false},
       {id:'ffr',    name:'Ríos FFR (estado conectividad)', color:'#1f6dc7',opacity:90,on:false},
     ],
     legend:{title:'Humedales · meses inundados',ind:'I.5',items:[
@@ -785,20 +862,22 @@ const MODULES = {
     layers:[
       {id:'departamentos',name:'Departamentos de Bolivia',color:'#000000',opacity:100,on:true},
       {id:'apn',  name:'Áreas Protegidas',            color:'#2c8a4d',opacity:100,on:true},
-      {id:'com',  name:'Comunidades dentro AP',       color:'#4a8aa8',opacity:70,on:true},
-      {id:'sac',  name:'Sitios sagrados',             color:'#7c5fb5',opacity:80,on:false},
-      {id:'inf',  name:'Infraestructura comunitaria', color:'#6a6a6a',opacity:65,on:false},
-      {id:'tur',  name:'Rutas de acceso y turismo',   color:'#e8a417',opacity:75,on:true},
-      {id:'tradi',name:'Uso tradicional de recursos', color:'#b06e3a',opacity:55,on:false},
+
     ],
-    legend:{title:'Bienestar I.1–I.4',ind:'I.1—I.4',items:[
-      {c:'#4a8aa8',l:'Comunidad indígena',v:'187'},
-      {c:'#7fa860',l:'Comunidad campesina',v:'243'},
-      {c:'#e8a417',l:'Ruta de turismo activa',v:'24 rutas'},
-      {c:'#7c5fb5',l:'Sitio sagrado',v:'61 sitios'},
+    legend:{title:'Marco espacial',ind:'M6',items:[
+      {c:'#000000',l:'Departamentos de Bolivia',v:''},
+      {c:'#2c8a4d',l:'Areas Protegidas',v:''},
+
     ]}
   }
 };
+const DEFAULT_LAYER_TRANSPARENCY = 15;
+Object.values(MODULES).forEach(mod => {
+  mod.layers.forEach(layer => {
+    layer.transparency = DEFAULT_LAYER_TRANSPARENCY;
+    layer.opacity = 100 - layer.transparency;
+  });
+});
 let APN = [
   {code:'AP-0101',name:'Sajama',                      cat:'Parque Nacional',                              center:[-18.1,-68.9]},
   {code:'AP-0201',name:'Tunari',                       cat:'Parque Nacional',                              center:[-17.1,-66.3]},
@@ -1150,12 +1229,12 @@ function patternUrl(color){
   return `url(#ap-pat-${(color||'#2c8a4d').replace('#','')})`;
 }
 
-// Gradiente azul: blanco-azul claro → azul oscuro
+// Gradiente azul: blanco-azul claro ? azul oscuro
 function blueGradient(t){
   t=Math.max(0,Math.min(1,t));
-  const r=Math.round(232-t*219); // 232 → 13
-  const g=Math.round(244-t*175); // 244 → 69
-  const b=Math.round(255-t*136); // 255 → 119
+  const r=Math.round(232-t*219); // 232 ? 13
+  const g=Math.round(244-t*175); // 244 ? 69
+  const b=Math.round(255-t*136); // 255 ? 119
   return `rgb(${r},${g},${b})`;
 }
 
@@ -1532,7 +1611,7 @@ function createPMTilesLayer(layerDef){
       dataLayer: layerDef.pmlayer || id,
       symbolizer: new protomapsL.PolygonSymbolizer({
         fill: (z,f) => colorByMeses(f.props.Meses),
-        opacity: 0.85,
+        opacity: 1,
         stroke: '#1a4a7a',
         width: 0.3
       })
@@ -1541,21 +1620,21 @@ function createPMTilesLayer(layerDef){
     const seaColors = {
       'Altiplano BN6':'#49AE6F','Beni subandino BN4':'#3FF362','Llanura aluvial BN2':'#BBF6D8',
       'Llanura aluvial IT5':'#B7505A','Llanura aluvial MD3':'#A87000','Llanura aluvial MM2':'#3A45C9',
-      'Llanura aluvial pluvial MM3':'#C2CDF8','Meseta IT3':'#EDC1B9','MontaÃ±as BN5':'#68F8AF',
-      'Piedemonte BN3':'#82A891','Piedemonte MM4':'#6B85DF','Planicies de inundaciÃ³n Itenez IT1':'#FA5638',
+      'Llanura aluvial pluvial MM3':'#C2CDF8','Meseta IT3':'#EDC1B9','Montañas BN5':'#68F8AF',
+      'Piedemonte BN3':'#82A891','Piedemonte MM4':'#6B85DF','Planicies de inundación Itenez IT1':'#FA5638',
       'Plenillanura alta IT6':'#ED3E5E','Plenillanura baja IT4':'#F3927D','Precambrico MD2':'#EC7132',
-      'Serrania Chiquitana IT8':'#D98999','Zona de inundaciÃ³n BN1':'#2DC35A','Zona de inundaciÃ³n MD1':'#F5B449',
-      'Zona de inundaciÃ³n MM1':'#3632F4','Altiplano AP1':'#CCCCCC','Altiplano PC5':'#8300A7',
+      'Serrania Chiquitana IT8':'#D98999','Zona de inundación BN1':'#2DC35A','Zona de inundación MD1':'#F5B449',
+      'Zona de inundación MM1':'#3632F4','Altiplano AP1':'#CCCCCC','Altiplano PC5':'#8300A7',
       'Altiplano norte TP2':'#006FFF','Chaco PR3':'#FFAA00','Chaco Xerico PC2':'#DE73FF',
       'Cordillera occidental AP2':'#9C9C9C','Cordillera occidental TP4':'#002573',
       'Cordillera oriental AP3':'#7671E4','Cordillera oriental MM6':'#00848B',
       'Cordillera oriental PC4':'#A900E6','Cordillera oriental TP3':'#004CA7',
       'Escudo precambrico alto PR5':'#A76F00','Escudo precambrico bajo PR2':'#FFD37E',
       'Itenez xerica IT7':'#DE6F6F','Lago Poopo TP5':'#73DFFF','Lago Titicaca TP1':'#73DFFF',
-      'Mamore altiplano MM7':'#0D7286','MontaÃ±as BM1':'#A73700','MontaÃ±as altas BM2':'#732500',
-      'ParapetÃ­ montaÃ±as IT9':'#D90000','Planicie de inundaciÃ³n Izozog IT2':'#FFCCCC',
-      'Planicie de inundaciÃ³n PC1':'#E9C3FF','Serranias PR4':'#E69700','Subandino MM5':'#00B0B0',
-      'Subandino PC3':'#C400FF','Zona de inundaciÃ³n PR1':'#FFEBAF'
+      'Mamore altiplano MM7':'#0D7286','Montañas BM1':'#A73700','Montañas altas BM2':'#732500',
+      'Parapetí montañas IT9':'#D90000','Planicie de inundación Izozog IT2':'#FFCCCC',
+      'Planicie de inundación PC1':'#E9C3FF','Serranias PR4':'#E69700','Subandino MM5':'#00B0B0',
+      'Subandino PC3':'#C400FF','Zona de inundación PR1':'#FFEBAF'
     };
     const fallbackPalette = ['#49AE6F','#BBF6D8','#B7505A','#A87000','#3A45C9','#C2CDF8','#EDC1B9','#68F8AF','#82A891','#6B85DF','#FA5638','#ED3E5E','#F3927D','#EC7132','#D98999','#2DC35A','#F5B449','#3632F4','#CCCCCC','#8300A7','#006FFF','#FFAA00','#DE73FF','#9C9C9C','#002573','#7671E4','#00848B','#A900E6','#004CA7','#A76F00','#FFD37E','#DE6F6F','#73DFFF','#0D7286','#A73700','#732500','#D90000','#FFCCCC','#E9C3FF','#E69700','#00B0B0','#C400FF','#FFEBAF'];
     const seaColor = cat => {
@@ -1568,7 +1647,7 @@ function createPMTilesLayer(layerDef){
       dataLayer: layerDef.pmlayer || id,
       symbolizer: new protomapsL.PolygonSymbolizer({
         fill: (z,f) => seaColor(f.props.TA_DATE),
-        opacity: 0.72,
+        opacity: 1,
         stroke: '#555',
         width: 0.5
       })
@@ -1592,6 +1671,31 @@ function createPMTilesLayer(layerDef){
         width: 0.45
       })
     }];
+  } else if(layerDef.overlapTiles){
+    const overlapColor = count => {
+      const v = +count || 0;
+      return v <= 1 ? '#7dd3fc' : v <= 2 ? '#38bdf8' : v <= 4 ? '#0284c7'
+           : v <= 9 ? '#075985' : '#021526';
+    };
+    paintRules = [{
+      dataLayer: layerDef.pmlayer || id,
+      symbolizer: new protomapsL.PolygonSymbolizer({
+        fill: (z,f) => overlapColor(f.props.sp_count),
+        opacity: 1,
+        stroke: '#001b33',
+        width: 0.55
+      })
+    }];
+  } else if(layerDef.speciesDistributionTiles){
+    paintRules = [{
+      dataLayer: layerDef.pmlayer || id,
+      symbolizer: new protomapsL.PolygonSymbolizer({
+        fill: layerDef.color || '#064e8a',
+        opacity: 1,
+        stroke: '#001b33',
+        width: 0.55
+      })
+    }];
   } else if(id === 'cuencas_n8' || id === 'cuencas_n9'){
     const isN8 = id === 'cuencas_n8';
     const lineColor = isN8 ? '#123f73' : '#2f77a8';
@@ -1599,7 +1703,7 @@ function createPMTilesLayer(layerDef){
       dataLayer: layerDef.pmlayer || id,
       symbolizer: new protomapsL.PolygonSymbolizer({
         fill: lineColor,
-        opacity: isN8 ? 0.32 : 0.24,
+        opacity: 1,
         stroke: lineColor,
         width: isN8 ? 1.35 : 0.9
       })
@@ -1609,7 +1713,7 @@ function createPMTilesLayer(layerDef){
     paintRules = [{
       dataLayer: layerDef.pmlayer || id,
       symbolizer: new protomapsL.PolygonSymbolizer({
-        fill: layerDef.color || '#2374b5', opacity: 0.55,
+        fill: layerDef.color || '#2374b5', opacity: 1,
         stroke: layerDef.color || '#1a4a7a', width: 0.5
       })
     }];
@@ -1652,8 +1756,8 @@ function createPMTilesLayer(layerDef){
           <tr><td>Días inundados</td><td>${props.IAF != null ? props.IAF : '—'}</td></tr>
         </table></div>`;
       } else if (id === 'sea') {
-        html = `<div class="feature-popup"><h5>Sistema EcolÃ³gico AcuÃ¡tico</h5><table>
-          <tr><td>Clase</td><td><b>${props.TA_DATE || 'â€”'}</b></td></tr>
+        html = `<div class="feature-popup"><h5>Sistema Ecológico Acuático</h5><table>
+          <tr><td>Clase</td><td><b>${props.TA_DATE || '—'}</b></td></tr>
           ${props.NOMBRE ? `<tr><td>Nombre</td><td>${props.NOMBRE}</td></tr>` : ''}
           ${props.SEA ? `<tr><td>SEA</td><td>${props.SEA}</td></tr>` : ''}
         </table></div>`;
@@ -1667,6 +1771,20 @@ function createPMTilesLayer(layerDef){
           <tr><td>Grado</td><td><b>${grado}</b></td></tr>
           <tr><td>Indice amenaza</td><td>${idx}</td></tr>
           <tr><td>Codigo</td><td>${props.CODIGO || '-'}</td></tr>
+        </table></div>`;
+      } else if (layerDef.overlapTiles) {
+        const count = props.sp_count != null ? props.sp_count : '-';
+        const species = props.species || '-';
+        html = `<div class="feature-popup"><h5>${layerDef.genus || layerDef.name}</h5><table>
+          <tr><td>Sobreposicion</td><td><b>${count} especie(s)</b></td></tr>
+          <tr><td>Especies</td><td>${species}</td></tr>
+        </table></div>`;
+      } else if (layerDef.speciesDistributionTiles) {
+        html = `<div class="feature-popup"><h5><i>${props.sci_name || layerDef.name}</i></h5><table>
+          <tr><td>Estado IUCN</td><td><b>${props.red_cat || '-'}</b></td></tr>
+          <tr><td>Clase</td><td>${props.class_nm || '-'}</td></tr>
+          <tr><td>Orden</td><td>${props.order_nm || '-'}</td></tr>
+          <tr><td>Familia</td><td>${props.family_nm || '-'}</td></tr>
         </table></div>`;
       } else {
         // Genérico: muestra todas las propiedades
@@ -1756,7 +1874,7 @@ function applyLayerOpacity(layerId, leafletLayer, pct){
   if(!leafletLayer) return;
   const o = Math.max(0, Math.min(1, pct/100));
   // Caso especial: PMTiles (vector tiles via protomaps-leaflet)
-  // Estos no tienen setStyle ni eachLayer — usan setOpacity heredado de GridLayer
+  // Estos no tienen setStyle ni eachLayer ? usan setOpacity heredado de GridLayer
   if(!leafletLayer.setStyle && !leafletLayer.eachLayer && leafletLayer.setOpacity){
     leafletLayer.setOpacity(o);
     return;
@@ -1772,7 +1890,7 @@ function applyLayerOpacity(layerId, leafletLayer, pct){
     });
     return;
   }
-  // Caso especial: ffr — color/grosor per-feature (CSI_FF2, RIV_ORD, CSI)
+  // Caso especial: ffr ? color/grosor per-feature (CSI_FF2, RIV_ORD, CSI)
   if(layerId==='ffr' && leafletLayer.eachLayer){
     const widths = {2:4.5, 3:3.5, 4:2.5, 5:1.8, 6:1.2, 7:0.8, 8:0.5, 9:0.3, 10:0.25};
     const ffrColor = (csi_ff2, csi) => {
@@ -1786,7 +1904,7 @@ function applyLayerOpacity(layerId, leafletLayer, pct){
       fl.setStyle({
         color: ffrColor(p.CSI_FF2, p.CSI),
         weight: widths[+p.RIV_ORD] || 0.4,
-        opacity: o*0.9,
+        opacity: o,
         fillOpacity: 0
       });
     });
@@ -1804,7 +1922,7 @@ function applyLayerOpacity(layerId, leafletLayer, pct){
       fl.setStyle({
         color:'#1a4a7a', weight:0.3,
         fillColor: colorByMeses(fl.feature.properties.Meses),
-        opacity: o*0.55, fillOpacity: o*0.85
+        opacity: o, fillOpacity: o
       });
     });
     return;
@@ -1826,10 +1944,8 @@ function applyLayerOpacity(layerId, leafletLayer, pct){
     return;
   }
   const outlineOnly = (layerId==='limite' || layerId==='apn_lim' || layerId==='departamentos');
-  // Capas de riqueza usan fill 100% (no transparencia por defecto). Especies normales 55%.
-  const fillRatio = layerId.startsWith('riq_') ? 1.0 : 0.55;
   try{
-    leafletLayer.setStyle({opacity: o, fillOpacity: outlineOnly ? 0 : o*fillRatio});
+    leafletLayer.setStyle({opacity: o, fillOpacity: outlineOnly ? 0 : o});
   }catch(e){}
 }
 
@@ -1852,26 +1968,169 @@ function reapplyLayerOrder(modId, mod){
   }
 }
 
+let layerHighlight=null;
+let layerHighlightTimer=null;
+const pmtilesBoundsCache=new Map();
+
+function clearLayerHighlight(){
+  if(layerHighlightTimer){
+    clearTimeout(layerHighlightTimer);
+    layerHighlightTimer=null;
+  }
+  if(layerHighlight && map.hasLayer(layerHighlight)) map.removeLayer(layerHighlight);
+  layerHighlight=null;
+}
+
+function boundsFromLayer(layer){
+  if(!layer) return null;
+  if(layer.getBounds){
+    try{
+      const b=layer.getBounds();
+      if(b && b.isValid && b.isValid()) return b;
+    }catch(_){}
+  }
+  let bounds=null;
+  if(layer.eachLayer){
+    layer.eachLayer(child=>{
+      const b=boundsFromLayer(child);
+      if(b) bounds=bounds ? bounds.extend(b) : L.latLngBounds(b.getSouthWest(), b.getNorthEast());
+    });
+  }
+  return bounds;
+}
+
+function boundsFromLonLatArray(values){
+  if(!values) return null;
+  const nums = Array.isArray(values) ? values.map(Number) : String(values).split(',').map(Number);
+  if(nums.length < 4 || nums.some(v=>!Number.isFinite(v))) return null;
+  const [minLon,minLat,maxLon,maxLat]=nums;
+  const lonSpan=Math.abs(maxLon-minLon), latSpan=Math.abs(maxLat-minLat);
+  if(lonSpan < 1e-9 || latSpan < 1e-9) return null;
+  if(Math.abs(minLon) < 1e-9 && Math.abs(minLat) < 1e-9 && Math.abs(maxLon) < 1e-9 && Math.abs(maxLat) < 1e-9) return null;
+  if(minLon < -180 || maxLon > 180 || minLat < -90 || maxLat > 90) return null;
+  const b=L.latLngBounds([minLat,minLon],[maxLat,maxLon]);
+  return b && b.isValid && b.isValid() ? b : null;
+}
+
+async function boundsFromPMTiles(layerDef){
+  if(!layerDef.pmtiles || typeof pmtiles === 'undefined' || !pmtiles.PMTiles) return null;
+  if(pmtilesBoundsCache.has(layerDef.pmtiles)) return pmtilesBoundsCache.get(layerDef.pmtiles);
+  try{
+    let b=boundsFromLonLatArray(layerDef.bounds || OVERLAP_BOUNDS[layerDef.genus]);
+    if(b){
+      pmtilesBoundsCache.set(layerDef.pmtiles,b);
+      return b;
+    }
+    const archive=new pmtiles.PMTiles(layerDef.pmtiles);
+    const h=await archive.getHeader();
+    b=boundsFromLonLatArray([h.minLon,h.minLat,h.maxLon,h.maxLat]);
+    if(!b){
+      const meta=await archive.getMetadata();
+      b=boundsFromLonLatArray(meta && meta.bounds);
+    }
+    if(b) pmtilesBoundsCache.set(layerDef.pmtiles,b);
+    return b || null;
+  }catch(err){
+    console.warn('No se pudo leer bounds PMTiles:', err);
+    return null;
+  }
+}
+
+function addGeoJSONHighlight(layerId, layerDef, bounds){
+  if(DATA_FILES[layerId] && geoData[layerId]){
+    return L.geoJSON(geoData[layerId],{
+      interactive:false,
+      style:{color:'#ffd400',weight:3,opacity:1,fillOpacity:0}
+    }).addTo(map);
+  }
+  return L.rectangle(bounds,{interactive:false,color:'#ffd400',weight:3,opacity:1,fillOpacity:0,dashArray:'6,4'}).addTo(map);
+}
+
+function addPMTilesHighlight(layerDef, bounds){
+  if(typeof protomapsL === 'undefined'){
+    return L.rectangle(bounds,{interactive:false,color:'#ffd400',weight:3,opacity:1,fillOpacity:0,dashArray:'6,4'}).addTo(map);
+  }
+  const layer=protomapsL.leafletLayer({
+    url: layerDef.pmtiles,
+    interactive:false,
+    maxDataZoom: layerDef.maxDataZoom || 12,
+    paintRules:[{
+      dataLayer: layerDef.pmlayer || layerDef.id,
+      symbolizer: new protomapsL.PolygonSymbolizer({
+        fill:'rgba(255,212,0,0)',
+        opacity:1,
+        stroke:'#ffd400',
+        width:2.5
+      })
+    }]
+  });
+  layer.addTo(map);
+  return layer;
+}
+
+async function zoomAndHighlightLayer(modId, layerDef){
+  const key=modId+':'+layerDef.id;
+  if(!moduleLayers[key]) moduleLayers[key]=buildModuleLayer(layerDef.id, MODULES[modId]);
+  const layer=moduleLayers[key];
+  let bounds=boundsFromLayer(layer);
+  if(!bounds && layerDef.pmtiles) bounds=await boundsFromPMTiles(layerDef);
+  if(!bounds || !bounds.isValid || !bounds.isValid()) return;
+
+  clearLayerHighlight();
+  layerHighlight = layerDef.pmtiles
+    ? addPMTilesHighlight(layerDef, bounds)
+    : addGeoJSONHighlight(layerDef.id, layerDef, bounds);
+  layerHighlightTimer=setTimeout(()=>clearLayerHighlight(), 3500);
+
+  map.fitBounds(bounds.pad(0.18), {maxZoom:12, animate:true});
+}
+
 let _dragSrcIdx=null;
+const collapsedLayerGroups={};
+function layerGroupKey(modId, group){
+  return `${modId}:${group || '__ungrouped__'}`;
+}
 
 function renderLayerList(modId, mod){
   const ll=document.getElementById('layerList');
   ll.innerHTML=''; activeLayers.clear();
   let lastGroup=null;
+  const groupCounts=mod.layers.reduce((acc,layer)=>{
+    const group=layer.group || '';
+    acc[group]=(acc[group] || 0) + 1;
+    return acc;
+  },{});
   mod.layers.forEach((l,idx)=>{
     // Header de grupo si cambia
     if(l.group && l.group!==lastGroup){
-      const h=document.createElement('div');
-      h.style.cssText='font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-dim);padding:10px 4px 4px;border-top:1px solid var(--border);margin-top:6px;';
-      h.textContent=l.group;
-      // El primero no necesita borde superior
-      if(lastGroup===null){h.style.borderTop='0';h.style.marginTop='0';h.style.paddingTop='2px';}
+      const h=document.createElement('button');
+      const groupKey=layerGroupKey(modId,l.group);
+      const collapsed=!!collapsedLayerGroups[groupKey];
+      h.type='button';
+      h.className='layer-group-h'+(collapsed?' collapsed':'');
+      h.dataset.group=l.group;
+      h.innerHTML=`
+        <svg class="group-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+        <span class="group-title">${l.group}</span>
+        <span class="group-count">${groupCounts[l.group]||0}</span>
+      `;
+      h.addEventListener('click',()=>{
+        collapsedLayerGroups[groupKey]=!collapsedLayerGroups[groupKey];
+        renderLayerList(modId,mod);
+      });
       ll.appendChild(h);
       lastGroup=l.group;
     }
+    const isGroupCollapsed = l.group && collapsedLayerGroups[layerGroupKey(modId,l.group)];
+    const key=modId+':'+l.id;
+    if(!moduleLayers[key]) moduleLayers[key]=buildModuleLayer(l.id,mod);
+    if(l.on){activeLayers.add(l.id);}
+    applyLayerOpacity(l.id, moduleLayers[key], l.opacity);
+    if(isGroupCollapsed) return;
     const row=document.createElement('div');
     row.className='layer '+(l.on?'on':'off');
-    row.draggable=true; row.dataset.idx=idx; row.dataset.lid=l.id; row.dataset.group=l.group||'';
+    row.draggable=false; row.dataset.idx=idx; row.dataset.lid=l.id; row.dataset.group=l.group||'';
+    const transparency = l.transparency ?? DEFAULT_LAYER_TRANSPARENCY;
     const badge=l.iucn?` <span style="font-size:9px;padding:1px 5px;border-radius:3px;background:${IUCN_COLORS[l.iucn]||'#888'};color:#fff;font-family:monospace;font-weight:600">${l.iucn}</span>`:'';
     const sub=l.sci?`<span style="display:block;font-size:10px;color:var(--text-dim);font-style:italic;line-height:1.1">${l.sci}</span>`:'';
     const swatchStyle = l.gradient
@@ -1885,20 +2144,26 @@ function renderLayerList(modId, mod){
         <span class="chk"></span>
         <span class="swatch" style="${swatchStyle}"></span>
         <span class="name" style="flex:1;min-width:0">${l.name}${badge}${sub}</span>
-        <span class="opacity mono">${l.opacity}%</span>
+        <span class="opacity mono">${transparency}%</span>
         <button class="slider-btn" title="Ajustar transparencia">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
         </button>
+        <button class="zoom-layer-btn" title="Zoom a la capa">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>
+        </button>
+        <a class="download-layer-btn" href="assets/downloads/${l.id}.zip" download title="Descargar shapefile ZIP">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v11"/><path d="m7 9 5 5 5-5"/><path d="M5 20h14"/></svg>
+        </a>
       </div>
       <div class="layer-slider">
-        <input type="range" min="0" max="100" step="1" value="${l.opacity}">
-        <span class="opacity mono" style="min-width:32px;text-align:right">${l.opacity}%</span>
+        <input type="range" min="0" max="100" step="1" value="${transparency}" aria-label="Transparencia">
+        <span class="opacity mono" style="min-width:32px;text-align:right">${transparency}%</span>
       </div>
     `;
 
     // Toggle on/off al hacer click en el área principal (excluyendo controles)
     row.querySelector('.layer-main').addEventListener('click',e=>{
-      if(e.target.closest('.slider-btn,.grip')) return;
+      if(e.target.closest('.slider-btn,.zoom-layer-btn,.download-layer-btn,.grip')) return;
       toggleLayer(l.id,row);
     });
 
@@ -1909,25 +2174,45 @@ function renderLayerList(modId, mod){
       row.classList.toggle('slider-open');
       sliderBtn.classList.toggle('active', row.classList.contains('slider-open'));
     });
+    const zoomBtn=row.querySelector('.zoom-layer-btn');
+    zoomBtn.addEventListener('click',async e=>{
+      e.stopPropagation();
+      await zoomAndHighlightLayer(modId, l);
+    });
+    const downloadBtn=row.querySelector('.download-layer-btn');
+    downloadBtn.addEventListener('click',e=>e.stopPropagation());
 
     // Input del slider
     const rangeInput=row.querySelector('input[type=range]');
     const opacityLabels=row.querySelectorAll('.opacity');
     rangeInput.addEventListener('input',e=>{
       const v=+e.target.value;
-      l.opacity=v;
+      l.transparency=v;
+      l.opacity=100-v;
       opacityLabels.forEach(s=>s.textContent=v+'%');
       const key=modId+':'+l.id;
-      applyLayerOpacity(l.id, moduleLayers[key], v);
+      applyLayerOpacity(l.id, moduleLayers[key], l.opacity);
     });
-    rangeInput.addEventListener('click',e=>e.stopPropagation());
+    ['click','mousedown','pointerdown','touchstart','dragstart'].forEach(evt=>{
+      rangeInput.addEventListener(evt,e=>e.stopPropagation());
+    });
 
     // No iniciar drag desde el slider/botón
-    row.querySelector('.layer-slider').addEventListener('mousedown',e=>e.stopPropagation());
-    sliderBtn.addEventListener('mousedown',e=>e.stopPropagation());
+    ['mousedown','pointerdown','touchstart'].forEach(evt=>{
+      row.querySelector('.layer-slider').addEventListener(evt,e=>e.stopPropagation());
+      sliderBtn.addEventListener(evt,e=>e.stopPropagation());
+      zoomBtn.addEventListener(evt,e=>e.stopPropagation());
+      downloadBtn.addEventListener(evt,e=>e.stopPropagation());
+    });
+    const grip=row.querySelector('.grip');
+    grip.draggable=true;
 
     // Drag-and-drop
     row.addEventListener('dragstart',e=>{
+      if(!e.target.closest('.grip')){
+        e.preventDefault();
+        return;
+      }
       _dragSrcIdx=idx;
       row.classList.add('dragging');
       e.dataTransfer.effectAllowed='move';
@@ -1971,11 +2256,6 @@ function renderLayerList(modId, mod){
 
     ll.appendChild(row);
 
-    const key=modId+':'+l.id;
-    if(!moduleLayers[key]) moduleLayers[key]=buildModuleLayer(l.id,mod);
-    if(l.on){activeLayers.add(l.id);}
-    // Aplica opacidad guardada al construir
-    applyLayerOpacity(l.id, moduleLayers[key], l.opacity);
   });
   // Añade capas activas en el orden correcto al mapa
   reapplyLayerOrder(modId,mod);
@@ -2009,8 +2289,8 @@ function generateBluePalette(n){
   const out=[];
   for(let i=0;i<n;i++){
     const t = n===1 ? 0.5 : i/(n-1);
-    const lightness = 28 + t*52; // 28% → 80%
-    const saturation = 75 - t*25; // 75 → 50
+    const lightness = 28 + t*52; // 28% ? 80%
+    const saturation = 75 - t*25; // 75 ? 50
     out.push(`hsl(210, ${saturation}%, ${lightness}%)`);
   }
   return out;
@@ -2143,7 +2423,7 @@ function renderM2Stats(){
     });
   }
   const activeSp = MODULES['2'].layers.filter(l=> activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar' && l.id!=='cuencas' && l.id!=='ffr' && l.id!=='lagos' && l.id!=='cuencas_n8' && l.id!=='cuencas_n9' && l.id!=='sea');
-  // Superficie de intersección (ha) — datos reales de ArcGIS, filtrados por APs
+  // Superficie de intersección (ha) ? datos reales de ArcGIS, filtrados por APs
   let supInterHa = 0;
   activeSp.forEach(s=>{ supInterHa += getLayerIntersectedHa(s.id); });
   // # especies con intersección en APs (real, no estimado)
@@ -2211,6 +2491,7 @@ function renderRightPanelKPIs(modId){
 }
 
 function renderModule(modId){
+  clearLayerHighlight();
   Object.values(moduleLayers).forEach(l=>{if(map.hasLayer(l))map.removeLayer(l);});
   currentModule=modId;
   const mod=MODULES[modId];
@@ -2237,13 +2518,14 @@ function toggleLayer(layerId,rowEl){
   const key=currentModule+':'+layerId;
   const layer=moduleLayers[key];
   const isOn=rowEl.classList.contains('on');
+  const mod=MODULES[currentModule];
+  const ld=mod.layers.find(x=>x.id===layerId);
+  if(ld) ld.on=isOn ? false : true;
   rowEl.classList.toggle('on',!isOn); rowEl.classList.toggle('off',isOn);
   if(isOn){if(layer&&map.hasLayer(layer))map.removeLayer(layer);activeLayers.delete(layerId);}
   else{
     if(layer){
       // Aplicar opacidad guardada y re-establecer orden completo
-      const mod=MODULES[currentModule];
-      const ld=mod.layers.find(x=>x.id===layerId);
       activeLayers.add(layerId);
       reapplyLayerOrder(currentModule,mod);
       if(ld) applyLayerOpacity(layerId, layer, ld.opacity);
@@ -2359,7 +2641,7 @@ document.querySelectorAll('.panel-section[data-collapse] .panel-h').forEach(h=>{
 });
 renderAPList();
 renderModule('2');
-// Carga asíncrona de capas reales — re-renderiza al completar
+// Carga asíncrona de capas reales ? re-renderiza al completar
 // Indexar datos de intersección ArcGIS apenas se cargue el script (síncrono)
 buildIntersectionIndex();
 

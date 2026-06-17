@@ -1,0 +1,365 @@
+{
+  "downloads": {
+    "amenaza_sequia": {
+      "url": "assets/downloads/amenaza_sequia.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\amenaza_sequia.geojson",
+      "bytes": 10678821
+    },
+    "amenaza_sequia_mdryt": {
+      "url": "assets/downloads/amenaza_sequia_mdryt.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\amenaza_sequia_mdryt.geojson",
+      "bytes": 189311
+    },
+    "apn": {
+      "url": "assets/downloads/apn.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\AreasProtegidas_Bolivia.geojson",
+      "bytes": 1012979
+    },
+    "borochi": {
+      "url": "assets/downloads/borochi.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Chrysocyon_brachyurus_Borochi.geojson",
+      "bytes": 152879
+    },
+    "brycon": {
+      "url": "assets/downloads/brycon.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Grupos\\Brycon_amazonicus.geojson",
+      "bytes": 307997
+    },
+    "colossoma": {
+      "url": "assets/downloads/colossoma.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Grupos\\Colossoma_macropomum.geojson",
+      "bytes": 360404
+    },
+    "condor": {
+      "url": "assets/downloads/condor.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Vultur_gryphus_Condor.geojson",
+      "bytes": 88911
+    },
+    "cuencas": {
+      "url": "assets/downloads/cuencas.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Cuencas.geojson",
+      "bytes": 772886
+    },
+    "cuencas_n8": {
+      "url": "assets/downloads/cuencas_n8.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Cuencas_nivel_8.geojson",
+      "bytes": 1605293
+    },
+    "cuencas_n9": {
+      "url": "assets/downloads/cuencas_n9.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Cuencas_nivel_9.geojson",
+      "bytes": 2595604
+    },
+    "densidad_inia": {
+      "url": "assets/downloads/densidad_inia.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\densidad_inia.geojson",
+      "bytes": 59198
+    },
+    "departamentos": {
+      "url": "assets/downloads/departamentos.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Departamentos_Bolivia.geojson",
+      "bytes": 307982
+    },
+    "dist_acanthochelys_pallidipectoris": {
+      "url": "assets/downloads/dist_acanthochelys_pallidipectoris.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Acanthochelys_distribucion_clip.shp",
+      "bytes": 8127
+    },
+    "dist_ameerega_boehmei": {
+      "url": "assets/downloads/dist_ameerega_boehmei.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Ameerega_distribucion_clip.shp",
+      "bytes": 39641
+    },
+    "dist_ancistrus_bolivianus": {
+      "url": "assets/downloads/dist_ancistrus_bolivianus.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Ancistrus_distribucion_clip.shp",
+      "bytes": 11059
+    },
+    "dist_aphyocharax_gracilis": {
+      "url": "assets/downloads/dist_aphyocharax_gracilis.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Aphyocharax_distribucion_clip.shp",
+      "bytes": 14067
+    },
+    "dist_austrolebias_vandenbergi": {
+      "url": "assets/downloads/dist_austrolebias_vandenbergi.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Austrolebias_distribucion_clip.shp",
+      "bytes": 24549
+    },
+    "dist_brachyplatystoma_rousseauxii": {
+      "url": "assets/downloads/dist_brachyplatystoma_rousseauxii.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Brachyplatystoma_distribucion_clip.shp",
+      "bytes": 362081
+    },
+    "dist_bujurquina_oenolaemus": {
+      "url": "assets/downloads/dist_bujurquina_oenolaemus.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Bujurquina_distribucion_clip.shp",
+      "bytes": 11190
+    },
+    "dist_dendropsophus_rozenmani": {
+      "url": "assets/downloads/dist_dendropsophus_rozenmani.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Dendropsophus_distribucion_clip.shp",
+      "bytes": 99883
+    },
+    "dist_hemigrammus_changae": {
+      "url": "assets/downloads/dist_hemigrammus_changae.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Hemigrammus_distribucion_clip.shp",
+      "bytes": 64579
+    },
+    "dist_jenynsia_alternimaculata": {
+      "url": "assets/downloads/dist_jenynsia_alternimaculata.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Jenynsia_distribucion_clip.shp",
+      "bytes": 16148
+    },
+    "dist_microkayla_huayna": {
+      "url": "assets/downloads/dist_microkayla_huayna.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Microkayla_distribucion_clip.shp",
+      "bytes": 7336
+    },
+    "dist_nannophryne_apolobambica": {
+      "url": "assets/downloads/dist_nannophryne_apolobambica.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Nannophryne_distribucion_clip.shp",
+      "bytes": 18478
+    },
+    "dist_oligosarcus_schindleri": {
+      "url": "assets/downloads/dist_oligosarcus_schindleri.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Oligosarcus_distribucion_clip.shp",
+      "bytes": 8479
+    },
+    "dist_papiliolebias_bitteri": {
+      "url": "assets/downloads/dist_papiliolebias_bitteri.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Papiliolebias_distribucion_clip.shp",
+      "bytes": 14903
+    },
+    "dist_paratrygon_aiereba": {
+      "url": "assets/downloads/dist_paratrygon_aiereba.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Paratrygon_distribucion_clip.shp",
+      "bytes": 160106
+    },
+    "dist_parodon_carrikeri": {
+      "url": "assets/downloads/dist_parodon_carrikeri.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Parodon_distribucion_clip.shp",
+      "bytes": 28443
+    },
+    "dist_phreatobius_sanguijuela": {
+      "url": "assets/downloads/dist_phreatobius_sanguijuela.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Phreatobius_distribucion_clip.shp",
+      "bytes": 5632
+    },
+    "dist_piabina_thomasi": {
+      "url": "assets/downloads/dist_piabina_thomasi.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Piabina_distribucion_clip.shp",
+      "bytes": 10640
+    },
+    "dist_pleurodema_marmoratum": {
+      "url": "assets/downloads/dist_pleurodema_marmoratum.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Pleurodema_distribucion_clip.shp",
+      "bytes": 165183
+    },
+    "dist_rhamphopoma_magnum": {
+      "url": "assets/downloads/dist_rhamphopoma_magnum.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Rhamphopoma_distribucion_clip.shp",
+      "bytes": 177782
+    },
+    "dist_spectrolebias_pilleti": {
+      "url": "assets/downloads/dist_spectrolebias_pilleti.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Spectrolebias_distribucion_clip.shp",
+      "bytes": 8160
+    },
+    "dist_titanolebias_monstrosus": {
+      "url": "assets/downloads/dist_titanolebias_monstrosus.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Titanolebias_distribucion_clip.shp",
+      "bytes": 31583
+    },
+    "dist_trigonectes_aplocheiloides": {
+      "url": "assets/downloads/dist_trigonectes_aplocheiloides.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\05_distribucion_unica_clip_bolivia\\Trigonectes_distribucion_clip.shp",
+      "bytes": 14724
+    },
+    "dorado": {
+      "url": "assets/downloads/dorado.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Brachyplatystoma_rousseauxii_Dorado.geojson",
+      "bytes": 354557
+    },
+    "ffr": {
+      "url": "assets/downloads/ffr.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\FFR_Bolivia.geojson",
+      "bytes": 4604612
+    },
+    "fl_andino": {
+      "url": "assets/downloads/fl_andino.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Phoenicoparrus_andinus_FlamencoAndino.geojson",
+      "bytes": 51888
+    },
+    "fl_james": {
+      "url": "assets/downloads/fl_james.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Phoenicoparrus_jamesi_FlamencoJames.geojson",
+      "bytes": 44080
+    },
+    "guanaco": {
+      "url": "assets/downloads/guanaco.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Lama_guanicoe_Guanaco.geojson",
+      "bytes": 46189
+    },
+    "humedales": {
+      "url": "assets/downloads/humedales.zip",
+      "source": "C:\\WWF HOWEE\\SIG\\Humedales.shp",
+      "bytes": 5353222
+    },
+    "inia_bol": {
+      "url": "assets/downloads/inia_bol.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\inia_bol.geojson",
+      "bytes": 32296
+    },
+    "jaguar": {
+      "url": "assets/downloads/jaguar.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Panthera_onca_Jaguar.geojson",
+      "bytes": 458966
+    },
+    "jucumari": {
+      "url": "assets/downloads/jucumari.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Tremarctos_ornatus_Jucumari.geojson",
+      "bytes": 23049
+    },
+    "lagos": {
+      "url": "assets/downloads/lagos.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Lagos_2016.geojson",
+      "bytes": 1310631
+    },
+    "limite": {
+      "url": "assets/downloads/limite.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Bolivia_limite.geojson",
+      "bytes": 10256
+    },
+    "londra": {
+      "url": "assets/downloads/londra.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Pteronura_brasiliensis_Londra.geojson",
+      "bytes": 356263
+    },
+    "paraba_az": {
+      "url": "assets/downloads/paraba_az.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Anodorhynchus_hyacinthinus_ParabaAzul.geojson",
+      "bytes": 23326
+    },
+    "paraba_bb": {
+      "url": "assets/downloads/paraba_bb.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Ara_glaucogularis_ParabaBarbaAzul.geojson",
+      "bytes": 105805
+    },
+    "paraba_fr": {
+      "url": "assets/downloads/paraba_fr.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Ara_rubrogenys_ParabaFrenteRoja.geojson",
+      "bytes": 440626
+    },
+    "prochilodus": {
+      "url": "assets/downloads/prochilodus.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Prochilodus_lineatus.geojson",
+      "bytes": 107993
+    },
+    "ramsar": {
+      "url": "assets/downloads/ramsar.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\RAMSAR_SITES.geojson",
+      "bytes": 304395
+    },
+    "riq_orestias": {
+      "url": "assets/downloads/riq_orestias.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Grupos\\Riqueza_Orestias.geojson",
+      "bytes": 33294
+    },
+    "riq_pimelodella": {
+      "url": "assets/downloads/riq_pimelodella.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Riqueza_Pimelodella.geojson",
+      "bytes": 997183
+    },
+    "riq_pimelodus": {
+      "url": "assets/downloads/riq_pimelodus.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Riqueza_Pimelodus.geojson",
+      "bytes": 648704
+    },
+    "riq_rhamdia": {
+      "url": "assets/downloads/riq_rhamdia.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Riqueza_Rhamdia.geojson",
+      "bytes": 455062
+    },
+    "riq_rivulidae": {
+      "url": "assets/downloads/riq_rivulidae.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Grupos\\Riqueza_Rivulidae.geojson",
+      "bytes": 239386
+    },
+    "riq_trichomy": {
+      "url": "assets/downloads/riq_trichomy.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Grupos\\Riqueza_Trichomycterus.geojson",
+      "bytes": 445663
+    },
+    "sea": {
+      "url": "assets/downloads/sea.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\sea.geojson",
+      "bytes": 482235
+    },
+    "sp_allobates": {
+      "url": "assets/downloads/sp_allobates.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\02_sobreposicion_por_genero_clip_bolivia\\Allobates_sobreposicion_clip.shp",
+      "bytes": 148111
+    },
+    "sp_atelopus": {
+      "url": "assets/downloads/sp_atelopus.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\02_sobreposicion_por_genero_clip_bolivia\\Atelopus_sobreposicion_clip.shp",
+      "bytes": 32640
+    },
+    "sp_heleobia": {
+      "url": "assets/downloads/sp_heleobia.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\02_sobreposicion_por_genero_clip_bolivia\\Heleobia_sobreposicion_clip.shp",
+      "bytes": 18645
+    },
+    "sp_hyloscirtus": {
+      "url": "assets/downloads/sp_hyloscirtus.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\02_sobreposicion_por_genero_clip_bolivia\\Hyloscirtus_sobreposicion_clip.shp",
+      "bytes": 18909
+    },
+    "sp_knodus": {
+      "url": "assets/downloads/sp_knodus.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\02_sobreposicion_por_genero_clip_bolivia\\Knodus_sobreposicion_clip.shp",
+      "bytes": 9168
+    },
+    "sp_moema": {
+      "url": "assets/downloads/sp_moema.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\02_sobreposicion_por_genero_clip_bolivia\\Moema_sobreposicion_clip.shp",
+      "bytes": 25728
+    },
+    "sp_nymphargus": {
+      "url": "assets/downloads/sp_nymphargus.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\02_sobreposicion_por_genero_clip_bolivia\\Nymphargus_sobreposicion_clip.shp",
+      "bytes": 153260
+    },
+    "sp_orestias": {
+      "url": "assets/downloads/sp_orestias.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\02_sobreposicion_por_genero_clip_bolivia\\Orestias_sobreposicion_clip.shp",
+      "bytes": 30330
+    },
+    "sp_potamotrygon": {
+      "url": "assets/downloads/sp_potamotrygon.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\02_sobreposicion_por_genero_clip_bolivia\\Potamotrygon_sobreposicion_clip.shp",
+      "bytes": 64992
+    },
+    "sp_rhinella": {
+      "url": "assets/downloads/sp_rhinella.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\02_sobreposicion_por_genero_clip_bolivia\\Rhinella_sobreposicion_clip.shp",
+      "bytes": 185081
+    },
+    "sp_telmatobius": {
+      "url": "assets/downloads/sp_telmatobius.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\02_sobreposicion_por_genero_clip_bolivia\\Telmatobius_sobreposicion_v2_clip.shp",
+      "bytes": 1076607
+    },
+    "sp_trichomycterus": {
+      "url": "assets/downloads/sp_trichomycterus.zip",
+      "source": "C:\\WWF HOWEE\\Especies\\Procesadas_por_genero\\02_sobreposicion_por_genero_clip_bolivia\\Trichomycterus_sobreposicion_clip.shp",
+      "bytes": 16087
+    },
+    "vicuna": {
+      "url": "assets/downloads/vicuna.zip",
+      "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Vicugna_vicugna_Vicuna.geojson",
+      "bytes": 69756
+    }
+  },
+  "errors": []
+}
