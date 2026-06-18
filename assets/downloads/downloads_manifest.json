@@ -30,6 +30,11 @@
       "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Grupos\\Colossoma_macropomum.geojson",
       "bytes": 360404
     },
+    "cobertura_mapbiomas_2024": {
+      "url": "assets/downloads/cobertura_mapbiomas_2024.tif",
+      "source": "C:\\WWF HOWEE\\SIG\\COBERTURA\\bolivia_coverage_2023.tif",
+      "bytes": 134924642
+    },
     "condor": {
       "url": "assets/downloads/condor.zip",
       "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Vultur_gryphus_Condor.geojson",

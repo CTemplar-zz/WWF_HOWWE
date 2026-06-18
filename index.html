@@ -211,13 +211,13 @@
   .tab .tab-dot { width: 8px; height: 8px; border-radius: 2px; }
   .main {
     display: grid;
-    grid-template-columns: 320px 1fr 340px;
+    grid-template-columns: 380px 1fr 340px;
     overflow: hidden;
     transition: grid-template-columns .28s cubic-bezier(.4,0,.2,1);
     position: relative;
   }
   .app.left-collapsed  .main { grid-template-columns: 0 1fr 340px; }
-  .app.right-collapsed .main { grid-template-columns: 320px 1fr 0; }
+  .app.right-collapsed .main { grid-template-columns: 380px 1fr 0; }
   .app.left-collapsed.app.right-collapsed .main { grid-template-columns: 0 1fr 0; }
   .sb-toggle {
     position: fixed;
@@ -237,7 +237,7 @@
   .sb-toggle:hover { background: #16542d; }
   .sb-toggle:hover svg { transform: scale(1.2); }
   .sb-toggle svg { width: 16px; height: 16px; stroke-width: 3; }
-  .sb-toggle.left { left: 320px; border-left: 0; border-radius: 0 8px 8px 0; }
+  .sb-toggle.left { left: 380px; border-left: 0; border-radius: 0 8px 8px 0; }
   .sb-toggle.right { right: 340px; border-right: 0; border-radius: 8px 0 0 8px; }
   .sb-toggle.left.panel-hidden  { left: 0; }
   .sb-toggle.right.panel-hidden { right: 0; }
@@ -294,7 +294,8 @@
   .layer .slider-btn:hover { background: var(--accent-soft); color: var(--accent); }
   .layer .slider-btn.active { background: var(--accent-soft); color: var(--accent); }
   .layer .zoom-layer-btn,
-  .layer .download-layer-btn {
+  .layer .download-layer-btn,
+  .layer .metadata-layer-btn {
     flex-shrink: 0; width: 22px; height: 22px;
     display: grid; place-items: center;
     border-radius: 4px; border: 0;
@@ -303,7 +304,8 @@
     cursor: pointer; transition: background .12s, color .12s;
   }
   .layer .zoom-layer-btn:hover,
-  .layer .download-layer-btn:hover { background: var(--accent-soft); color: var(--accent); }
+  .layer .download-layer-btn:hover,
+  .layer .metadata-layer-btn:hover { background: var(--accent-soft); color: var(--accent); }
   .layer-slider { display: none; padding: 0 10px 10px 30px; gap: 8px; align-items: center; }
   .layer.slider-open .layer-slider { display: flex; }
   .layer-slider input[type=range] {
@@ -328,6 +330,49 @@
   .layer .swatch { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; border: 1px solid rgba(0,0,0,.15); }
   .layer .name { flex: 1; font-size: 13px; }
   .layer .opacity { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-dim); }
+  .metadata-backdrop {
+    position: fixed; inset: 0; z-index: 10000;
+    display: none; place-items: center;
+    background: rgba(10,14,12,.36);
+    padding: 18px;
+  }
+  .metadata-backdrop.open { display: grid; }
+  .metadata-dialog {
+    width: min(520px, 100%);
+    max-height: min(680px, calc(100vh - 36px));
+    overflow: auto;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 18px 60px rgba(0,0,0,.22);
+  }
+  .metadata-header {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    padding: 16px 18px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .metadata-header h3 { margin: 0; font-size: 16px; line-height: 1.25; }
+  .metadata-header .sub { margin-top: 3px; font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .8px; }
+  .metadata-close {
+    width: 28px; height: 28px; flex-shrink: 0;
+    display: grid; place-items: center;
+    border: 0; border-radius: 5px;
+    background: transparent; color: var(--text-soft);
+    cursor: pointer;
+  }
+  .metadata-close:hover { background: var(--bg-soft); color: var(--text); }
+  .metadata-body { padding: 14px 18px 18px; font-size: 13px; line-height: 1.5; color: var(--text-soft); }
+  .metadata-body p { margin: 0 0 10px; }
+  .metadata-body a { color: var(--accent); text-decoration: none; font-weight: 600; word-break: break-word; }
+  .metadata-body a:hover { text-decoration: underline; }
+  .metadata-note {
+    margin-top: 12px; padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-soft);
+    color: var(--text-dim);
+    font-size: 11.5px;
+  }
   .layer-group-h {
     display: flex; align-items: center; gap: 6px;
     width: 100%; padding: 10px 4px 4px; margin-top: 6px;
@@ -396,6 +441,7 @@
     background: var(--bg-elev); border: 1px solid var(--border);
     border-radius: 10px; padding: 12px 14px;
     min-width: 220px; max-width: 280px;
+    max-height: calc(100vh - 180px);
     box-shadow: var(--shadow);
   }
   .legend-h { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 12px; margin-bottom: 10px; color: var(--text); }
@@ -418,6 +464,11 @@
   .legend.collapsed .legend-h,
   .legend.collapsed #legendBody { display: none; }
   .legend.collapsed .legend-collapsed-icon { display: grid; place-items: center; color: var(--text); }
+  #legendBody {
+    max-height: calc(100vh - 245px);
+    overflow-y: auto;
+    padding-right: 4px;
+  }
   .legend-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 11.5px; color: var(--text-soft); }
   .legend-row .sw { width: 14px; height: 10px; border-radius: 2px; flex-shrink: 0; }
   .legend-row .pct { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--text-dim); }
@@ -599,7 +650,7 @@
         <button class="iconbtn" title="Medir"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m4 20 16-16M8 6l2 2M11 9l2 2M14 12l2 2M17 15l2 2"/></svg></button>
         <button class="iconbtn" title="Pantalla completa"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
       </div>
-      <div class="map-overlay legend" id="legend">
+      <div class="map-overlay legend collapsed" id="legend">
         <div class="legend-collapsed-icon" title="Mostrar leyenda">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18M3 12h18M3 17h12"/></svg>
         </div>
@@ -677,8 +728,58 @@
     </div>
   </footer>
 </div>
+<div class="metadata-backdrop" id="metadataBackdrop" aria-hidden="true">
+  <div class="metadata-dialog" role="dialog" aria-modal="true" aria-labelledby="metadataTitle">
+    <div class="metadata-header">
+      <div>
+        <h3 id="metadataTitle">Metadatos</h3>
+        <div class="sub" id="metadataLayerName"></div>
+      </div>
+      <button class="metadata-close" id="metadataClose" title="Cerrar metadatos">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="metadata-body" id="metadataBody"></div>
+  </div>
+</div>
 <script>
 const R2_PMTILES_BASE = 'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES';
+const MAPBIOMAS_LEGEND = [
+  {c:'#1f8d49',l:'Bosque',v:'3'},
+  {c:'#7dc975',l:'Bosque abierto',v:'4'},
+  {c:'#026975',l:'Bosque inundable',v:'6'},
+  {c:'#519799',l:'Herbazal/arbustal inundable',v:'11'},
+  {c:'#d6bc74',l:'Herbazal/arbustal',v:'12'},
+  {c:'#d89f5c',l:'Otra formación natural no forestal',v:'13'},
+  {c:'#edde8e',l:'Pastura',v:'15'},
+  {c:'#e974ed',l:'Agricultura',v:'18'},
+  {c:'#ffefc3',l:'Mosaico de usos',v:'21'},
+  {c:'#ffa07a',l:'Playa, duna y banco de arena',v:'23'},
+  {c:'#d4271e',l:'Infraestructura urbana',v:'24'},
+  {c:'#db4d4f',l:'Otra área antrópica sin vegetación',v:'25'},
+  {c:'#ffaa5f',l:'Afloramiento rocoso',v:'29'},
+  {c:'#9c0027',l:'Minería',v:'30'},
+  {c:'#091077',l:'Acuicultura',v:'31'},
+  {c:'#2532e4',l:'Río, lago',v:'33'},
+  {c:'#93dfe6',l:'Glaciar',v:'34'},
+  {c:'#f5b3c8',l:'Soya (beta)',v:'39'},
+  {c:'#f5d5d5',l:'Salar',v:'61'},
+  {c:'#a89358',l:'Matorral',v:'66'},
+  {c:'#e97a7a',l:'Otra área natural sin vegetación',v:'68'},
+  {c:'#c1799c',l:'Otros cultivos',v:'72'},
+  {c:'#c8c099',l:'Pajonal y arbustal andino',v:'81'},
+  {c:'#66b2a3',l:'Pajonal y arbustal andino inundable',v:'82'}
+];
+const MAPBIOMAS_BY_RGB = MAPBIOMAS_LEGEND.reduce((acc,item)=>{
+  const hex=item.c.replace('#','').toLowerCase();
+  const rgb=[
+    parseInt(hex.slice(0,2),16),
+    parseInt(hex.slice(2,4),16),
+    parseInt(hex.slice(4,6),16)
+  ].join(',');
+  acc[rgb]={code:item.v,label:item.l,color:item.c};
+  return acc;
+},{});
 const OVERLAP_BOUNDS = {
   Allobates: [-68.578549, -17.46137, -60.248859, -12.613819],
   Atelopus: [-69.067908, -17.714647, -64.658376, -13.599639],
@@ -735,8 +836,13 @@ const MODULES = {
       {id:'departamentos',name:'Departamentos de Bolivia', color:'#000000',opacity:100,on:true},
       {id:'apn',   name:'Áreas Protegidas (33 polígonos)',  color:'#2c8a4d',opacity:100,on:true},
       {id:'limite',name:'Límite Bolivia',                    color:'#6a6a6a',opacity:80,on:true},
+      {id:'cobertura_mapbiomas_2024',name:'Cobertura MapBiomas 2024', color:'#1f8d49',opacity:85,on:false, rasterPmtiles:'assets/tiles/cobertura_mapbiomas_2024.pmtiles', maxDataZoom:11, bounds:[-70.37258205346872,-23.515289023925128,-56.265887989297816,-8.701980157265806], downloadUrl:'assets/downloads/cobertura_mapbiomas_2024.tif', downloadLabel:'Descargar TIFF', swatch:'linear-gradient(90deg,#1f8d49 0%,#d6bc74 32%,#ffefc3 55%,#d4271e 74%,#2532e4 100%)'},
     ],
-    legend:{title:'Categorías SERNAP',ind:'I.6',items:[
+    legend:{title:'Cobertura MapBiomas 2024',ind:'M1',items:[
+      ...MAPBIOMAS_LEGEND,
+      {c:'#2c8a4d',l:'Área protegida',v:''},
+      {c:'#000000',l:'Departamentos de Bolivia',v:''},
+      {c:'#6a6a6a',l:'Límite Bolivia',v:''},
       {c:'#1f6b3a',l:'Parque Nacional',v:'9 áreas'},
       {c:'#4ec97a',l:'Reserva de la Biosfera',v:'3 áreas'},
       {c:'#9ec979',l:'Reserva Nacional',v:'4 áreas'},
@@ -878,6 +984,175 @@ Object.values(MODULES).forEach(mod => {
     layer.opacity = 100 - layer.transparency;
   });
 });
+const LAYER_METADATA = {
+  departamentos: {
+    title: 'Límites departamentales',
+    body: [
+      'Muestra los límites interdepartamentales actualizados de una parte del territorio nacional.',
+      'Información proporcionada por el Viceministerio de Autonomías, parte del Ministerio de la Presidencia, en julio de 2020.'
+    ]
+  },
+  limite: {
+    title: 'Límite Bolivia',
+    body: [
+      'Límite nacional utilizado como marco espacial de referencia del geoportal.',
+      'Fuente por confirmar con el archivo oficial usado en el proyecto.'
+    ]
+  },
+  apn: {
+    title: 'Áreas protegidas',
+    body: [
+      'Fecha de creación: 09 de diciembre de 2025.',
+      'Cita obligatoria: SDSN Bolivia (2025). Áreas protegidas Bolivia 2025 [Archivo shapefile]. https://sdsnbolivia.org/datos-espaciales/'
+    ],
+    links: [{label:'SDSN Bolivia - datos espaciales', url:'https://sdsnbolivia.org/datos-espaciales/'}]
+  },
+  cobertura_mapbiomas_2024: {
+    title: 'Cobertura MapBiomas 2024',
+    body: [
+      'MapBiomas - Colección 3 de la Serie Anual 2024 de Mapas de Cobertura y Uso del Suelo de Bolivia.',
+      'La descarga de esta capa corresponde al archivo TIFF original.'
+    ],
+    links: [{label:'MapBiomas Bolivia', url:'https://bolivia.mapbiomas.org/'}]
+  },
+  sea: {
+    title: 'Sistemas ecológicos acuáticos',
+    body: [
+      'Generados por FAUNAGUA en base a datos de cuencas hidrográficas HydroBASINS / WWF.',
+      'Procesamiento propio para visualización en PMTiles.'
+    ],
+    links: [{label:'FAUNAGUA', url:'https://www.faunagua.org'}]
+  },
+  cuencas: {
+    title: 'Cuencas (balance hídrico)',
+    body: [
+      'Balance Hídrico de Bolivia 1980 - 2020.',
+      'Fuente: Ministerio de Medio Ambiente y Agua de Bolivia (MMAyA) y Stockholm Environment Institute (SEI).'
+    ],
+    links: [{label:'Balance Hídrico de Bolivia 1980 - 2020', url:'https://www.sei.org/publications/balance-hidrico-de-bolivia-1980-2020/'}]
+  },
+  cuencas_n8: {
+    title: 'Sub-cuencas HydroBASINS nivel 8',
+    body: [
+      'Delimitación de subcuencas derivada de HydroBASINS, producto de HydroSHEDS.',
+      'HydroBASINS presenta límites de cuencas y subcuencas anidadas derivados de datos HydroSHEDS a resolución de 15 segundos de arco.'
+    ],
+    links: [{label:'HydroBASINS - HydroSHEDS', url:'https://www.hydrosheds.org/products/hydrobasins'}]
+  },
+  cuencas_n9: {
+    title: 'Sub-cuencas HydroBASINS nivel 9',
+    body: [
+      'Delimitación de subcuencas derivada de HydroBASINS, producto de HydroSHEDS.',
+      'HydroBASINS presenta límites de cuencas y subcuencas anidadas derivados de datos HydroSHEDS a resolución de 15 segundos de arco.'
+    ],
+    links: [{label:'HydroBASINS - HydroSHEDS', url:'https://www.hydrosheds.org/products/hydrobasins'}]
+  },
+  ffr: {
+    title: 'Ríos FFR (estado conectividad)',
+    body: [
+      'Capa basada en el estudio global de ríos libres de flujo (Free-Flowing Rivers), liderado por WWF y McGill University.',
+      'La metodología evalúa la conectividad fluvial y permite identificar ríos con menor alteración longitudinal, lateral, vertical y temporal.'
+    ],
+    links: [{label:'WWF - Free Flowing Rivers Study', url:'https://www.worldwildlife.org/publications/free-flowing-rivers-study-full-map/'}]
+  },
+  lagos: {
+    title: 'Lagos y lagunas 2016',
+    body: [
+      'Muestra los lagos y lagunas permanentes e intermitentes en las tres cuencas hidrográficas del Estado Plurinacional de Bolivia.',
+      'Información del Servicio Nacional de Hidrografía Nacional.'
+    ]
+  },
+  humedales: {
+    title: 'Humedales (meses inundados)',
+    body: [
+      'Ovando Alex, 2018. Multi-temporal flood mapping and satellite altimetry used to evaluate the flood dynamics of the Bolivian Amazon wetlands.'
+    ]
+  },
+  ramsar: {
+    title: 'Sitios Ramsar',
+    body: [
+      'Sitios Ramsar de Bolivia según la Convención sobre los Humedales.',
+      'El servicio Ramsar Sites Information Service mantiene fichas y datos espaciales de los humedales de importancia internacional.'
+    ],
+    links: [{label:'Perfil de Bolivia - Convención sobre los Humedales', url:'https://www.ramsar.org/country-profile/bolivia-plurinational-state'}]
+  },
+  amenaza_sequia: {
+    title: 'Amenaza de sequía',
+    body: [
+      'Datos de amenaza de sequía generados por el "Atlas de riesgo agropecuario y cambio climático para la soberanía alimentaria" 2014.'
+    ]
+  },
+  amenaza_sequia_mdryt: {
+    title: 'Amenaza sequía MDRyT',
+    body: [
+      'Datos de amenaza de sequía generados por el "Atlas de riesgo agropecuario y cambio climático para la soberanía alimentaria" 2014.'
+    ]
+  }
+};
+const SPECIES_METADATA = {
+  title: 'Distribución de especies',
+  body: [
+    'Fuente base: IUCN Red List Spatial Data.',
+    'Procesamiento propio en base a distribución individual de especies.'
+  ],
+  links: [{label:'IUCN Red List - Spatial Data Download', url:'https://www.iucnredlist.org/resources/spatial-data-download'}]
+};
+function escapeHTML(value){
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function getLayerMetadata(layer){
+  if(!layer) return null;
+  if(layer.id?.startsWith('sp_')){
+    return {
+      ...SPECIES_METADATA,
+      title: `${layer.genus || layer.name} - sobreposición`,
+      body: [
+        'Capa generada por procesamiento propio a partir de distribuciones individuales de especies del mismo género.',
+        'Incluye el conteo de especies sobrepuestas y el listado de especies presentes por polígono.',
+        ...SPECIES_METADATA.body
+      ],
+      links: SPECIES_METADATA.links
+    };
+  }
+  if(layer.id?.startsWith('dist_') || layer.sci || ['jaguar','paraba_bb','inia_bol','londra','paraba_fr','jucumari','dorado','paraba_az','fl_andino','condor','borochi','fl_james','guanaco','vicuna','brycon','colossoma','prochilodus'].includes(layer.id)){
+    return {
+      ...SPECIES_METADATA,
+      title: layer.sci || layer.name,
+      body: SPECIES_METADATA.body
+    };
+  }
+  if(layer.id?.startsWith('riq_')){
+    return {
+      title: layer.name,
+      body: [
+        'Capa de riqueza generada por procesamiento propio a partir de distribuciones individuales de especies.',
+        'Fuente base: IUCN Red List Spatial Data.'
+      ],
+      links: SPECIES_METADATA.links
+    };
+  }
+  return LAYER_METADATA[layer.id] || {
+    title: layer.name,
+    body: ['Metadatos específicos pendientes de confirmar con la fuente original del proyecto.']
+  };
+}
+function openMetadata(layer){
+  const meta=getLayerMetadata(layer);
+  const backdrop=document.getElementById('metadataBackdrop');
+  document.getElementById('metadataTitle').textContent=meta.title || 'Metadatos';
+  document.getElementById('metadataLayerName').textContent=layer?.name || '';
+  const paragraphs=(meta.body || []).map(t=>`<p>${escapeHTML(t)}</p>`).join('');
+  const links=(meta.links || []).map(link=>`<p><a href="${escapeHTML(link.url)}" target="_blank" rel="noopener noreferrer">${escapeHTML(link.label || link.url)}</a></p>`).join('');
+  const note=meta.note ? `<div class="metadata-note">${escapeHTML(meta.note)}</div>` : '';
+  document.getElementById('metadataBody').innerHTML=paragraphs+links+note;
+  backdrop.classList.add('open');
+  backdrop.setAttribute('aria-hidden','false');
+}
+function closeMetadata(){
+  const backdrop=document.getElementById('metadataBackdrop');
+  backdrop.classList.remove('open');
+  backdrop.setAttribute('aria-hidden','true');
+}
 let APN = [
   {code:'AP-0101',name:'Sajama',                      cat:'Parque Nacional',                              center:[-18.1,-68.9]},
   {code:'AP-0201',name:'Tunari',                       cat:'Parque Nacional',                              center:[-17.1,-66.3]},
@@ -1833,8 +2108,85 @@ function createPMTilesLayer(layerDef){
   return layer;
 }
 
+function createRasterPMTilesLayer(layerDef){
+  if(typeof pmtiles === 'undefined' || !pmtiles.PMTiles || !pmtiles.leafletRasterLayer){
+    console.warn('pmtiles raster no cargó');
+    return L.layerGroup();
+  }
+  const archive = new pmtiles.PMTiles(layerDef.rasterPmtiles);
+  const layer = pmtiles.leafletRasterLayer(archive, {
+    maxNativeZoom: layerDef.maxDataZoom || 12,
+    maxZoom: 18,
+    opacity: (layerDef.opacity ?? 100) / 100,
+    attribution: 'MapBiomas Bolivia'
+  });
+  if(layerDef.id === 'cobertura_mapbiomas_2024'){
+    const canvas = document.createElement('canvas');
+    canvas.width = 1;
+    canvas.height = 1;
+    const ctx = canvas.getContext('2d', {willReadFrequently:true});
+    const bounds = boundsFromLonLatArray(layerDef.bounds);
+
+    const decodeTileImage = async data => {
+      const blob = new Blob([data], {type:'image/png'});
+      if(window.createImageBitmap) return await createImageBitmap(blob);
+      return await new Promise((resolve,reject)=>{
+        const img = new Image();
+        const url = URL.createObjectURL(blob);
+        img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+        img.onerror = err => { URL.revokeObjectURL(url); reject(err); };
+        img.src = url;
+      });
+    };
+
+    const readCoverageAt = async latlng => {
+      if(!ctx || (bounds && !bounds.contains(latlng))) return null;
+      const z = Math.max(0, Math.min(layerDef.maxDataZoom || 11, Math.floor(layer._map.getZoom())));
+      const point = L.CRS.EPSG3857.latLngToPoint(latlng, z);
+      const scale = 1 << z;
+      const x = Math.max(0, Math.min(scale - 1, Math.floor(point.x / 256)));
+      const y = Math.max(0, Math.min(scale - 1, Math.floor(point.y / 256)));
+      const px = Math.max(0, Math.min(255, Math.floor(point.x - x * 256)));
+      const py = Math.max(0, Math.min(255, Math.floor(point.y - y * 256)));
+      const tile = await archive.getZxy(z, x, y);
+      if(!tile || !tile.data) return null;
+      const image = await decodeTileImage(tile.data);
+      ctx.clearRect(0,0,1,1);
+      ctx.drawImage(image, px, py, 1, 1, 0, 0, 1, 1);
+      if(image.close) image.close();
+      const [r,g,b,a] = ctx.getImageData(0,0,1,1).data;
+      if(a === 0) return null;
+      return MAPBIOMAS_BY_RGB[[r,g,b].join(',')] || null;
+    };
+
+    const handleRasterClick = async e => {
+      try{
+        const cls = await readCoverageAt(e.latlng);
+        if(!cls) return;
+        L.popup({maxWidth:260})
+          .setLatLng(e.latlng)
+          .setContent(`<div class="feature-popup"><h5>Cobertura MapBiomas 2024</h5><table>
+            <tr><td>Tipo de cobertura</td><td><b>${cls.label}</b></td></tr>
+          </table></div>`)
+          .openOn(layer._map);
+      }catch(err){
+        console.warn('Raster PMTiles popup error:', err);
+      }
+    };
+
+    layer.on('add', () => {
+      if(layer._map) layer._map.on('click', handleRasterClick);
+    });
+    layer.on('remove', () => {
+      if(layer._map) layer._map.off('click', handleRasterClick);
+    });
+  }
+  return layer;
+}
+
 function buildModuleLayer(id,mod){
   const layerDef=mod.layers.find(l=>l.id===id)||{color:'#888'};
+  if(layerDef.rasterPmtiles) return createRasterPMTilesLayer(layerDef);
   // PMTiles (vector tiles)
   if(layerDef.pmtiles) return createPMTilesLayer(layerDef);
   if(id==='apn_lim'&&geoData['apn']){
@@ -2013,22 +2365,23 @@ function boundsFromLonLatArray(values){
 }
 
 async function boundsFromPMTiles(layerDef){
-  if(!layerDef.pmtiles || typeof pmtiles === 'undefined' || !pmtiles.PMTiles) return null;
-  if(pmtilesBoundsCache.has(layerDef.pmtiles)) return pmtilesBoundsCache.get(layerDef.pmtiles);
+  const url = layerDef.pmtiles || layerDef.rasterPmtiles;
+  if(!url || typeof pmtiles === 'undefined' || !pmtiles.PMTiles) return null;
+  if(pmtilesBoundsCache.has(url)) return pmtilesBoundsCache.get(url);
   try{
     let b=boundsFromLonLatArray(layerDef.bounds || OVERLAP_BOUNDS[layerDef.genus]);
     if(b){
-      pmtilesBoundsCache.set(layerDef.pmtiles,b);
+      pmtilesBoundsCache.set(url,b);
       return b;
     }
-    const archive=new pmtiles.PMTiles(layerDef.pmtiles);
+    const archive=new pmtiles.PMTiles(url);
     const h=await archive.getHeader();
     b=boundsFromLonLatArray([h.minLon,h.minLat,h.maxLon,h.maxLat]);
     if(!b){
       const meta=await archive.getMetadata();
       b=boundsFromLonLatArray(meta && meta.bounds);
     }
-    if(b) pmtilesBoundsCache.set(layerDef.pmtiles,b);
+    if(b) pmtilesBoundsCache.set(url,b);
     return b || null;
   }catch(err){
     console.warn('No se pudo leer bounds PMTiles:', err);
@@ -2073,11 +2426,13 @@ async function zoomAndHighlightLayer(modId, layerDef){
   if(!moduleLayers[key]) moduleLayers[key]=buildModuleLayer(layerDef.id, MODULES[modId]);
   const layer=moduleLayers[key];
   let bounds=boundsFromLayer(layer);
-  if(!bounds && layerDef.pmtiles) bounds=await boundsFromPMTiles(layerDef);
+  if(!bounds && (layerDef.pmtiles || layerDef.rasterPmtiles)) bounds=await boundsFromPMTiles(layerDef);
   if(!bounds || !bounds.isValid || !bounds.isValid()) return;
 
   clearLayerHighlight();
-  layerHighlight = layerDef.pmtiles
+  layerHighlight = layerDef.rasterPmtiles
+    ? L.rectangle(bounds,{interactive:false,color:'#ffd400',weight:3,opacity:1,fillOpacity:0,dashArray:'6,4'}).addTo(map)
+    : layerDef.pmtiles
     ? addPMTilesHighlight(layerDef, bounds)
     : addGeoJSONHighlight(layerDef.id, layerDef, bounds);
   layerHighlightTimer=setTimeout(()=>clearLayerHighlight(), 3500);
@@ -2133,9 +2488,13 @@ function renderLayerList(modId, mod){
     const transparency = l.transparency ?? DEFAULT_LAYER_TRANSPARENCY;
     const badge=l.iucn?` <span style="font-size:9px;padding:1px 5px;border-radius:3px;background:${IUCN_COLORS[l.iucn]||'#888'};color:#fff;font-family:monospace;font-weight:600">${l.iucn}</span>`:'';
     const sub=l.sci?`<span style="display:block;font-size:10px;color:var(--text-dim);font-style:italic;line-height:1.1">${l.sci}</span>`:'';
-    const swatchStyle = l.gradient
+    const swatchStyle = l.swatch
+      ? `background:${l.swatch}`
+      : l.gradient
       ? 'background:linear-gradient(90deg,#e8f4ff 0%,#7fb5e0 50%,#0d4577 100%)'
       : `background:${l.color}`;
+    const downloadUrl = l.downloadUrl || `assets/downloads/${l.id}.zip`;
+    const downloadTitle = l.downloadLabel || 'Descargar shapefile ZIP';
     row.innerHTML=`
       <div class="layer-main">
         <span class="grip" title="Arrastra para reordenar">
@@ -2151,7 +2510,10 @@ function renderLayerList(modId, mod){
         <button class="zoom-layer-btn" title="Zoom a la capa">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>
         </button>
-        <a class="download-layer-btn" href="assets/downloads/${l.id}.zip" download title="Descargar shapefile ZIP">
+        <button class="metadata-layer-btn" title="Ver metadatos">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 10v7"/><path d="M12 7h.01"/></svg>
+        </button>
+        <a class="download-layer-btn" href="${downloadUrl}" download title="${downloadTitle}">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v11"/><path d="m7 9 5 5 5-5"/><path d="M5 20h14"/></svg>
         </a>
       </div>
@@ -2163,7 +2525,7 @@ function renderLayerList(modId, mod){
 
     // Toggle on/off al hacer click en el área principal (excluyendo controles)
     row.querySelector('.layer-main').addEventListener('click',e=>{
-      if(e.target.closest('.slider-btn,.zoom-layer-btn,.download-layer-btn,.grip')) return;
+      if(e.target.closest('.slider-btn,.zoom-layer-btn,.metadata-layer-btn,.download-layer-btn,.grip')) return;
       toggleLayer(l.id,row);
     });
 
@@ -2178,6 +2540,11 @@ function renderLayerList(modId, mod){
     zoomBtn.addEventListener('click',async e=>{
       e.stopPropagation();
       await zoomAndHighlightLayer(modId, l);
+    });
+    const metadataBtn=row.querySelector('.metadata-layer-btn');
+    metadataBtn.addEventListener('click',e=>{
+      e.stopPropagation();
+      openMetadata(l);
     });
     const downloadBtn=row.querySelector('.download-layer-btn');
     downloadBtn.addEventListener('click',e=>e.stopPropagation());
@@ -2202,6 +2569,7 @@ function renderLayerList(modId, mod){
       row.querySelector('.layer-slider').addEventListener(evt,e=>e.stopPropagation());
       sliderBtn.addEventListener(evt,e=>e.stopPropagation());
       zoomBtn.addEventListener(evt,e=>e.stopPropagation());
+      metadataBtn.addEventListener(evt,e=>e.stopPropagation());
       downloadBtn.addEventListener(evt,e=>e.stopPropagation());
     });
     const grip=row.querySelector('.grip');
@@ -2593,6 +2961,13 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>rend
     }
   });
 })();
+document.getElementById('metadataClose').addEventListener('click',closeMetadata);
+document.getElementById('metadataBackdrop').addEventListener('click',e=>{
+  if(e.target.id==='metadataBackdrop') closeMetadata();
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') closeMetadata();
+});
 document.getElementById('themeToggle').addEventListener('click',()=>{
   currentTheme=currentTheme==='light'?'dark':'light';
   document.body.setAttribute('data-theme',currentTheme);
