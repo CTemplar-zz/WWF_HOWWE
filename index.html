@@ -2298,7 +2298,14 @@ function applyLayerOpacity(layerId, leafletLayer, pct){
     });
     return;
   }
-  const outlineOnly = (layerId==='limite' || layerId==='apn_lim' || layerId==='departamentos');
+  const outlineOnly = (
+    layerId==='limite' ||
+    layerId==='apn_lim' ||
+    layerId==='departamentos' ||
+    layerId==='cuencas' ||
+    layerId==='cuencas_n8' ||
+    layerId==='cuencas_n9'
+  );
   try{
     leafletLayer.setStyle({opacity: o, fillOpacity: outlineOnly ? 0 : o});
   }catch(e){}
