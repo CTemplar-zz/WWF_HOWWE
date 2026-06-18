@@ -982,6 +982,10 @@ Object.values(MODULES).forEach(mod => {
   mod.layers.forEach(layer => {
     layer.transparency = DEFAULT_LAYER_TRANSPARENCY;
     layer.opacity = 100 - layer.transparency;
+    if(['cuencas','cuencas_n8','cuencas_n9'].includes(layer.id)){
+      layer.transparency = 0;
+      layer.opacity = 100;
+    }
   });
 });
 const LAYER_METADATA = {
@@ -1656,12 +1660,11 @@ function createGeoJSONLayer(id, layerDef){
   }
   if(id==='cuencas_n8' || id==='cuencas_n9'){
     // HydroBASINS nivel 8 (1,331) y nivel 9 (3,974). Sólo contornos.
-    // Nivel 8: línea más gruesa azul medio. Nivel 9: línea fina azul claro.
     const isN8 = id==='cuencas_n8';
-    const lineColor = isN8 ? '#123f73' : '#2f77a8';
+    const lineColor = '#003f73';
     const weight    = isN8 ? 1.35 : 0.9;
     return L.geoJSON(data, {
-      style: { color: lineColor, weight: weight, opacity: 0.95, fillColor: lineColor, fillOpacity: isN8 ? 0.14 : 0.1 },
+      style: { color: lineColor, weight: weight, opacity: 1, fillOpacity: 0 },
       onEachFeature: (f,l) => {
         const p = f.properties;
         const sub = p.SUB_AREA != null ? Number(p.SUB_AREA).toLocaleString('es-BO')+' km²' : '—';
@@ -1746,7 +1749,7 @@ function createGeoJSONLayer(id, layerDef){
   }
   if(id==='cuencas'){
     return L.geoJSON(data,{
-      style:{color:'#005ce6', weight:1, fillColor:'#005ce6', fillOpacity:0.39, opacity:0.85},
+      style:{color:'#003f73', weight:1.25, opacity:1, fillOpacity:0},
       onEachFeature:(f,l)=>{
         const p=f.properties;
         const name = p.uh_nombre || 'Cuenca';
@@ -1973,11 +1976,11 @@ function createPMTilesLayer(layerDef){
     }];
   } else if(id === 'cuencas_n8' || id === 'cuencas_n9'){
     const isN8 = id === 'cuencas_n8';
-    const lineColor = isN8 ? '#123f73' : '#2f77a8';
+    const lineColor = '#003f73';
     paintRules = [{
       dataLayer: layerDef.pmlayer || id,
       symbolizer: new protomapsL.PolygonSymbolizer({
-        fill: lineColor,
+        fill: 'rgba(0,0,0,0)',
         opacity: 1,
         stroke: lineColor,
         width: isN8 ? 1.35 : 0.9
