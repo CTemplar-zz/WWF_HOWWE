@@ -556,6 +556,21 @@
   .feature-popup table { font-size: 11px; }
   .feature-popup td { padding: 2px 6px 2px 0; }
   .feature-popup td:first-child { color: var(--text-dim); }
+  .aioc-zone-label {
+    background: rgba(255,255,255,.82);
+    border: 1px solid rgba(80,80,80,.25);
+    border-radius: 4px;
+    color: #1a201a;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+    max-width: 150px;
+    padding: 2px 5px;
+    text-align: center;
+    white-space: normal;
+    box-shadow: 0 1px 2px rgba(0,0,0,.14);
+  }
+  .leaflet-tooltip.aioc-zone-label::before { display: none; }
 </style>
 </head>
 <body data-theme="light">
@@ -611,6 +626,7 @@
     <button class="tab" data-mod="4"><span class="tab-dot" style="background:#2374b5"></span><span class="tab-num">M4</span>Ecosistemas y agua</button>
     <button class="tab" data-mod="5"><span class="tab-dot" style="background:#e8a417"></span><span class="tab-num">M5</span>Cambio climático</button>
     <button class="tab" data-mod="6"><span class="tab-dot" style="background:#4a8aa8"></span><span class="tab-num">M6</span>Comunidades y bienestar</button>
+    <button class="tab" data-mod="7"><span class="tab-dot" style="background:#8a6f3e"></span><span class="tab-num">M7</span>AIOC Charagua Iyambae</button>
   </nav>
   <main class="main">
     <aside class="left">
@@ -975,6 +991,27 @@ const MODULES = {
       {c:'#2c8a4d',l:'Areas Protegidas',v:''},
 
     ]}
+  },
+  '7': { title:'AIOC Charagua Iyambae', sub:'Zonas territoriales, áreas protegidas y límites departamentales', color:'#8a6f3e',
+    icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M3 6.5 9 4l6 2.5 6-2.5v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/></svg>',
+    layers:[
+      {id:'aioc_charagua_zonas',name:'Zonas AIOC Charagua Iyambae',color:'#45ddb0',opacity:100,on:true,downloadUrl:'assets/downloads/aioc_charagua_zonas.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'apn',name:'Áreas Protegidas',color:'#2c8a4d',opacity:100,on:true},
+      {id:'departamentos',name:'Departamentos de Bolivia',color:'#000000',opacity:100,on:true},
+    ],
+    legend:{title:'Zonas AIOC Charagua Iyambae',ind:'M7',items:[
+      {c:'#45ddb0',l:'Parque Nacional Kaa Iya del Gran Chaco',v:''},
+      {c:'#8dbeb3',l:'Parque Nacional Otuquis',v:''},
+      {c:'#a66531',l:'Zona Alto Isoso',v:''},
+      {c:'#c2c662',l:'Zona Bajo Isoso',v:''},
+      {c:'#e7a80f',l:'Zona Charagua Pueblo',v:''},
+      {c:'#de6312',l:'Zona Estación Charagua',v:''},
+      {c:'#d5badf',l:'Zona Norte Charagua',v:''},
+      {c:'#be7061',l:'Zona Parapitiguasu',v:''},
+      {c:'#b5f0ce',l:'Área de Conservación e Importancia Ecológica de la Nación Guaraní Ñembi Guasu',v:''},
+      {c:'#2c8a4d',l:'Áreas Protegidas',v:''},
+      {c:'#000000',l:'Departamentos de Bolivia',v:''},
+    ]}
   }
 };
 const DEFAULT_LAYER_TRANSPARENCY = 15;
@@ -982,7 +1019,7 @@ Object.values(MODULES).forEach(mod => {
   mod.layers.forEach(layer => {
     layer.transparency = DEFAULT_LAYER_TRANSPARENCY;
     layer.opacity = 100 - layer.transparency;
-    if(['cuencas','cuencas_n8','cuencas_n9'].includes(layer.id)){
+    if(['cuencas','cuencas_n8','cuencas_n9','aioc_charagua_zonas'].includes(layer.id)){
       layer.transparency = 0;
       layer.opacity = 100;
     }
@@ -1090,6 +1127,13 @@ const LAYER_METADATA = {
     title: 'Amenaza sequía MDRyT',
     body: [
       'Datos de amenaza de sequía generados por el "Atlas de riesgo agropecuario y cambio climático para la soberanía alimentaria" 2014.'
+    ]
+  },
+  aioc_charagua_zonas: {
+    title: 'Zonas AIOC Charagua Iyambae',
+    body: [
+      'Zonificación territorial de la Autonomía Indígena Originaria Campesina Charagua Iyambae.',
+      'Fuente: capa ZONAS_AIOC_CHARAGUA provista desde ArcGIS Pro y preparada para visualización en el geoportal.'
     ]
   }
 };
@@ -1243,6 +1287,7 @@ const DATA_FILES = {
   'lagos':           'assets/capas/Lagos_2016.geojson',
   // amenaza_sequia: ahora servida como vector tiles (assets/tiles/amenaza_sequia.pmtiles)
   'amenaza_sequia_mdryt': 'assets/capas/amenaza_sequia_mdryt.geojson',
+  'aioc_charagua_zonas': 'assets/capas/ZONAS_AIOC_CHARAGUA.geojson',
   // cuencas_n8 y cuencas_n9: ahora servidas como vector tiles (assets/tiles/cuencas_n*.pmtiles)
   // sea: ahora servido como vector tiles (assets/tiles/sea.pmtiles)
 };
@@ -1552,6 +1597,46 @@ function createGeoJSONLayer(id, layerDef){
     return L.geoJSON(data,{
       interactive:false,
       style:{color:'#000000',weight:1.4,fillOpacity:0,opacity:0.9,interactive:false}
+    });
+  }
+  if(id==='aioc_charagua_zonas'){
+    const AIOC_COLORS = {
+      'Parque Nacional Kaa Iya del Gran Chaco':'#45ddb0',
+      'Parque Nacional Otuquis':'#8dbeb3',
+      'Zona Alto Isoso':'#a66531',
+      'Zona Bajo Isoso':'#c2c662',
+      'Zona Charagua Pueblo':'#e7a80f',
+      'Zona Estación Charagua':'#de6312',
+      'Zona Norte Charagua':'#d5badf',
+      'Zona Parapitiguasu':'#be7061',
+      'Área de Conservación e Importancia Ecológica de la Nación Guaraní Ñembi Guasu':'#b5f0ce'
+    };
+    return L.geoJSON(data,{
+      style:f=>{
+        const zone = f.properties?.Zona || f.properties?.Zonas || '';
+        return {
+          color:'#6e6e6e',
+          weight:0.7,
+          opacity:1,
+          fillColor:AIOC_COLORS[zone] || layerDef.color || '#45ddb0',
+          fillOpacity:0.72
+        };
+      },
+      onEachFeature:(f,l)=>{
+        const p=f.properties||{};
+        const zone=p.Zona || p.Zonas || 'Zona AIOC Charagua Iyambae';
+        l.bindTooltip(`<span>${escapeHTML(zone)}</span>`,{
+          permanent:true,
+          direction:'center',
+          className:'aioc-zone-label',
+          opacity:0.95
+        });
+        l.bindPopup(`<div class="feature-popup"><h5>${escapeHTML(zone)}</h5><table>
+          <tr><td>Municipio</td><td>${escapeHTML(p.municipio||'Charagua')}</td></tr>
+          <tr><td>Provincia</td><td>${escapeHTML(p.provincia||'-')}</td></tr>
+          <tr><td>Departamento</td><td>${escapeHTML(p.departamen||'-')}</td></tr>
+        </table></div>`,{maxWidth:300});
+      }
     });
   }
   if(id==='amenaza_sequia' || id==='amenaza_sequia_mdryt'){

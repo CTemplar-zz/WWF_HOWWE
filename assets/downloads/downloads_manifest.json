@@ -15,6 +15,11 @@
       "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\AreasProtegidas_Bolivia.geojson",
       "bytes": 1012979
     },
+    "aioc_charagua_zonas": {
+      "url": "assets/downloads/aioc_charagua_zonas.zip",
+      "source": "C:\\WWF HOWEE\\CHARAGUA\\ZONAS_AIOC_CHARAGUA_sin_solape.shp",
+      "bytes": 65569
+    },
     "borochi": {
       "url": "assets/downloads/borochi.zip",
       "source": "C:\\WWF HOWEE\\Geoportal_v2\\assets\\capas\\Chrysocyon_brachyurus_Borochi.geojson",
