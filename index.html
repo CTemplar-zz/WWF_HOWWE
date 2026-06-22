@@ -472,6 +472,10 @@
   .legend-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 11.5px; color: var(--text-soft); }
   .legend-row .sw { width: 14px; height: 10px; border-radius: 2px; flex-shrink: 0; }
   .legend-row .pct { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--text-dim); }
+  .legend-section-title { font-size:10px; font-weight:600; color:var(--text-soft); margin-top:10px; padding-top:8px; border-top:1px solid var(--border); text-transform:uppercase; letter-spacing:.8px; }
+  .wms-legend { margin-top: 8px; }
+  .wms-legend-title { font-size: 11px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .wms-legend img { display: block; max-width: 100%; height: auto; background: rgba(255,255,255,.82); border: 1px solid var(--border); border-radius: 4px; padding: 4px; }
   .map-tools { top: 14px; right: 14px; display: flex; flex-direction: column; gap: 6px; }
   .map-tools .iconbtn { background: var(--bg-elev); border: 1px solid var(--border); box-shadow: var(--shadow); }
   .map-tools .iconbtn:hover { background: var(--bg-soft); }
@@ -556,6 +560,7 @@
   .feature-popup table { font-size: 11px; }
   .feature-popup td { padding: 2px 6px 2px 0; }
   .feature-popup td:first-child { color: var(--text-dim); }
+  .wms-feature-block + .wms-feature-block { border-top: 1px solid var(--border); margin-top: 8px; padding-top: 8px; }
   .aioc-zone-label {
     background: rgba(255,255,255,.82);
     border: 1px solid rgba(80,80,80,.25);
@@ -760,6 +765,7 @@
 </div>
 <script>
 const R2_PMTILES_BASE = 'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES';
+const INRA_WMS_URL = 'https://geoserver.inra.gob.bo/geoserver/sinacar/wms';
 const MAPBIOMAS_LEGEND = [
   {c:'#1f8d49',l:'Bosque',v:'3'},
   {c:'#7dc975',l:'Bosque abierto',v:'4'},
@@ -845,6 +851,34 @@ const SPECIES_DISTRIBUTION_TILES = [
   maxDataZoom:12,
   speciesDistributionTiles:true
 }));
+const FISH_RECORD_SPECIES = new Set([
+  'Ancistrus bolivianus','Aphyocharax gracilis','Austrolebias vandenbergi',
+  'Brachyplatystoma rousseauxii','Bujurquina oenolaemus','Hemigrammus changae',
+  'Jenynsia alternimaculata','Oligosarcus schindleri','Papiliolebias bitteri',
+  'Paratrygon aiereba','Parodon carrikeri','Phreatobius sanguijuela',
+  'Piabina thomasi','Rhamphopoma magnum','Spectrolebias pilleti',
+  'Titanolebias monstrosus','Trigonectes aplocheiloides'
+]);
+function fishRecordLayer(id, name, filter, group){
+  return {
+    id,
+    name:`Registros - ${name}`,
+    group,
+    color:'#0f766e',
+    opacity:100,
+    on:false,
+    noDownload:true,
+    recordLayer:true,
+    ...filter
+  };
+}
+function fishDistributionWithRecords(layer){
+  if(!FISH_RECORD_SPECIES.has(layer.name)) return [layer];
+  return [
+    fishRecordLayer(`registros_peces_${layer.id}`, layer.name, {recordSpecies:[layer.name]}, layer.group),
+    layer
+  ];
+}
 const MODULES = {
   '1': { title:'Marco espacial base', sub:'Polígonos oficiales SERNAP · límite nacional', color:'#6e8a55',
     icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2 4 7v10l8 5 8-5V7z"/><path d="m4 7 8 5 8-5M12 12v10"/></svg>',
@@ -852,6 +886,7 @@ const MODULES = {
       {id:'departamentos',name:'Departamentos de Bolivia', color:'#000000',opacity:100,on:true},
       {id:'apn',   name:'Áreas Protegidas (33 polígonos)',  color:'#2c8a4d',opacity:100,on:true},
       {id:'limite',name:'Límite Bolivia',                    color:'#6a6a6a',opacity:80,on:true},
+      {id:'tcos',  name:'TCOs',                               color:'#a87000',opacity:60,on:false,geojsonUrl:'assets/capas/TCOs.geojson',bounds:[-69.56782221499998,-20.96026439036899,-59.73598272199996,-10.900932527649083],downloadUrl:'assets/downloads/tcos.zip',downloadLabel:'Descargar shapefile ZIP'},
       {id:'cobertura_mapbiomas_2024',name:'Cobertura MapBiomas 2024', color:'#1f8d49',opacity:85,on:false, rasterPmtiles:'assets/tiles/cobertura_mapbiomas_2024.pmtiles', maxDataZoom:11, bounds:[-70.37258205346872,-23.515289023925128,-56.265887989297816,-8.701980157265806], downloadUrl:'assets/downloads/cobertura_mapbiomas_2024.tif', downloadLabel:'Descargar TIFF', swatch:'linear-gradient(90deg,#1f8d49 0%,#d6bc74 32%,#ffefc3 55%,#d4271e 74%,#2532e4 100%)'},
     ],
     legend:{title:'Cobertura MapBiomas 2024',ind:'M1',items:[
@@ -887,6 +922,7 @@ const MODULES = {
       {id:'londra',    name:'Londra',            group:'Objetos de conservación', color:'#c54a2c',opacity:50,on:false, iucn:'EN',sci:'Pteronura brasiliensis'},
       {id:'paraba_fr', name:'Paraba Frente Roja',group:'Objetos de conservación', color:'#c54a2c',opacity:50,on:false, iucn:'EN',sci:'Ara rubrogenys'},
       {id:'jucumari',  name:'Jucumari',          group:'Objetos de conservación', color:'#e8a417',opacity:50,on:false, iucn:'VU',sci:'Tremarctos ornatus'},
+      fishRecordLayer('registros_peces_dorado','Dorado',{recordSpecies:['Brachyplatystoma rousseauxii']},'Objetos de conservación'),
       {id:'dorado',    name:'Dorado',            group:'Objetos de conservación', color:'#e8a417',opacity:50,on:false, iucn:'VU',sci:'Brachyplatystoma rousseauxii'},
       {id:'paraba_az', name:'Paraba Azul',       group:'Objetos de conservación', color:'#e8a417',opacity:50,on:false, iucn:'VU',sci:'Anodorhynchus hyacinthinus'},
       {id:'fl_andino', name:'Flamenco Andino',   group:'Objetos de conservación', color:'#e8a417',opacity:50,on:false, iucn:'VU',sci:'Phoenicoparrus andinus'},
@@ -895,28 +931,42 @@ const MODULES = {
       {id:'fl_james',  name:'Flamenco James',    group:'Objetos de conservación', color:'#4aa3e3',opacity:50,on:false, iucn:'NT',sci:'Phoenicoparrus jamesi'},
       {id:'guanaco',   name:'Guanaco',           group:'Objetos de conservación', color:'#4ec97a',opacity:50,on:false, iucn:'LC',sci:'Lama guanicoe'},
       {id:'vicuna',    name:'Vicuña',            group:'Objetos de conservación', color:'#4ec97a',opacity:50,on:false, iucn:'LC',sci:'Vicugna vicugna'},
+      fishRecordLayer('registros_peces_brycon','Sábalo',{recordSpecies:['Brycon amazonicus']},'Propuesta de objetos de conservación'),
       {id:'brycon',        name:'Sábalo',                group:'Propuesta de objetos de conservación', color:'#5fa3b5',opacity:50,on:false, iucn:'LC',sci:'Brycon amazonicus'},
+      fishRecordLayer('registros_peces_colossoma','Pacú',{recordSpecies:['Colossoma macropomum']},'Propuesta de objetos de conservación'),
       {id:'colossoma',     name:'Pacú',                  group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:50,on:false, iucn:'NT',sci:'Colossoma macropomum'},
+      fishRecordLayer('registros_peces_riq_orestias','Riqueza Orestias',{recordSource:'Riqueza Orestias'},'Propuesta de objetos de conservación'),
       {id:'riq_orestias',  name:'Riqueza Orestias',      group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
+      fishRecordLayer('registros_peces_riq_rivulidae','Riqueza Rivulidae',{recordSource:'Riqueza Rivulidae'},'Propuesta de objetos de conservación'),
       {id:'riq_rivulidae', name:'Riqueza Rivulidae',     group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
+      fishRecordLayer('registros_peces_riq_trichomy','Riqueza Trichomycterus',{recordSource:'Riqueza Trichomycterus'},'Propuesta de objetos de conservación'),
       {id:'riq_trichomy',  name:'Riqueza Trichomycterus',group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
+      fishRecordLayer('registros_peces_prochilodus','Sábalo del Plata',{recordSpecies:['Prochilodus lineatus']},'Propuesta de objetos de conservación'),
       {id:'prochilodus',     name:'Sábalo del Plata',    group:'Propuesta de objetos de conservación', color:'#5fa3b5',opacity:50, on:false, iucn:'LC', sci:'Prochilodus lineatus'},
+      fishRecordLayer('registros_peces_riq_pimelodella','Riqueza Pimelodella',{recordSource:'Riqueza Pimelodella'},'Propuesta de objetos de conservación'),
       {id:'riq_pimelodella', name:'Riqueza Pimelodella', group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
+      fishRecordLayer('registros_peces_riq_pimelodus','Riqueza Pimelodus',{recordSource:'Riqueza Pimelodus'},'Propuesta de objetos de conservación'),
       {id:'riq_pimelodus',   name:'Riqueza Pimelodus',   group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
+      fishRecordLayer('registros_peces_riq_rhamdia','Riqueza Rhamdia',{recordSource:'Riqueza Rhamdia'},'Propuesta de objetos de conservación'),
       {id:'riq_rhamdia',     name:'Riqueza Rhamdia',     group:'Propuesta de objetos de conservación', color:'#2374b5',opacity:100,on:false, gradient:true},
       {id:'sp_allobates',     name:'Allobates - sobreposición',     group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Allobates_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Allobates'},
       {id:'sp_atelopus',      name:'Atelopus - sobreposición',      group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Atelopus_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Atelopus'},
       {id:'sp_heleobia',      name:'Heleobia - sobreposición',      group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Heleobia_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Heleobia'},
       {id:'sp_hyloscirtus',   name:'Hyloscirtus - sobreposición',   group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Hyloscirtus_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Hyloscirtus'},
+      fishRecordLayer('registros_peces_sp_knodus','Knodus',{recordGenus:'Knodus'},'Sobreposición por género'),
       {id:'sp_knodus',        name:'Knodus - sobreposición',        group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Knodus_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Knodus'},
+      fishRecordLayer('registros_peces_sp_moema','Moema',{recordGenus:'Moema'},'Sobreposición por género'),
       {id:'sp_moema',         name:'Moema - sobreposición',         group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Moema_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Moema'},
       {id:'sp_nymphargus',    name:'Nymphargus - sobreposición',    group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Nymphargus_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Nymphargus'},
+      fishRecordLayer('registros_peces_sp_orestias','Orestias',{recordGenus:'Orestias'},'Sobreposición por género'),
       {id:'sp_orestias',      name:'Orestias - sobreposición',      group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Orestias_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Orestias'},
+      fishRecordLayer('registros_peces_sp_potamotrygon','Potamotrygon',{recordGenus:'Potamotrygon'},'Sobreposición por género'),
       {id:'sp_potamotrygon',  name:'Potamotrygon - sobreposición',  group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Potamotrygon_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Potamotrygon'},
       {id:'sp_rhinella',      name:'Rhinella - sobreposición',      group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Rhinella_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Rhinella'},
       {id:'sp_telmatobius',   name:'Telmatobius - sobreposición',   group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Telmatobius_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Telmatobius'},
+      fishRecordLayer('registros_peces_sp_trichomycterus','Trichomycterus',{recordGenus:'Trichomycterus'},'Sobreposición por género'),
       {id:'sp_trichomycterus',name:'Trichomycterus - sobreposición',group:'Sobreposición por género', color:'#198fbd',opacity:85,on:false, pmtiles:`${R2_PMTILES_BASE}/Trichomycterus_sp.pmtiles`, pmlayer:'sobreposicion', maxDataZoom:12, overlapTiles:true, genus:'Trichomycterus'},
-      ...SPECIES_DISTRIBUTION_TILES,
+      ...SPECIES_DISTRIBUTION_TILES.flatMap(fishDistributionWithRecords),
     ],
     legend:{title:'Estado de conservación IUCN',ind:'I.7',items:[
       {c:'#7a1a1a',l:'En peligro crítico (CR)',v:'1 spp.'},
@@ -931,6 +981,12 @@ const MODULES = {
     layers:[
       {id:'departamentos',name:'Departamentos de Bolivia',color:'#000000',opacity:100,on:true},
       {id:'apn',      name:'Áreas Protegidas',             color:'#2c8a4d',opacity:100,on:true},
+      {id:'wms_amenaza_inundacion',name:'Amenaza de inundación',group:'SINACAR / INRA',color:'#2271ae',opacity:85,on:false,wmsLayer:'sinacar:layer_amenaza_de_inundacion_p5wxo',wms:INRA_WMS_URL,bounds:[-69.64493560791016,-22.898048400878906,-57.45443344116211,-9.653406143188477]},
+      {id:'wms_amenaza_incendios',name:'Amenaza de incendios',group:'SINACAR / INRA',color:'#d6452c',opacity:85,on:false,wmsLayer:'sinacar:layer_amenaza_de_incendios_yfzbml',wms:INRA_WMS_URL,bounds:[-69.64493560791016,-22.898048400878906,-57.45443344116211,-9.669632911682129]},
+      {id:'wms_plan_uso_suelos',name:'Plan de uso de suelos',group:'SINACAR / INRA',color:'#8a6f3e',opacity:85,on:false,wmsLayer:'sinacar:layer_plan_de_uso_de_suelos_6couij',wms:INRA_WMS_URL,bounds:[-69.56353759765625,-22.913942337036133,-57.49848556518555,-9.658485412597656]},
+      {id:'wms_quemas_incendios_2019_2022',name:'Quemas e incendios 2019-2022',group:'SINACAR / INRA',color:'#e87522',opacity:85,on:false,wmsLayer:'sinacar:layer_quemasincendios19_22_9vror',wms:INRA_WMS_URL,bounds:[-69.5682373046875,-22.868593215942383,-57.6021614074707,-9.678046226501465]},
+      {id:'wms_quemas_incendios_2023_2025',name:'Quemas e incendios 2023-2025',group:'SINACAR / INRA',color:'#a43b1d',opacity:85,on:false,wmsLayer:'sinacar:layer_quemasincendios23_25_5xk55',wms:INRA_WMS_URL,bounds:[-69.56733703613281,-22.762861251831055,-57.46281433105469,-9.687928199768066]},
+      {id:'wms_deforestacion',name:'Deforestación',group:'SINACAR / INRA',color:'#6f8b2d',opacity:85,on:false,wmsLayer:'sinacar:layer_deforestacion_5fxh4i',wms:INRA_WMS_URL,bounds:[-69.56841278076172,-22.87550926208496,-57.45443344116211,-9.67728042602539]},
 
     ],
     legend:{title:'Marco espacial',ind:'M3',items:[
@@ -996,6 +1052,7 @@ const MODULES = {
     icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M3 6.5 9 4l6 2.5 6-2.5v13.5L15 20l-6-2.5L3 20z"/><path d="M9 4v13.5M15 6.5V20"/></svg>',
     layers:[
       {id:'aioc_charagua_zonas',name:'Zonas AIOC Charagua Iyambae',color:'#45ddb0',opacity:100,on:true,downloadUrl:'assets/downloads/aioc_charagua_zonas.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'tcos',name:'TCOs',color:'#a87000',opacity:60,on:false,geojsonUrl:'assets/capas/TCOs.geojson',bounds:[-69.56782221499998,-20.96026439036899,-59.73598272199996,-10.900932527649083],downloadUrl:'assets/downloads/tcos.zip',downloadLabel:'Descargar shapefile ZIP'},
       {id:'apn',name:'Áreas Protegidas',color:'#2c8a4d',opacity:100,on:true},
       {id:'departamentos',name:'Departamentos de Bolivia',color:'#000000',opacity:100,on:true},
     ],
@@ -1023,6 +1080,10 @@ Object.values(MODULES).forEach(mod => {
       layer.transparency = 0;
       layer.opacity = 100;
     }
+    if(layer.id==='tcos'){
+      layer.transparency = 40;
+      layer.opacity = 60;
+    }
   });
 });
 const LAYER_METADATA = {
@@ -1047,6 +1108,13 @@ const LAYER_METADATA = {
       'Cita obligatoria: SDSN Bolivia (2025). Áreas protegidas Bolivia 2025 [Archivo shapefile]. https://sdsnbolivia.org/datos-espaciales/'
     ],
     links: [{label:'SDSN Bolivia - datos espaciales', url:'https://sdsnbolivia.org/datos-espaciales/'}]
+  },
+  tcos: {
+    title: 'TCOs',
+    body: [
+      'Territorios Comunitarios de Origen incorporados desde la capa TCOs activa en ArcGIS Pro.',
+      'Simbologia por estado: Demandado y Titulada.'
+    ]
   },
   cobertura_mapbiomas_2024: {
     title: 'Cobertura MapBiomas 2024',
@@ -1129,6 +1197,13 @@ const LAYER_METADATA = {
       'Datos de amenaza de sequía generados por el "Atlas de riesgo agropecuario y cambio climático para la soberanía alimentaria" 2014.'
     ]
   },
+  registros_peces_m2: {
+    title: 'Registros de captura de peces',
+    body: [
+      'Puntos extraídos de la capa Registros_Captura_Peces en ArcGIS Pro, filtrados por las especies de peces presentes en el módulo M2 del geoportal.',
+      'Incluye especies presentes como capas individuales, propuestas de objetos de conservación, capas de riqueza y capas de sobreposición por género.'
+    ]
+  },
   aioc_charagua_zonas: {
     title: 'Zonas AIOC Charagua Iyambae',
     body: [
@@ -1150,6 +1225,26 @@ function escapeHTML(value){
 }
 function getLayerMetadata(layer){
   if(!layer) return null;
+  if(layer.wms){
+    return {
+      title: layer.name,
+      body: [
+        'Capa consumida como WMS desde el GeoServer SINACAR / INRA.',
+        'La visualización se solicita al servidor como imagen PNG transparente; para análisis GIS completo conviene descargar la capa como GeoPackage o shapefile fuera del geoportal.'
+      ],
+      links: [{label:'Servicio WMS SINACAR / INRA', url:layer.wms}]
+    };
+  }
+  if(layer.recordLayer){
+    const filtro = layer.recordSpecies?.join(', ') || layer.recordGenus || layer.recordSource || 'todas las especies de peces M2';
+    return {
+      title: layer.name,
+      body: [
+        `Puntos de captura filtrados para: ${filtro}.`,
+        'Fuente: capa Registros_Captura_Peces de ArcGIS Pro, filtrada por el campo Nombre_Especie.'
+      ]
+    };
+  }
   if(layer.id?.startsWith('sp_')){
     return {
       ...SPECIES_METADATA,
@@ -1280,6 +1375,7 @@ const DATA_FILES = {
   'riq_rhamdia':     'assets/capas/Riqueza_Rhamdia.geojson',
   'inia_bol':        'assets/capas/inia_bol.geojson',
   'densidad_inia':   'assets/capas/densidad_inia.geojson',
+  'registros_peces_m2': 'assets/capas/Registros_Captura_Peces_Geoportal.geojson',
   // humedales: ahora servido como vector tiles (assets/tiles/humedales.pmtiles)
   'ramsar':          'assets/capas/RAMSAR_SITES.geojson',
   'cuencas':         'assets/capas/Cuencas.geojson',
@@ -1553,6 +1649,21 @@ function patternUrl(color){
   return `url(#ap-pat-${(color||'#2c8a4d').replace('#','')})`;
 }
 
+function fishRecordSpeciesColor(name){
+  let h = 0;
+  for(const ch of String(name || '')) h = ((h << 5) - h + ch.charCodeAt(0)) | 0;
+  return `hsl(${Math.abs(h) % 360}, 68%, 38%)`;
+}
+
+function fishRecordMatchesLayer(feature, layerDef){
+  const p=feature.properties||{};
+  const sp=String(p.Nombre_Especie||'');
+  if(layerDef.recordSpecies) return layerDef.recordSpecies.includes(sp);
+  if(layerDef.recordGenus) return sp.startsWith(`${layerDef.recordGenus} `);
+  if(layerDef.recordSource) return String(p.Geoportal_fuente||'').split(';').map(s=>s.trim()).includes(layerDef.recordSource);
+  return true;
+}
+
 // Gradiente azul: blanco-azul claro ? azul oscuro
 function blueGradient(t){
   t=Math.max(0,Math.min(1,t));
@@ -1563,7 +1674,8 @@ function blueGradient(t){
 }
 
 function createGeoJSONLayer(id, layerDef){
-  const data=geoData[id];
+  let data=geoData[id];
+  if(layerDef.recordLayer && geoData['registros_peces_m2']) data=geoData['registros_peces_m2'];
   if(!data) return L.layerGroup();
   // Capas de riqueza: gradiente por N_ESP, popup con lista de especies
   if(id.startsWith('riq_')){
@@ -1597,6 +1709,59 @@ function createGeoJSONLayer(id, layerDef){
     return L.geoJSON(data,{
       interactive:false,
       style:{color:'#000000',weight:1.4,fillOpacity:0,opacity:0.9,interactive:false}
+    });
+  }
+  if(id==='registros_peces_m2' || layerDef.recordLayer){
+    return L.geoJSON(data,{
+      filter: f=>fishRecordMatchesLayer(f,layerDef),
+      pointToLayer:(f,latlng)=>L.circleMarker(latlng,{
+        radius:4,
+        color:'#ffffff',
+        weight:0.9,
+        opacity:0.95,
+        fillColor:fishRecordSpeciesColor(f.properties?.Nombre_Especie),
+        fillOpacity:0.9
+      }),
+      onEachFeature:(f,l)=>{
+        const p=f.properties||{};
+        l.bindPopup(`<div class="feature-popup"><h5><i>${escapeHTML(p.Nombre_Especie||'Registro de pez')}</i></h5><table>
+          <tr><td>Fuente</td><td>${escapeHTML(p.Fuente||'-')}</td></tr>
+          <tr><td>Latitud</td><td>${p.Latitud!=null?Number(p.Latitud).toFixed(6):'-'}</td></tr>
+          <tr><td>Longitud</td><td>${p.Longitud!=null?Number(p.Longitud).toFixed(6):'-'}</td></tr>
+          <tr><td>Capa geoportal</td><td>${escapeHTML(p.Geoportal_fuente||'-')}</td></tr>
+        </table></div>`,{maxWidth:300});
+      }
+    });
+  }
+  if(id==='tcos'){
+    const tcoStyle = status => {
+      const s=String(status||'').trim().toLowerCase();
+      if(s==='demandado') return {fill:'#ffebaf',outline:'#686868'};
+      if(s==='titulada') return {fill:'#a87000',outline:'#000000'};
+      return {fill:layerDef.color||'#a87000',outline:'#686868'};
+    };
+    return L.geoJSON(data,{
+      style:f=>{
+        const c=tcoStyle(f.properties?.status);
+        return {
+          color:c.outline,
+          weight:0.7,
+          opacity:(layerDef.opacity??60)/100,
+          fillColor:c.fill,
+          fillOpacity:(layerDef.opacity??60)/100
+        };
+      },
+      onEachFeature:(f,l)=>{
+        const p=f.properties||{};
+        const area=p.area_sig_h!=null ? Number(p.area_sig_h).toLocaleString('es-BO') : '-';
+        l.bindPopup(`<div class="feature-popup"><h5>${escapeHTML(p.nombre||p.name||'TCO')}</h5><table>
+          <tr><td>Estado</td><td><b>${escapeHTML(p.status||'-')}</b></td></tr>
+          <tr><td>Categoria</td><td>${escapeHTML(p.categoria||p.categoria_||'-')}</td></tr>
+          <tr><td>Etnias</td><td>${escapeHTML(p.etnias||'-')}</td></tr>
+          <tr><td>Area SIG (ha)</td><td>${area}</td></tr>
+          <tr><td>Fuente</td><td>${escapeHTML(p.fuente||'-')}</td></tr>
+        </table></div>`,{maxWidth:320});
+      }
     });
   }
   if(id==='aioc_charagua_zonas'){
@@ -1957,7 +2122,96 @@ function createGeoJSONLayer(id, layerDef){
 }
 
 const moduleLayers={};
+function createWMSLayer(layerDef){
+  return L.tileLayer.wms(layerDef.wms, {
+    layers: layerDef.wmsLayer,
+    format: 'image/png',
+    transparent: true,
+    version: layerDef.wmsVersion || '1.1.1',
+    attribution: layerDef.attribution || 'INRA / SINACAR',
+    opacity: Math.max(0, Math.min(1, (layerDef.opacity ?? 100) / 100))
+  });
+}
+
+function getWMSFeatureInfoUrl(layerDef, latlng){
+  const point = map.latLngToContainerPoint(latlng, map.getZoom());
+  const size = map.getSize();
+  const bounds = map.getBounds();
+  const params = new URLSearchParams({
+    SERVICE: 'WMS',
+    VERSION: layerDef.wmsVersion || '1.1.1',
+    REQUEST: 'GetFeatureInfo',
+    LAYERS: layerDef.wmsLayer,
+    QUERY_LAYERS: layerDef.wmsLayer,
+    STYLES: '',
+    BBOX: [
+      bounds.getWest(),
+      bounds.getSouth(),
+      bounds.getEast(),
+      bounds.getNorth()
+    ].join(','),
+    FEATURE_COUNT: '5',
+    HEIGHT: String(size.y),
+    WIDTH: String(size.x),
+    FORMAT: 'image/png',
+    INFO_FORMAT: 'application/json',
+    SRS: 'EPSG:4326',
+    X: String(Math.round(point.x)),
+    Y: String(Math.round(point.y))
+  });
+  return `${layerDef.wms}?${params.toString()}`;
+}
+
+function featureInfoTable(properties){
+  const entries = Object.entries(properties || {})
+    .filter(([_,value]) => value !== null && value !== undefined && String(value).trim() !== '')
+    .slice(0, 12);
+  if(!entries.length) return '<p>Sin atributos disponibles.</p>';
+  return `<table>${entries.map(([key,value])=>`
+    <tr><td>${escapeHTML(key)}</td><td>${escapeHTML(value)}</td></tr>
+  `).join('')}</table>`;
+}
+
+async function queryWMSFeatureInfo(layerDef, latlng){
+  const r = await fetch(getWMSFeatureInfoUrl(layerDef, latlng));
+  if(!r.ok) throw new Error(`WMS GetFeatureInfo ${r.status}`);
+  const data = await r.json();
+  const features = Array.isArray(data.features) ? data.features : [];
+  if(!features.length) return '';
+  return features.slice(0, 3).map((feature,idx)=>`
+    <div class="wms-feature-block">
+      <h5>${escapeHTML(layerDef.name)}${features.length > 1 ? ` · ${idx+1}` : ''}</h5>
+      ${featureInfoTable(feature.properties)}
+    </div>
+  `).join('');
+}
 // === Vector tiles (PMTiles) ===
+const pmtilesBufferedSourceCache=new Map();
+function isLocalPMTilesUrl(url){
+  return typeof url === 'string' && !/^https?:\/\//i.test(url);
+}
+function createPMTilesArchive(url){
+  if(!isLocalPMTilesUrl(url)) return new pmtiles.PMTiles(url);
+  if(!pmtilesBufferedSourceCache.has(url)){
+    let bytesPromise=null;
+    const source={
+      getKey(){return `buffer:${url}`;},
+      async getBytes(offset,length){
+        if(!bytesPromise){
+          bytesPromise=fetch(url).then(r=>{
+            if(!r.ok) throw new Error(`No se pudo cargar PMTiles local: ${url}`);
+            return r.arrayBuffer();
+          });
+        }
+        const bytes=await bytesPromise;
+        return {data:bytes.slice(offset,offset+length)};
+      }
+    };
+    pmtilesBufferedSourceCache.set(url,source);
+  }
+  return new pmtiles.PMTiles(pmtilesBufferedSourceCache.get(url));
+}
+
 function createPMTilesLayer(layerDef){
   if(typeof protomapsL === 'undefined'){
     console.warn('protomaps-leaflet no cargó'); return L.layerGroup();
@@ -2201,7 +2455,7 @@ function createRasterPMTilesLayer(layerDef){
     console.warn('pmtiles raster no cargó');
     return L.layerGroup();
   }
-  const archive = new pmtiles.PMTiles(layerDef.rasterPmtiles);
+  const archive = createPMTilesArchive(layerDef.rasterPmtiles);
   const layer = pmtiles.leafletRasterLayer(archive, {
     maxNativeZoom: layerDef.maxDataZoom || 12,
     maxZoom: 18,
@@ -2272,11 +2526,49 @@ function createRasterPMTilesLayer(layerDef){
   return layer;
 }
 
+function createLazyGeoJSONLayer(id, layerDef){
+  const group=L.layerGroup();
+  let loading=null;
+  let loadedLayer=null;
+  const load=async()=>{
+    if(loadedLayer) return loadedLayer;
+    if(geoData[id]){
+      loadedLayer=createGeoJSONLayer(id,layerDef);
+      group.addLayer(loadedLayer);
+      applyLayerOpacity(id,loadedLayer,layerDef.opacity??100);
+      return loadedLayer;
+    }
+    if(!loading){
+      loading=fetch(layerDef.geojsonUrl)
+        .then(r=>{
+          if(!r.ok) throw new Error(`No se pudo cargar ${layerDef.geojsonUrl}`);
+          return r.json();
+        })
+        .then(data=>{
+          geoData[id]=data;
+          loadedLayer=createGeoJSONLayer(id,layerDef);
+          group.addLayer(loadedLayer);
+          applyLayerOpacity(id,loadedLayer,layerDef.opacity??100);
+          return loadedLayer;
+        })
+        .catch(err=>{
+          console.warn('No se pudo cargar capa GeoJSON:', layerDef.geojsonUrl, err);
+          return null;
+        });
+    }
+    return loading;
+  };
+  group.on('add',load);
+  return group;
+}
+
 function buildModuleLayer(id,mod){
   const layerDef=mod.layers.find(l=>l.id===id)||{color:'#888'};
+  if(layerDef.wms) return createWMSLayer(layerDef);
   if(layerDef.rasterPmtiles) return createRasterPMTilesLayer(layerDef);
   // PMTiles (vector tiles)
   if(layerDef.pmtiles) return createPMTilesLayer(layerDef);
+  if(layerDef.geojsonUrl) return createLazyGeoJSONLayer(id,layerDef);
   if(id==='apn_lim'&&geoData['apn']){
     return L.geoJSON(geoData['apn'],{
       style:{color:layerDef.color,weight:1.6,fillOpacity:0,opacity:0.85},
@@ -2286,6 +2578,7 @@ function buildModuleLayer(id,mod){
       }
     });
   }
+  if(layerDef.recordLayer && geoData['registros_peces_m2']) return createGeoJSONLayer(id,layerDef);
   if(DATA_FILES[id]&&geoData[id]) return createGeoJSONLayer(id,layerDef);
   // Capas simuladas para módulos 3-6
   const g=L.layerGroup();
@@ -2309,10 +2602,44 @@ function buildModuleLayer(id,mod){
 let currentModule='2', currentAP=null;
 const activeLayers=new Set();
 
+async function handleWMSFeatureInfoClick(e){
+  const mod = MODULES[currentModule];
+  if(!mod) return;
+  const wmsLayers = mod.layers.filter(layerDef => {
+    if(!layerDef.wms || !activeLayers.has(layerDef.id)) return false;
+    const layer = moduleLayers[`${currentModule}:${layerDef.id}`];
+    return layer && map.hasLayer(layer);
+  });
+  if(!wmsLayers.length) return;
+  try{
+    const results = await Promise.allSettled(wmsLayers.map(layerDef => queryWMSFeatureInfo(layerDef, e.latlng)));
+    const html = results
+      .filter(result => result.status === 'fulfilled' && result.value)
+      .map(result => result.value)
+      .join('');
+    results
+      .filter(result => result.status === 'rejected')
+      .forEach(result => console.warn('WMS GetFeatureInfo error:', result.reason));
+    if(html){
+      L.popup({maxWidth:340})
+        .setLatLng(e.latlng)
+        .setContent(`<div class="feature-popup">${html}</div>`)
+        .openOn(map);
+    }
+  }catch(err){
+    console.warn('WMS GetFeatureInfo error:', err);
+  }
+}
+// GetFeatureInfo del WMS de INRA está bloqueado por CORS; las WMS usan leyenda dinámica.
+
 // Aplica opacidad sin tocar otros estilos (color, etc.)
 function applyLayerOpacity(layerId, leafletLayer, pct){
   if(!leafletLayer) return;
   const o = Math.max(0, Math.min(1, pct/100));
+  if(!leafletLayer.setStyle && leafletLayer.eachLayer){
+    leafletLayer.eachLayer(child=>applyLayerOpacity(layerId,child,pct));
+    return;
+  }
   // Caso especial: PMTiles (vector tiles via protomaps-leaflet)
   // Estos no tienen setStyle ni eachLayer ? usan setOpacity heredado de GridLayer
   if(!leafletLayer.setStyle && !leafletLayer.eachLayer && leafletLayer.setOpacity){
@@ -2469,7 +2796,7 @@ async function boundsFromPMTiles(layerDef){
       pmtilesBoundsCache.set(url,b);
       return b;
     }
-    const archive=new pmtiles.PMTiles(url);
+    const archive=createPMTilesArchive(url);
     const h=await archive.getHeader();
     b=boundsFromLonLatArray([h.minLon,h.minLat,h.maxLon,h.maxLat]);
     if(!b){
@@ -2521,6 +2848,7 @@ async function zoomAndHighlightLayer(modId, layerDef){
   if(!moduleLayers[key]) moduleLayers[key]=buildModuleLayer(layerDef.id, MODULES[modId]);
   const layer=moduleLayers[key];
   let bounds=boundsFromLayer(layer);
+  if(!bounds && layerDef.bounds) bounds=boundsFromLonLatArray(layerDef.bounds);
   if(!bounds && (layerDef.pmtiles || layerDef.rasterPmtiles)) bounds=await boundsFromPMTiles(layerDef);
   if(!bounds || !bounds.isValid || !bounds.isValid()) return;
 
@@ -2588,8 +2916,13 @@ function renderLayerList(modId, mod){
       : l.gradient
       ? 'background:linear-gradient(90deg,#e8f4ff 0%,#7fb5e0 50%,#0d4577 100%)'
       : `background:${l.color}`;
+    const showDownload = !l.wms && !l.noDownload;
     const downloadUrl = l.downloadUrl || `assets/downloads/${l.id}.zip`;
     const downloadTitle = l.downloadLabel || 'Descargar shapefile ZIP';
+    const downloadButton = showDownload ? `
+        <a class="download-layer-btn" href="${downloadUrl}" download title="${downloadTitle}">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v11"/><path d="m7 9 5 5 5-5"/><path d="M5 20h14"/></svg>
+        </a>` : '';
     row.innerHTML=`
       <div class="layer-main">
         <span class="grip" title="Arrastra para reordenar">
@@ -2608,9 +2941,7 @@ function renderLayerList(modId, mod){
         <button class="metadata-layer-btn" title="Ver metadatos">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 10v7"/><path d="M12 7h.01"/></svg>
         </button>
-        <a class="download-layer-btn" href="${downloadUrl}" download title="${downloadTitle}">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v11"/><path d="m7 9 5 5 5-5"/><path d="M5 20h14"/></svg>
-        </a>
+        ${downloadButton}
       </div>
       <div class="layer-slider">
         <input type="range" min="0" max="100" step="1" value="${transparency}" aria-label="Transparencia">
@@ -2642,7 +2973,7 @@ function renderLayerList(modId, mod){
       openMetadata(l);
     });
     const downloadBtn=row.querySelector('.download-layer-btn');
-    downloadBtn.addEventListener('click',e=>e.stopPropagation());
+    if(downloadBtn) downloadBtn.addEventListener('click',e=>e.stopPropagation());
 
     // Input del slider
     const rangeInput=row.querySelector('input[type=range]');
@@ -2665,7 +2996,7 @@ function renderLayerList(modId, mod){
       sliderBtn.addEventListener(evt,e=>e.stopPropagation());
       zoomBtn.addEventListener(evt,e=>e.stopPropagation());
       metadataBtn.addEventListener(evt,e=>e.stopPropagation());
-      downloadBtn.addEventListener(evt,e=>e.stopPropagation());
+      if(downloadBtn) downloadBtn.addEventListener(evt,e=>e.stopPropagation());
     });
     const grip=row.querySelector('.grip');
     grip.draggable=true;
@@ -2767,7 +3098,7 @@ function getRiquezaSpeciesBreakdown(sid){
 
 // Construye los items del desglose M2 (uno por especie individual)
 function getM2BreakdownItems(){
-  const activeSp=MODULES['2'].layers.filter(l=>activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar' && l.id!=='cuencas' && l.id!=='ffr' && l.id!=='lagos' && l.id!=='cuencas_n8' && l.id!=='cuencas_n9' && l.id!=='sea');
+  const activeSp=MODULES['2'].layers.filter(l=>activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar' && l.id!=='cuencas' && l.id!=='ffr' && l.id!=='lagos' && l.id!=='cuencas_n8' && l.id!=='cuencas_n9' && l.id!=='sea' && l.id!=='registros_peces_m2');
   const items=[];
   activeSp.forEach(s=>{
     if(s.id.startsWith('riq_')){
@@ -2885,7 +3216,7 @@ function renderM2Stats(){
       if(inSel){ supAP += (parseFloat(p.sup_ha)||0); apCount++; }
     });
   }
-  const activeSp = MODULES['2'].layers.filter(l=> activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar' && l.id!=='cuencas' && l.id!=='ffr' && l.id!=='lagos' && l.id!=='cuencas_n8' && l.id!=='cuencas_n9' && l.id!=='sea');
+  const activeSp = MODULES['2'].layers.filter(l=> activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar' && l.id!=='cuencas' && l.id!=='ffr' && l.id!=='lagos' && l.id!=='cuencas_n8' && l.id!=='cuencas_n9' && l.id!=='sea' && l.id!=='registros_peces_m2');
   // Superficie de intersección (ha) ? datos reales de ArcGIS, filtrados por APs
   let supInterHa = 0;
   activeSp.forEach(s=>{ supInterHa += getLayerIntersectedHa(s.id); });
@@ -2953,6 +3284,144 @@ function renderRightPanelKPIs(modId){
   }
 }
 
+function getWMSLegendGraphicUrl(layerDef){
+  const params = new URLSearchParams({
+    SERVICE: 'WMS',
+    VERSION: layerDef.wmsVersion || '1.1.1',
+    REQUEST: 'GetLegendGraphic',
+    FORMAT: 'image/png',
+    LAYER: layerDef.wmsLayer
+  });
+  return `${layerDef.wms}?${params.toString()}`;
+}
+
+const OVERLAP_LEGEND=[
+  {c:'#d7efff',l:'1 especie',v:''},
+  {c:'#8fcdf2',l:'2 especies',v:''},
+  {c:'#3f96d1',l:'3 a 4 especies',v:''},
+  {c:'#075f9e',l:'5 a 9 especies',v:''},
+  {c:'#002f5f',l:'10+ especies',v:''},
+];
+const DROUGHT_LEGEND=[
+  {c:'#f4f1a3',l:'Amenaza baja',v:''},
+  {c:'#f0c35a',l:'Amenaza media',v:''},
+  {c:'#e67a33',l:'Amenaza alta',v:''},
+  {c:'#b7332c',l:'Amenaza muy alta',v:''},
+];
+const ACTIVE_LAYER_LEGENDS={
+  departamentos:{title:'Departamentos de Bolivia',items:[{c:'#000000',l:'Limite departamental',v:''}]},
+  limite:{title:'Limite Bolivia',items:[{c:'#6a6a6a',l:'Limite nacional',v:''}]},
+  apn:{title:'Areas Protegidas',items:SERNAP_LEGEND},
+  tcos:{title:'TCOs',items:[
+    {c:'#ffebaf',l:'Demandado',v:''},
+    {c:'#a87000',l:'Titulada',v:''},
+  ]},
+  sea:{title:'Sistemas Ecologicos Acuaticos',items:[{c:'#49AE6F',l:'Sistemas ecologicos acuaticos',v:''}]},
+  cobertura_mapbiomas_2024:{title:'Cobertura MapBiomas 2024',items:MAPBIOMAS_LEGEND},
+  cuencas:{title:'Cuencas (balance hidrico)',items:[{c:'#003f73',l:'Borde de cuenca',v:''}]},
+  cuencas_n8:{title:'Sub-cuencas HydroBASINS nivel 8',items:[{c:'#003f73',l:'Borde de sub-cuenca',v:''}]},
+  cuencas_n9:{title:'Sub-cuencas HydroBASINS nivel 9',items:[{c:'#003f73',l:'Borde de sub-cuenca',v:''}]},
+  ffr:{title:'Rios FFR (estado conectividad)',items:[{c:'linear-gradient(90deg,#1f6dc7,#b7d9ff)',l:'Estado de conectividad',v:''}]},
+  lagos:{title:'Lagos y lagunas 2016',items:[{c:'#2374b5',l:'Lagos y lagunas',v:''}]},
+  humedales:{title:'Humedales (meses inundados)',items:[{c:'linear-gradient(90deg,#d7efff,#1f6dc7)',l:'Menos a mas meses inundados',v:''}]},
+  ramsar:{title:'Sitios Ramsar',items:[{c:'#4aa3e3',l:'Sitios Ramsar',v:''}]},
+  densidad_inia:{title:'Densidad estimada Inia boliviensis',items:[{c:'linear-gradient(90deg,#f2d1c5,#BC5539)',l:'Menor a mayor densidad',v:''}]},
+  amenaza_sequia:{title:'Amenaza de Sequia',items:DROUGHT_LEGEND,key:'sequia'},
+  amenaza_sequia_mdryt:{title:'Amenaza de Sequia MDRyT',items:DROUGHT_LEGEND,key:'sequia-mdryt'},
+  aioc_charagua_zonas:{title:'Zonas AIOC Charagua Iyambae',items:[
+    {c:'#b7e3a1',l:'Zona',v:''},
+    {c:'#2f7d32',l:'Borde / etiqueta Zonas',v:''},
+  ]},
+};
+
+function legendRowsHTML(items){
+  return items.map(it=>`<div class="legend-row"><span class="sw" style="background:${it.c}"></span><span>${escapeHTML(it.l)}</span><span class="pct mono">${escapeHTML(it.v||'')}</span></div>`).join('');
+}
+
+function fishRecordLegendItems(layerDef){
+  const data=geoData['registros_peces_m2'];
+  if(data?.features?.length){
+    const counts=new Map();
+    data.features
+      .filter(f=>fishRecordMatchesLayer(f,layerDef))
+      .forEach(f=>{
+        const sp=String(f.properties?.Nombre_Especie||'Registro sin especie');
+        counts.set(sp,(counts.get(sp)||0)+1);
+      });
+    const items=Array.from(counts.entries())
+      .sort((a,b)=>a[0].localeCompare(b[0]))
+      .map(([sp,count])=>({c:fishRecordSpeciesColor(sp),l:sp,v:`${count} pts.`}));
+    if(items.length) return items;
+  }
+  if(layerDef.recordSpecies?.length){
+    return layerDef.recordSpecies.map(sp=>({c:fishRecordSpeciesColor(sp),l:sp,v:''}));
+  }
+  return [{c:layerDef.color||'#0f766e',l:'Puntos de registro',v:''}];
+}
+
+function layerLegendSpec(layerDef){
+  if(layerDef.wms){
+    return {
+      key:layerDef.id,
+      html:`<div class="wms-legend">
+        <div class="wms-legend-title">${escapeHTML(layerDef.name)}</div>
+        <img src="${escapeHTML(getWMSLegendGraphicUrl(layerDef))}" alt="Leyenda ${escapeHTML(layerDef.name)}" loading="lazy">
+      </div>`
+    };
+  }
+  if(ACTIVE_LAYER_LEGENDS[layerDef.id]) return ACTIVE_LAYER_LEGENDS[layerDef.id];
+  if(layerDef.overlapTiles) return {title:layerDef.name,items:OVERLAP_LEGEND};
+  if(layerDef.recordLayer) return {title:layerDef.name,items:fishRecordLegendItems(layerDef)};
+  if(layerDef.speciesDistributionTiles) return {title:layerDef.name,items:[{c:layerDef.color||'#064e8a',l:'Distribucion de especie',v:''}]};
+  if(layerDef.id && layerDef.id.startsWith('riq_')) return {title:layerDef.name,items:[{c:'linear-gradient(90deg,#d7efff,#064e8a)',l:'Menor a mayor riqueza',v:''}]};
+  if(layerDef.gradient) return {title:layerDef.name,items:[{c:layerDef.swatch||`linear-gradient(90deg,#d7efff,${layerDef.color||'#2374b5'})`,l:'Menor a mayor valor',v:''}]};
+  if(layerDef.iucn){
+    const color=IUCN_COLORS[layerDef.iucn]||layerDef.color||'#2374b5';
+    return {title:layerDef.name,items:[{c:color,l:`Estado IUCN ${layerDef.iucn}`,v:layerDef.sci||''}]};
+  }
+  return {title:layerDef.name,items:[{c:layerDef.swatch||layerDef.color||'#7f8a7d',l:layerDef.name,v:''}]};
+}
+
+function renderMapLegend(modId){
+  const mod=MODULES[modId];
+  if(!mod) return;
+  document.getElementById('legendTitle').textContent='Leyenda de capas activas';
+  document.getElementById('legendInd').textContent=`M${modId}`;
+  const activeDefs=mod.layers.filter(layerDef=>activeLayers.has(layerDef.id));
+  if(!activeDefs.length){
+    document.getElementById('legendBody').innerHTML='<div class="legend-section-title">Activa una capa para ver su leyenda</div>';
+    return;
+  }
+  const renderedKeys=new Set();
+  const legendHTML=activeDefs.map(layerDef=>{
+    const spec=layerLegendSpec(layerDef);
+    if(!spec) return '';
+    const key=spec.key||layerDef.id;
+    if(renderedKeys.has(key)) return '';
+    renderedKeys.add(key);
+    if(spec.html) return spec.html;
+    return `<div class="legend-section-title">${escapeHTML(spec.title)}</div>${legendRowsHTML(spec.items||[])}`;
+  }).join('');
+  document.getElementById('legendBody').innerHTML=legendHTML;
+  return;
+  const activeWMS = mod.layers.filter(layerDef => layerDef.wms && activeLayers.has(layerDef.id));
+  if(activeWMS.length){
+    legendHTML += `<div class="legend-section-title">Leyendas WMS activas</div>`;
+    legendHTML += activeWMS.map(layerDef => `
+      <div class="wms-legend">
+        <div class="wms-legend-title">${escapeHTML(layerDef.name)}</div>
+        <img src="${escapeHTML(getWMSLegendGraphicUrl(layerDef))}" alt="Leyenda ${escapeHTML(layerDef.name)}" loading="lazy">
+      </div>
+    `).join('');
+  }
+
+  if(modId!=='1'){
+    legendHTML+=`<div class="legend-section-title">Categorías SERNAP</div>`;
+    legendHTML+=SERNAP_LEGEND.map(rowHTML).join('');
+  }
+  document.getElementById('legendBody').innerHTML=legendHTML;
+}
+
 function renderModule(modId){
   clearLayerHighlight();
   Object.values(moduleLayers).forEach(l=>{if(map.hasLayer(l))map.removeLayer(l);});
@@ -2966,15 +3435,7 @@ function renderModule(modId){
   document.getElementById('layerCount').textContent=`${mod.layers.length} capas`;
   renderLayerList(modId, mod);
   renderRightPanelKPIs(modId);
-  document.getElementById('legendTitle').textContent=mod.legend.title;
-  document.getElementById('legendInd').textContent=mod.legend.ind;
-  const rowHTML=it=>`<div class="legend-row"><span class="sw" style="background:${it.c}"></span><span>${it.l}</span><span class="pct mono">${it.v}</span></div>`;
-  let legendHTML=mod.legend.items.map(rowHTML).join('');
-  if(modId!=='1'){
-    legendHTML+=`<div style="font-size:10px;font-weight:600;color:var(--text-soft);margin-top:10px;padding-top:8px;border-top:1px solid var(--border);text-transform:uppercase;letter-spacing:.8px">Categorías SERNAP</div>`;
-    legendHTML+=SERNAP_LEGEND.map(rowHTML).join('');
-  }
-  document.getElementById('legendBody').innerHTML=legendHTML;
+  renderMapLegend(modId);
   updateStatusLayers();
 }
 function toggleLayer(layerId,rowEl){
@@ -2995,6 +3456,11 @@ function toggleLayer(layerId,rowEl){
     }
   }
   updateStatusLayers();
+  renderMapLegend(currentModule);
+  if(ld?.wms && !isOn){
+    const legend=document.getElementById('legend');
+    if(legend) legend.classList.remove('collapsed');
+  }
   if(currentModule==='2'){ renderM2Stats(); renderM2Donut(); }
 }
 function updateStatusLayers(){
