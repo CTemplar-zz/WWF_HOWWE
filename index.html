@@ -109,7 +109,8 @@
     padding: 0 18px;
     background: var(--bg-elev);
     border-bottom: 1px solid var(--border);
-    z-index: 30;
+    position: relative;
+    z-index: 3000;
   }
   .brand {
     display: flex; align-items: center; gap: 12px;
@@ -149,10 +150,52 @@
     border: 1px solid var(--border);
     border-radius: 999px;
     color: var(--text-soft);
+    position: relative;
   }
   .topbar-search:focus-within { border-color: var(--accent); background: var(--bg-elev); }
   .topbar-search input { flex: 1; background: transparent; border: 0; outline: 0; color: var(--text); font-family: inherit; font-size: 13px; }
   .topbar-search .kbd { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 2px 6px; border: 1px solid var(--border-strong); border-radius: 4px; color: var(--text-dim); }
+  .search-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    max-height: 390px;
+    overflow: auto;
+    padding: 8px;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    z-index: 3100;
+    display: none;
+  }
+  .search-panel.open { display: block; }
+  .search-empty { padding: 12px; color: var(--text-dim); font-size: 12px; line-height: 1.4; }
+  .search-result {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: center;
+    padding: 8px;
+    border-radius: 6px;
+  }
+  .search-result:hover { background: var(--bg-soft); }
+  .search-kind { font-size: 9.5px; text-transform: uppercase; letter-spacing: .8px; color: var(--text-dim); margin-bottom: 2px; }
+  .search-title { font-size: 12.5px; color: var(--text); font-weight: 600; }
+  .search-sub { font-size: 11px; color: var(--text-soft); margin-top: 2px; }
+  .search-actions { display: flex; gap: 5px; }
+  .search-actions button {
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-soft);
+    border-radius: 5px;
+    font: inherit;
+    font-size: 11px;
+    padding: 5px 7px;
+    cursor: pointer;
+  }
+  .search-actions button:hover { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
   .topbar-spacer { flex: 1; }
   .topbar-actions { display: flex; align-items: center; gap: 6px; }
   .iconbtn {
@@ -600,8 +643,9 @@
     </div>
     <div class="topbar-search">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input type="text" placeholder="Buscar área protegida, territorio, especie…" />
+      <input type="text" id="globalSearchInput" placeholder="Buscar área protegida, territorio, especie…" autocomplete="off" />
       <span class="kbd">⌘K</span>
+      <div class="search-panel" id="searchPanel" role="listbox"></div>
     </div>
     <div class="topbar-spacer"></div>
     <div class="topbar-actions">
@@ -3467,6 +3511,223 @@ function updateStatusLayers(){
   const n=activeLayers.size+userLayers.length;
   document.getElementById('layerStatus').textContent=`${n} capa${n===1?'':'s'} activa${n===1?'':'s'}`;
 }
+
+function normalizeSearchText(value){
+  return String(value||'')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase()
+    .trim();
+}
+function allModuleLayerEntries(){
+  const entries=[];
+  Object.entries(MODULES).forEach(([modId,mod])=>{
+    mod.layers.forEach(layer=>entries.push({type:'layer',modId,mod,layer}));
+  });
+  return entries;
+}
+function layerSearchText(entry){
+  const l=entry.layer;
+  return [l.name,l.id,l.group,l.sci,l.genus,entry.mod.title,`M${entry.modId}`].filter(Boolean).join(' ');
+}
+async function ensureSearchableGeoData(query){
+  const q=normalizeSearchText(query);
+  if(q.length<3) return;
+  const layerDefs=allModuleLayerEntries().map(e=>e.layer).filter(l=>l.geojsonUrl);
+  for(const layer of layerDefs){
+    if(geoData[layer.id]) continue;
+    const layerText=normalizeSearchText([layer.name,layer.id].join(' '));
+    if(q.length<4 && !layerText.includes(q) && !q.includes('tco')) continue;
+    try{
+      const r=await fetch(layer.geojsonUrl);
+      if(r.ok) geoData[layer.id]=await r.json();
+    }catch(err){
+      console.warn('No se pudo cargar capa para búsqueda:', layer.geojsonUrl, err);
+    }
+  }
+}
+function featureSearchLabel(layerId, props){
+  const fieldsByLayer={
+    apn:['nombre_ap','NOMBRE','nombre','name'],
+    apn_lim:['nombre_ap','NOMBRE','nombre','name'],
+    aioc_charagua_zonas:['Zona','Zonas','zona','name'],
+    tcos:['nombre','name','status','etnias'],
+    registros_peces_m2:['Nombre_Especie','Geoportal_fuente','Fuente']
+  };
+  const fields=fieldsByLayer[layerId] || ['nombre','name','Name','NOMBRE','Nombre','status','categoria'];
+  for(const field of fields){
+    const value=props?.[field];
+    if(value!==undefined && value!==null && String(value).trim()) return String(value).trim();
+  }
+  return 'Feature';
+}
+function featureSearchText(layerId, feature){
+  const p=feature.properties||{};
+  return Object.keys(p)
+    .filter(k=>['string','number'].includes(typeof p[k]))
+    .slice(0,18)
+    .map(k=>p[k])
+    .join(' ');
+}
+function featureSearchKey(layerId,layerName,label,feature,idx){
+  const geom=feature?.geometry||{};
+  if(layerId!=='registros_peces_m2') return `${normalizeSearchText(layerName)}:${normalizeSearchText(label)}`;
+  let firstCoord='';
+  let coords=geom.coordinates;
+  while(Array.isArray(coords) && Array.isArray(coords[0])) coords=coords[0];
+  if(Array.isArray(coords)) firstCoord=coords.slice(0,2).map(v=>Number(v).toFixed(4)).join(',');
+  return `${normalizeSearchText(layerName)}:${normalizeSearchText(label)}:${geom.type||''}:${firstCoord}:${idx}`;
+}
+function searchableFeatureEntries(query){
+  const q=normalizeSearchText(query);
+  if(q.length<3) return [];
+  const entries=[];
+  const seen=new Set();
+  Object.entries(geoData).forEach(([layerId,data])=>{
+    if(!data?.features?.length) return;
+    const layerEntries=allModuleLayerEntries().filter(e=>e.layer.id===layerId);
+    const layerEntry=layerEntries.find(e=>e.modId===currentModule) || layerEntries[0];
+    const layerName=layerEntry?.layer.name || layerId;
+    const modId=layerEntry?.modId || currentModule;
+    data.features.forEach((feature,idx)=>{
+      const p=feature.properties||{};
+      const label=featureSearchLabel(layerId,p);
+      const haystack=normalizeSearchText(`${label} ${featureSearchText(layerId,feature)} ${layerName}`);
+      if(haystack.includes(q)){
+        const key=featureSearchKey(layerId,layerName,label,feature,idx);
+        if(seen.has(key)) return;
+        seen.add(key);
+        entries.push({type:'feature',modId,layerId,layerName,label,feature,idx});
+      }
+    });
+  });
+  return entries;
+}
+function searchResults(query){
+  const q=normalizeSearchText(query);
+  if(q.length<2) return [];
+  const layerResults=[];
+  const seenLayers=new Set();
+  allModuleLayerEntries()
+    .filter(entry=>normalizeSearchText(layerSearchText(entry)).includes(q))
+    .sort((a,b)=>(a.modId===currentModule?-1:0)+(b.modId===currentModule?1:0))
+    .forEach(entry=>{
+      if(seenLayers.has(entry.layer.id)) return;
+      seenLayers.add(entry.layer.id);
+      layerResults.push({
+        ...entry,
+        title:entry.layer.name,
+        sub:`M${entry.modId} · ${entry.mod.title}${entry.layer.group?` · ${entry.layer.group}`:''}`
+      });
+    });
+  const featureResults=searchableFeatureEntries(query)
+    .map(entry=>({
+      ...entry,
+      title:entry.label,
+      sub:`${entry.layerName} · M${entry.modId}`
+    }));
+  return [...layerResults,...featureResults].slice(0,24);
+}
+async function activateLayerFromSearch(modId,layerId){
+  const mod=MODULES[modId];
+  if(!mod) return;
+  const layerDef=mod.layers.find(l=>l.id===layerId);
+  if(!layerDef) return;
+  layerDef.on=true;
+  renderModule(modId);
+  await new Promise(resolve=>setTimeout(resolve,500));
+  zoomAndHighlightLayer(modId,layerDef);
+}
+let searchFeatureLayer=null;
+function addFeatureFromSearch(result){
+  if(searchFeatureLayer && map.hasLayer(searchFeatureLayer)) map.removeLayer(searchFeatureLayer);
+  const feature={type:'FeatureCollection',features:[result.feature]};
+  searchFeatureLayer=L.geoJSON(feature,{
+    style:()=>({color:'#f5c400',weight:3,fillColor:'#f5c400',fillOpacity:.22}),
+    pointToLayer:(f,latlng)=>L.circleMarker(latlng,{radius:7,color:'#f5c400',weight:2,fillColor:'#1b1f24',fillOpacity:.95}),
+    onEachFeature:(f,layer)=>{
+      const rows=Object.entries(f.properties||{}).slice(0,18).map(([k,v])=>`<tr><td>${k}</td><td>${String(v).slice(0,80)}</td></tr>`).join('');
+      layer.bindPopup(`<div class="feature-popup"><h5>${result.label}</h5><table>${rows}</table></div>`);
+    }
+  }).addTo(map);
+  const b=searchFeatureLayer.getBounds?.();
+  if(b?.isValid()) map.fitBounds(b.pad(.25),{maxZoom:12});
+  searchFeatureLayer.openPopup?.();
+  updateStatusLayers();
+}
+function closeSearchPanel(){
+  const panel=document.getElementById('searchPanel');
+  if(panel) panel.classList.remove('open');
+}
+function renderSearchPanel(results,query){
+  const panel=document.getElementById('searchPanel');
+  if(!panel) return;
+  if(!normalizeSearchText(query)){panel.classList.remove('open'); panel.innerHTML=''; return;}
+  panel.classList.add('open');
+  if(!results.length){
+    panel.innerHTML='<div class="search-empty">Sin resultados. Prueba con el nombre de una capa, especie, territorio o área protegida.</div>';
+    return;
+  }
+  panel.innerHTML=results.map((r,i)=>`
+    <div class="search-result" role="option" data-i="${i}">
+      <div>
+        <div class="search-kind">${r.type==='layer'?'Capa':'Feature'}</div>
+        <div class="search-title">${r.title}</div>
+        <div class="search-sub">${r.sub}</div>
+      </div>
+      <div class="search-actions">
+        <button type="button" data-action="${r.type==='layer'?'activate':'feature'}" data-i="${i}">${r.type==='layer'?'Activar':'Crear capa'}</button>
+      </div>
+    </div>
+  `).join('');
+  panel.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click',async e=>{
+      e.stopPropagation();
+      const result=results[Number(btn.dataset.i)];
+      if(!result) return;
+      if(result.type==='layer') await activateLayerFromSearch(result.modId,result.layer.id);
+      else addFeatureFromSearch(result);
+      closeSearchPanel();
+    });
+  });
+}
+function initGlobalSearch(){
+  const input=document.getElementById('globalSearchInput');
+  const panel=document.getElementById('searchPanel');
+  if(!input || !panel) return;
+  let timer=null;
+  input.addEventListener('input',()=>{
+    clearTimeout(timer);
+    timer=setTimeout(async()=>{
+      await ensureSearchableGeoData(input.value);
+      renderSearchPanel(searchResults(input.value),input.value);
+    },180);
+  });
+  input.addEventListener('focus',()=>{
+    if(input.value) renderSearchPanel(searchResults(input.value),input.value);
+  });
+  input.addEventListener('keydown',async e=>{
+    if(e.key==='Escape') closeSearchPanel();
+    if(e.key==='Enter'){
+      const results=searchResults(input.value);
+      const first=results[0];
+      if(!first) return;
+      if(first.type==='layer') await activateLayerFromSearch(first.modId,first.layer.id);
+      else addFeatureFromSearch(first);
+      closeSearchPanel();
+    }
+  });
+  document.addEventListener('keydown',e=>{
+    if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k'){
+      e.preventDefault();
+      input.focus();
+      input.select();
+    }
+  });
+  document.addEventListener('click',e=>{
+    if(!panel.contains(e.target) && e.target!==input) closeSearchPanel();
+  });
+}
 function renderAPList(){
   const el=document.getElementById('apList'); el.innerHTML='';
   APN.forEach(ap=>{
@@ -3565,6 +3826,7 @@ function drawDonut(){
   document.getElementById('donutLegend').innerHTML=data.map(d=>`<div class="row"><span class="dot" style="background:${d.c}"></span><span>${d.l}</span><span class="pct mono">${d.v.toFixed(1)}%</span></div>`).join('');
 }
 drawDonut();
+initGlobalSearch();
 const appEl=document.querySelector('.app');
 const btnL=document.getElementById('toggleLeft');
 const btnR=document.getElementById('toggleRight');
@@ -3591,6 +3853,8 @@ loadAllGeoData().then(()=>{
   renderModule(currentModule);
   renderAPList();
   document.getElementById('crumbArea').textContent=`${APN.length} Áreas Protegidas`;
+  const searchInput=document.getElementById('globalSearchInput');
+  if(searchInput?.value) renderSearchPanel(searchResults(searchInput.value),searchInput.value);
 });
 </script>
 </body>
