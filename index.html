@@ -1050,13 +1050,13 @@ const MODULES = {
     layers:[
       {id:'departamentos',name:'Departamentos de Bolivia',color:'#000000',opacity:100,on:true},
       {id:'apn',    name:'Áreas Protegidas',              color:'#2c8a4d',opacity:100,on:true},
+      {id:'sistemas_acuaticos_ap',name:'Sistemas Acuáticos',group:'Hidrología',color:'#49AE6F',opacity:70,on:false,pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/sistemas_acuaticos_ap.pmtiles',pmlayer:'sistemas_acuaticos_ap',maxDataZoom:12,downloadUrl:'assets/downloads/sistemas_acuaticos_ap.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'rios_nacional_ap',name:'Ríos Nacional',group:'Hidrología',color:'#125b8a',opacity:100,on:false,pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/rios_nacional_ap.pmtiles',pmlayer:'rios_nacional_ap',maxDataZoom:12,downloadUrl:'assets/downloads/rios_nacional_ap.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'bofedales_ap',name:'Bofedales',group:'Hidrología',color:'#2271ae',opacity:75,on:false,pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/bofedales_ap.pmtiles',pmlayer:'bofedales_ap',maxDataZoom:12,downloadUrl:'assets/downloads/bofedales_ap.zip',downloadLabel:'Descargar shapefile ZIP'},
       {id:'lagos',  name:'Lagos y lagunas 2016',            color:'#2374b5',opacity:80,on:false},
-      {id:'humedales', name:'Humedales (meses inundados)', color:'#2271ae',opacity:90,on:false, gradient:true, pmtiles:'assets/tiles/humedales.pmtiles', pmlayer:'humedales', maxDataZoom:12},
       {id:'ramsar',    name:'Sitios Ramsar (11 sitios)',    color:'#4aa3e3',opacity:90,on:true},
       {id:'cuencas',name:'Cuencas (balance hídrico)',     color:'#005ce6',opacity:80,on:false},
       {id:'cuencas_n8',name:'Sub-cuencas HydroBASINS nivel 8',color:'#1e5694',opacity:85,on:false, pmtiles:'assets/tiles/cuencas_n8.pmtiles', pmlayer:'cuencas_n8', maxDataZoom:12},
-      {id:'cuencas_n9',name:'Sub-cuencas HydroBASINS nivel 9',color:'#5b8db8',opacity:85,on:false, pmtiles:'assets/tiles/cuencas_n9.pmtiles', pmlayer:'cuencas_n9', maxDataZoom:12},
-      {id:'ffr',    name:'Ríos FFR (estado conectividad)', color:'#1f6dc7',opacity:90,on:false},
     ],
     legend:{title:'Humedales · meses inundados',ind:'I.5',items:[
       {c:'#E8F4FB',l:'0 — 1 mes',v:''},
@@ -1181,6 +1181,27 @@ const LAYER_METADATA = {
       'Procesamiento propio para visualización en PMTiles.'
     ],
     links: [{label:'FAUNAGUA', url:'https://www.faunagua.org'}]
+  },
+  sistemas_acuaticos_ap: {
+    title: 'Sistemas Acuáticos en Áreas Protegidas',
+    body: [
+      'Sistemas acuáticos intersectados con las Áreas Protegidas activas del proyecto.',
+      'La capa conserva los atributos originales y permite consultar el área del polígono en hectáreas.'
+    ]
+  },
+  rios_nacional_ap: {
+    title: 'Ríos Nacional en Áreas Protegidas',
+    body: [
+      'Red de ríos nacionales dividida según su relación espacial con las Áreas Protegidas.',
+      'La longitud de cada segmento se expresa en kilómetros.'
+    ]
+  },
+  bofedales_ap: {
+    title: 'Bofedales en Áreas Protegidas',
+    body: [
+      'Capa unificada de Bofedales y Bofedales Altoandinos, dividida según su relación espacial con las Áreas Protegidas.',
+      'El área de cada polígono se expresa en hectáreas.'
+    ]
   },
   cuencas: {
     title: 'Cuencas (balance hídrico)',
@@ -2318,6 +2339,41 @@ function createPMTilesLayer(layerDef){
         width: 0.3
       })
     }];
+  } else if(id === 'sistemas_acuaticos_ap' || id === 'bofedales_ap'){
+    const aquaticColors = {
+      'Aguas blancas':'#0084a8',
+      'Aguas claras':'#004da8',
+      'Aguas mixtas':'#ffaa00',
+      'Aguas negras':'#895a44',
+      'Inundación estacional':'#d4d2ff',
+      'Inundación frecuente':'#a8a8f0'
+    };
+    const aquaticCategories = new Set(Object.keys(aquaticColors));
+    paintRules = [{
+      dataLayer: layerDef.pmlayer || id,
+      filter: (z,f) => id === 'bofedales_ap' || aquaticCategories.has(String(f.props.TIPOS_AGUA || '').trim()),
+      symbolizer: new protomapsL.PolygonSymbolizer({
+        fill: (z,f) => id === 'bofedales_ap' ? '#fcc2fc' : (aquaticColors[String(f.props.TIPOS_AGUA || '').trim()] || '#0084a8'),
+        opacity: 1,
+        stroke: id === 'bofedales_ap' ? '#6e6e6e' : 'rgba(0,0,0,0)',
+        width: id === 'bofedales_ap' ? 0.7 : 0
+      })
+    }];
+  } else if(id === 'rios_nacional_ap'){
+    const riverStyle = value => {
+      const v = String(value || '').trim().toLowerCase();
+      if(v === 'principal' || v === 'río principal') return {color:'#0070ff',width:1.5};
+      if(v === 'secundario' || v === 'río secundario') return {color:'#005ce6',width:0.7};
+      return {color:'#005ce6',width:0.4};
+    };
+    paintRules = [{
+      dataLayer: layerDef.pmlayer || id,
+      symbolizer: new protomapsL.LineSymbolizer({
+        color: (z,f) => riverStyle(f.props.CATEG_DES).color,
+        width: (z,f) => riverStyle(f.props.CATEG_DES).width,
+        opacity: 0.95
+      })
+    }];
   } else if(id === 'sea'){
     const seaColors = {
       'Altiplano BN6':'#49AE6F','Beni subandino BN4':'#3FF362','Llanura aluvial BN2':'#BBF6D8',
@@ -3438,6 +3494,20 @@ const ACTIVE_LAYER_LEGENDS={
     {c:'#a87000',l:'Titulada',v:''},
   ]},
   sea:{title:'Sistemas Ecologicos Acuaticos',items:[{c:'#49AE6F',l:'Sistemas ecologicos acuaticos',v:''}]},
+  sistemas_acuaticos_ap:{title:'Sistemas Acuáticos',items:[
+    {c:'#0084a8',l:'Aguas blancas',v:''},
+    {c:'#004da8',l:'Aguas claras',v:''},
+    {c:'#ffaa00',l:'Aguas mixtas',v:''},
+    {c:'#895a44',l:'Aguas negras',v:''},
+    {c:'#d4d2ff',l:'Inundación estacional',v:''},
+    {c:'#a8a8f0',l:'Inundación frecuente',v:''},
+  ]},
+  rios_nacional_ap:{title:'Ríos Nacional',items:[
+    {c:'#0070ff',l:'Río principal',v:''},
+    {c:'#005ce6',l:'Río secundario',v:''},
+    {c:'#005ce6',l:'Arroyo',v:''},
+  ]},
+  bofedales_ap:{title:'Bofedales',items:[{c:'#fcc2fc',l:'Bofedales y bofedales altoandinos',v:''}]},
   cobertura_mapbiomas_2024:{title:'Cobertura MapBiomas 2024',items:MAPBIOMAS_LEGEND},
   cuencas:{title:'Cuencas (balance hidrico)',items:[{c:'#003f73',l:'Borde de cuenca',v:''}]},
   cuencas_n8:{title:'Sub-cuencas HydroBASINS nivel 8',items:[{c:'#003f73',l:'Borde de sub-cuenca',v:''}]},
