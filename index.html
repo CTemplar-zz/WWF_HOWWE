@@ -1103,6 +1103,34 @@ const MODULES = {
     layers:[
       {id:'aioc_charagua_zonas',name:'Zonas AIOC Charagua Iyambae',color:'#45ddb0',opacity:100,on:true,downloadUrl:'assets/downloads/aioc_charagua_zonas.zip',downloadLabel:'Descargar shapefile ZIP'},
       {id:'tcos',name:'TCOs',color:'#a87000',opacity:60,on:false,geojsonUrl:'assets/capas/TCOs.geojson',bounds:[-69.56782221499998,-20.96026439036899,-59.73598272199996,-10.900932527649083],downloadUrl:'assets/downloads/tcos.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'charagua_limite',name:'Charagua',color:'#e1e1e1',opacity:85,on:true,geojsonUrl:'assets/capas/Charagua.geojson',bounds:[-69.56782221499998,-20.96026439036899,-59.73598272199996,-10.900932527649083],downloadUrl:'assets/downloads/charagua.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'comunidades_charagua',name:'Comunidades',color:'#e1e1e1',opacity:85,on:true,geojsonUrl:'assets/capas/Comunidades_Charagua.geojson',bounds:[-69.56782221499998,-20.96026439036899,-59.73598272199996,-10.900932527649083],downloadUrl:'assets/downloads/comunidades_charagua.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'uso_suelo_charagua',name:'Uso del suelo',group:'Cobertura y uso del suelo',color:'#1f8d49',opacity:100,on:false,rasterPmtiles:'assets/tiles/uso_suelo_charagua.pmtiles',maxDataZoom:12,bounds:[-63.48915380438321,-20.491968878622888,-58.80900093660016,-17.973784394174555],downloadUrl:'assets/downloads/uso_suelo_charagua.tif',downloadLabel:'Descargar TIFF'},
+      {id:'sitios_valor_sagrado',name:'Sitios de valor sagrado',group:'Sitios de valor cultural',color:'#55ff00',opacity:100,on:false,geojsonUrl:'assets/capas/sitios_valor_sagrado.geojson',downloadUrl:'assets/downloads/sitios_valor_sagrado.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'sitios_serranias',name:'Sitios de valor en serranías',group:'Sitios de valor cultural',color:'#cdaa66',opacity:100,on:false,geojsonUrl:'assets/capas/sitios_serranias.geojson',downloadUrl:'assets/downloads/sitios_serranias.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'salinas',name:'Salinas',group:'Sitios de valor cultural',color:'#c500ff',opacity:100,on:false,geojsonUrl:'assets/capas/salinas.geojson',downloadUrl:'assets/downloads/salinas.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'banados_isoso',name:'Bañados del Isoso',group:'Sitios de valor cultural',color:'#beffe8',opacity:100,on:false,geojsonUrl:'assets/capas/banados_isoso.geojson',downloadUrl:'assets/downloads/banados_isoso.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'rio_parapeti',name:'Río Parapetí',group:'Objetos de conservación',color:'#0070ff',opacity:100,on:false,geojsonUrl:'assets/capas/rio_parapeti.geojson',downloadUrl:'assets/downloads/rio_parapeti.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'sistemas_ecologicos_charagua',name:'Sistemas ecológicos',group:'Objetos de conservación',color:'#7af5ca',opacity:100,on:false,geojsonUrl:'assets/capas/sistemas_ecologicos_charagua.geojson',downloadUrl:'assets/downloads/sistemas_ecologicos_charagua.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'guanaco_charagua',name:'Distribución de guanaco',group:'Objetos de conservación',color:'#4ec97a',opacity:100,on:false,geojsonUrl:'assets/capas/guanaco_charagua.geojson',downloadUrl:'assets/downloads/guanaco_charagua.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'solitario_charagua',name:'Distribución de solitario',group:'Objetos de conservación',color:'#a900e6',opacity:100,on:false,geojsonUrl:'assets/capas/solitario_charagua.geojson',downloadUrl:'assets/downloads/solitario_charagua.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'jaguar_charagua',name:'Distribución de jaguar',group:'Objetos de conservación',color:'#55ff00',opacity:100,on:false,geojsonUrl:'assets/capas/jaguar_charagua.geojson',downloadUrl:'assets/downloads/jaguar_charagua.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'charagua_inra',name:'Tenencia de la tierra (INRA)',group:'Tenencia y territorios',color:'#d7c29e',opacity:100,on:false,geojsonUrl:'assets/capas/charagua_inra.geojson',downloadUrl:'assets/downloads/charagua_inra.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'tioc_charagua',name:'Territorios indígenas originarios (TIOC)',group:'Tenencia y territorios',color:'#d7c29e',opacity:100,on:false,geojsonUrl:'assets/capas/tioc_charagua.geojson',downloadUrl:'assets/downloads/tioc_charagua.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'no_contactados',name:'Distribución de pueblos no contactados',group:'Pueblos indígenas',color:'#00c5ff',opacity:100,on:false,geojsonUrl:'assets/capas/no_contactados.geojson',downloadUrl:'assets/downloads/no_contactados.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'presion_concesion_minera',name:'Concesión minera',group:'Presiones Antropicas',color:'#e69800',opacity:100,on:false,geojsonUrl:'assets/capas/presion_concesion_minera.geojson',downloadUrl:'assets/downloads/presion_concesion_minera.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'presion_area_reservada_ypfb',name:'Área reservada a favor de YPFB',group:'Presiones Antropicas',color:'#00ffc5',opacity:100,on:false,geojsonUrl:'assets/capas/presion_area_reservada_ypfb.geojson',downloadUrl:'assets/downloads/presion_area_reservada_ypfb.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'presion_camino_potencial',name:'Camino potencial',group:'Presiones Antropicas',color:'#ffff00',opacity:100,on:false,geojsonUrl:'assets/capas/presion_camino_potencial.geojson',downloadUrl:'assets/downloads/presion_camino_potencial.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'presion_pesca_ilegal',name:'Pesca ilegal (foránea)',group:'Presiones Antropicas',color:'#c500ff',opacity:100,on:false,geojsonUrl:'assets/capas/presion_pesca_ilegal.geojson',downloadUrl:'assets/downloads/presion_pesca_ilegal.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'presion_asentamiento_irregular',name:'Asentamiento irregular',group:'Presiones Antropicas',color:'#c500ff',opacity:100,on:false,geojsonUrl:'assets/capas/presion_asentamiento_irregular.geojson',downloadUrl:'assets/downloads/presion_asentamiento_irregular.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'presion_actividad_petrolera',name:'Actividad petrolera',group:'Presiones Antropicas',color:'#610000',opacity:100,on:false,geojsonUrl:'assets/capas/presion_actividad_petrolera.geojson',downloadUrl:'assets/downloads/presion_actividad_petrolera.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'presion_uso_rrnn',name:'Uso de recursos naturales de subsistencia',group:'Presiones Antropicas',color:'#c500ff',opacity:100,on:false,geojsonUrl:'assets/capas/presion_uso_rrnn.geojson',downloadUrl:'assets/downloads/presion_uso_rrnn.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'presion_caceria_ilegal',name:'Cacería ilegal',group:'Presiones Antropicas',color:'#abcd66',opacity:100,on:false,geojsonUrl:'assets/capas/presion_caceria_ilegal.geojson',downloadUrl:'assets/downloads/presion_caceria_ilegal.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'presion_ganaderia_pastura',name:'Ganadería',group:'Presiones Antropicas',color:'#ffaa00',opacity:100,on:false,geojsonUrl:'assets/capas/presion_ganaderia_pastura.geojson',downloadUrl:'assets/downloads/presion_ganaderia_pastura.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'presion_contaminacion_agua',name:'Contaminación y extracción de agua',group:'Presiones Antropicas',color:'#c500ff',opacity:100,on:false,geojsonUrl:'assets/capas/presion_contaminacion_agua.geojson',downloadUrl:'assets/downloads/presion_contaminacion_agua.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'presion_pesca',name:'Pesca',group:'Presiones Antropicas',color:'#c500ff',opacity:100,on:false,geojsonUrl:'assets/capas/presion_pesca.geojson',downloadUrl:'assets/downloads/presion_pesca.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'presion_quemas_incendios',name:'Quemas e incendios (2019-2024)',group:'Presiones Antropicas',color:'#d6452c',opacity:100,on:false,rasterPmtiles:'assets/tiles/presion_quemas_incendios.pmtiles',maxDataZoom:12,downloadUrl:'assets/downloads/presion_quemas_incendios.tif',downloadLabel:'Descargar TIFF'},
+      {id:'presion_deforestacion',name:'Deforestación',group:'Presiones Antropicas',color:'#6f8b2d',opacity:100,on:false,rasterPmtiles:'assets/tiles/presion_deforestacion.pmtiles',maxDataZoom:12},
       {id:'apn',name:'Áreas Protegidas',color:'#2c8a4d',opacity:100,on:true},
       {id:'departamentos',name:'Departamentos de Bolivia',color:'#000000',opacity:100,on:true},
     ],
@@ -1282,6 +1310,33 @@ const LAYER_METADATA = {
       'Fuente: capa ZONAS_AIOC_CHARAGUA provista desde ArcGIS Pro y preparada para visualización en el geoportal.'
     ]
   }
+  ,charagua_limite: {
+    title: 'Charagua',
+    body: [
+      'Límite de la Autonomía Indígena Originaria Campesina Charagua Iyambae.',
+      'Capa incorporada desde ArcGIS Pro con la simbología de la fuente original.'
+    ]
+  },
+  comunidades_charagua: {
+    title: 'Comunidades de Charagua',
+    body: [
+      'Localización de comunidades dentro del área de Charagua Iyambae.',
+      'Las etiquetas utilizan el campo nombre_c_4 de la capa original.'
+    ]
+  },
+  sitios_valor_sagrado: {title:'Sitios de valor sagrado',body:['Capa activa del mapa de planificación de conservación de Charagua Iyambae.','Fuente: SIG Plan de Conservación Charagua, ArcGIS Pro.']},
+  rio_parapeti: {title:'Río Parapetí',body:['Río Parapetí incorporado desde el mapa activo de planificación de conservación de Charagua Iyambae.','Fuente: SIG Plan de Conservación Charagua, ArcGIS Pro.']},
+  salinas: {title:'Salinas',body:['Sitios de salinas incorporados desde el mapa activo de planificación de conservación de Charagua Iyambae.','Fuente: SIG Plan de Conservación Charagua, ArcGIS Pro.']},
+  sitios_serranias: {title:'Sitios de valor en serranías',body:['Sitios de valor de serranías clasificados por el campo p_regional.','Fuente: SIG Plan de Conservación Charagua, ArcGIS Pro.']},
+  banados_isoso: {title:'Bañados del Isoso',body:['Bañados del Isoso incorporados desde el mapa activo de planificación de conservación de Charagua Iyambae.','Fuente: SIG Plan de Conservación Charagua, ArcGIS Pro.']},
+  guanaco_charagua: {title:'Distribución de guanaco',body:['Distribución de guanaco usada como objeto de conservación en Charagua Iyambae.','Fuente: SIG Plan de Conservación Charagua, ArcGIS Pro.']},
+  solitario_charagua: {title:'Distribución de solitario',body:['Distribución de solitario usada como objeto de conservación en Charagua Iyambae.','Fuente: SIG Plan de Conservación Charagua, ArcGIS Pro.']},
+  jaguar_charagua: {title:'Distribución de jaguar',body:['Distribución de jaguar con áreas núcleo y corredores.','Fuente: SIG Plan de Conservación Charagua, ArcGIS Pro.']},
+  sistemas_ecologicos_charagua: {title:'Sistemas ecológicos',body:['Sistemas ecológicos clasificados por el campo bsq_llanur.','Fuente: SIG Plan de Conservación Charagua, ArcGIS Pro.']},
+  charagua_inra: {title:'Tenencia de la tierra (INRA)',body:['Tenencia de la tierra de Charagua incorporada desde la capa activa de ArcGIS Pro.','Fuente: INRA, según la capa disponible en el proyecto.']},
+  no_contactados: {title:'Distribución de pueblos no contactados',body:['Distribución y áreas de prioridad de pueblos no contactados.','Fuente: SIG Plan de Conservación Charagua, ArcGIS Pro.']},
+  tioc_charagua: {title:'Territorios indígenas originarios',body:['Territorios indígenas originarios de Charagua Iyambae, simbolizados por el campo nombre.','Fuente: SIG Plan de Conservación Charagua, ArcGIS Pro.']}
+  ,uso_suelo_charagua: {title:'Uso del suelo',body:['Capa raster de uso del suelo incorporada desde el mapa activo de planificación de conservación de Charagua Iyambae.','La visualización se sirve como PMTiles con nivel máximo de zoom 12.','Fuente: SIG Plan de Conservación Charagua, ArcGIS Pro.'],note:'La descarga corresponde al raster TIFF original.'}
 };
 const SPECIES_METADATA = {
   title: 'Distribución de especies',
@@ -1455,10 +1510,36 @@ const DATA_FILES = {
   // amenaza_sequia: ahora servida como vector tiles (assets/tiles/amenaza_sequia.pmtiles)
   'amenaza_sequia_mdryt': 'assets/capas/amenaza_sequia_mdryt.geojson',
   'aioc_charagua_zonas': 'assets/capas/ZONAS_AIOC_CHARAGUA.geojson',
+  'comunidades_charagua': 'assets/capas/Comunidades_Charagua.geojson',
+  'charagua_limite': 'assets/capas/Charagua.geojson',
+  'sitios_valor_sagrado': 'assets/capas/sitios_valor_sagrado.geojson',
+  'rio_parapeti': 'assets/capas/rio_parapeti.geojson',
+  'salinas': 'assets/capas/salinas.geojson',
+  'sitios_serranias': 'assets/capas/sitios_serranias.geojson',
+  'banados_isoso': 'assets/capas/banados_isoso.geojson',
+  'guanaco_charagua': 'assets/capas/guanaco_charagua.geojson',
+  'solitario_charagua': 'assets/capas/solitario_charagua.geojson',
+  'jaguar_charagua': 'assets/capas/jaguar_charagua.geojson',
+  'sistemas_ecologicos_charagua': 'assets/capas/sistemas_ecologicos_charagua.geojson',
+  'charagua_inra': 'assets/capas/charagua_inra.geojson',
+  'no_contactados': 'assets/capas/no_contactados.geojson',
+  'tioc_charagua': 'assets/capas/tioc_charagua.geojson',
+  'presion_concesion_minera': 'assets/capas/presion_concesion_minera.geojson',
+  'presion_area_reservada_ypfb': 'assets/capas/presion_area_reservada_ypfb.geojson',
+  'presion_camino_potencial': 'assets/capas/presion_camino_potencial.geojson',
+  'presion_pesca_ilegal': 'assets/capas/presion_pesca_ilegal.geojson',
+  'presion_asentamiento_irregular': 'assets/capas/presion_asentamiento_irregular.geojson',
+  'presion_actividad_petrolera': 'assets/capas/presion_actividad_petrolera.geojson',
+  'presion_uso_rrnn': 'assets/capas/presion_uso_rrnn.geojson',
+  'presion_caceria_ilegal': 'assets/capas/presion_caceria_ilegal.geojson',
+  'presion_ganaderia_pastura': 'assets/capas/presion_ganaderia_pastura.geojson',
+  'presion_contaminacion_agua': 'assets/capas/presion_contaminacion_agua.geojson',
+  'presion_pesca': 'assets/capas/presion_pesca.geojson',
   // cuencas_n8 y cuencas_n9: ahora servidas como vector tiles (assets/tiles/cuencas_n*.pmtiles)
   // sea: ahora servido como vector tiles (assets/tiles/sea.pmtiles)
 };
 const IUCN_COLORS = {'CR':'#7a1a1a','EN':'#c54a2c','VU':'#e8a417','NT':'#7fa860','LC':'#4ec97a'};
+const AIOC_COLORS = {};
 const AP_CAT_COLORS = {
   // Parque Nacional (verde oscuro)
   'Parque Nacional':'#1f6b3a',
@@ -1789,6 +1870,51 @@ function createGeoJSONLayer(id, layerDef){
       }
     });
   }
+  if(id==='charagua_limite'){
+    Object.assign(AIOC_COLORS,{
+      'Parque Nacional  Otuquis':'#343434','Parque Nacional Kaa Iya del Gran Chaco':'#343434','Zona Alto Isoso':'#343434',
+      'Zona Bajo Isoso':'#cdcd66','Zona Charagua Pueblo':'#ffaa00','Zona Estacion Charagua':'#e64c00',
+      'Zona Norte Charagua':'#e8beff','Zona Parapitiguasu':'#cd6666','Ñembi Guasu':'#beffe8'
+    });
+    return L.geoJSON(data,{
+      style:{color:'#000000',weight:2,fillColor:'#e1e1e1',fillOpacity:1,opacity:1},
+      onEachFeature:(f,l)=>{
+        const p=f.properties||{};
+        l.bindPopup(`<div class="feature-popup"><h5>Charagua Iyambae</h5><table>
+          ${p.MUNICIPIO?`<tr><td>Municipio</td><td><b>${escapeHTML(p.MUNICIPIO)}</b></td></tr>`:''}
+          ${p.PROVINCIA?`<tr><td>Provincia</td><td>${escapeHTML(p.PROVINCIA)}</td></tr>`:''}
+          ${p.SUP_HA!=null?`<tr><td>Superficie</td><td>${Number(p.SUP_HA).toLocaleString('es-BO')} ha</td></tr>`:''}
+        </table></div>`,{maxWidth:280});
+      }
+    });
+  }
+  if(id==='comunidades_charagua'){
+    return L.geoJSON(data,{
+      pointToLayer:(f,latlng)=>L.circleMarker(latlng,{radius:4,color:'#000000',weight:1,fillColor:'#e1e1e1',fillOpacity:1,opacity:1}),
+      onEachFeature:(f,l)=>{
+        const p=f.properties||{};
+        const label=p.nombre_c_4||'';
+        if(label){
+          l.bindTooltip(`<span>${escapeHTML(label)}</span>`,{permanent:true,direction:'right',opacity:0.9,offset:[5,0],className:'charagua-community-label'});
+          const updateCommunityLabel=()=>{
+            if(!l._map) return;
+            if(l._map.getZoom()>=10) l.openTooltip();
+            else l.closeTooltip();
+          };
+          l.on('add',()=>{
+            updateCommunityLabel();
+            l._map?.on('zoomend',updateCommunityLabel);
+          });
+          l.on('remove',()=>l._map?.off('zoomend',updateCommunityLabel));
+        }
+        l.bindPopup(`<div class="feature-popup"><h5>${escapeHTML(label||'Comunidad')}</h5><table>
+          ${p.tipo_area?`<tr><td>Tipo de área</td><td>${escapeHTML(p.tipo_area)}</td></tr>`:''}
+          ${p.poblacion_!=null?`<tr><td>Población</td><td>${Number(p.poblacion_).toLocaleString('es-BO')}</td></tr>`:''}
+          ${p.viviendas_!=null?`<tr><td>Viviendas</td><td>${Number(p.viviendas_).toLocaleString('es-BO')}</td></tr>`:''}
+        </table></div>`,{maxWidth:280});
+      }
+    });
+  }
   if(id==='limite'){
     return L.geoJSON(data,{style:{color:layerDef.color,weight:2.5,fillOpacity:0,opacity:0.75,dashArray:'6,4'}});
   }
@@ -1851,6 +1977,74 @@ function createGeoJSONLayer(id, layerDef){
       }
     });
   }
+  if(['sitios_valor_sagrado','rio_parapeti','salinas','sitios_serranias','banados_isoso','guanaco_charagua','solitario_charagua','jaguar_charagua','sistemas_ecologicos_charagua','charagua_inra','no_contactados','tioc_charagua','presion_concesion_minera','presion_area_reservada_ypfb','presion_camino_potencial','presion_pesca_ilegal','presion_asentamiento_irregular','presion_actividad_petrolera','presion_uso_rrnn','presion_caceria_ilegal','presion_ganaderia_pastura','presion_contaminacion_agua','presion_pesca'].includes(id)){
+    const simpleStyles={
+      sitios_valor_sagrado:{color:'#55ff00',fillColor:'#55ff00',weight:3},
+      rio_parapeti:{color:'#0070ff',fillColor:'#0070ff',weight:2},
+      salinas:{color:'#c500ff',fillColor:'#c500ff',weight:3},
+      banados_isoso:{color:'#00ffc5',fillColor:'#beffe8',weight:3},
+      guanaco_charagua:{color:'#000000',fillColor:'#4ec97a',weight:1},
+      solitario_charagua:{color:'#000000',fillColor:'#a900e6',weight:1},
+      presion_concesion_minera:{color:'#6e6e6e',fillColor:'#e69800',weight:0.8},
+      presion_area_reservada_ypfb:{color:'#00ffc5',fillColor:'#00ffc5',weight:1},
+      presion_camino_potencial:{color:'#686868',fillColor:'#ffff00',weight:2},
+      presion_pesca_ilegal:{color:'#c500ff',fillColor:'#c500ff',weight:1},
+      presion_asentamiento_irregular:{color:'#c500ff',fillColor:'#c500ff',weight:1},
+      presion_actividad_petrolera:{color:'#610000',fillColor:'#610000',weight:1},
+      presion_uso_rrnn:{color:'#c500ff',fillColor:'#c500ff',weight:1},
+      presion_contaminacion_agua:{color:'#c500ff',fillColor:'#c500ff',weight:1},
+      presion_pesca:{color:'#c500ff',fillColor:'#c500ff',weight:1}
+    };
+    const serraniaColors={
+      'Cerro Curupautú':'#cdaa66','Cerro San Miguel':'#734c00','Cerro Urundayti':'#ffd37f','Cerro Ustárez':'#4ce600',
+      'Cerros del Izozog y Parapetí':'#ffaa00','Cumbres de serranías':'#cd8966','Serranía Caimán':'#732600','Serranía San Miguelito':'#cd6666'
+    };
+    const landColors={
+      'Colonia Menonita':'#ff0000','Comunidad Campesina':'#55ff00','Comunidad indígena':'#d7c29e','Empresa Hidrocarburos':'#ffff00',
+      'Fuerzas armadas del Estado':'#ff7f7f','Otros':'#005ce6','Propiedad privada':'#c500ff','Tierra Fiscal':'#e1e1e1','Área Urbana':'#730000'
+    };
+    const tiocColors={'Charagua Norte':'#804242','Charagua Sur (Parapitiguasu)':'#e69800','Isoso':'#d7c29e','Kaaguazu':'#73c4ba','Kaami':'#ffff00','Kaipependi Karovaicho':'#d9a8de','Santa Teresita':'#e600a9'};
+    const noContactColors={'Avistamiento':'#ff0000','Área de prioridad DS nro 1286':'#ff00c5','Distribución verificada':'#00c5ff'};
+    const speciesStyle=(f)=>{
+      const p=f.properties||{};
+      if(id==='sitios_serranias') return {color:serraniaColors[p.p_regional]||'#cdaa66',weight:1.2,fillColor:serraniaColors[p.p_regional]||'#cdaa66',fillOpacity:1,opacity:1};
+      if(id==='jaguar_charagua'){
+        const c=p.categoria==='corredor'?'#ffaa00':'#55ff00';
+        return {color:p.categoria==='corredor'?'#ffebaf':'#000000',weight:p.categoria==='corredor'?1:0.8,fillColor:c,fillOpacity:1,opacity:1};
+      }
+      if(id==='sistemas_ecologicos_charagua'){
+        const c=p.bsq_llanur==='Bosque en serranías'?'#7af5ca':'#8ab000';
+        return {color:'#000000',weight:0.8,fillColor:c,fillOpacity:1,opacity:1};
+      }
+      if(id==='charagua_inra'){
+        const c=landColors[p.clase_vf||p.leyenda]||'#d7c29e';
+        return {color:'#6e6e6e',weight:0.5,fillColor:c,fillOpacity:1,opacity:1};
+      }
+      if(id==='no_contactados'){
+        const c=noContactColors[p.Categoria]||'#00c5ff';
+        return {color:c,weight:p.Categoria==='Avistamiento'?3:1.5,fillColor:c,fillOpacity:p.Categoria==='Área de prioridad DS nro 1286'?0:1,opacity:1};
+      }
+      if(id==='tioc_charagua'){
+        const c=tiocColors[p.nombre]||'#d7c29e';
+        return {color:'#6e6e6e',weight:0.6,fillColor:c,fillOpacity:1,opacity:1};
+      }
+      if(id==='presion_caceria_ilegal') return {color:'#abcd66',weight:1.2,fillColor:'#abcd66',fillOpacity:1,opacity:1};
+      if(id==='presion_ganaderia_pastura'){
+        const c=String(p.ganderia||'').toLowerCase().includes('ramoneo')?'#d7d79e':'#ffaa00';
+        return {color:'#6e6e6e',weight:0.7,fillColor:c,fillOpacity:1,opacity:1};
+      }
+      return {...(simpleStyles[id]||{color:layerDef.color||'#198fbd',fillColor:layerDef.color||'#198fbd',weight:1}),fillOpacity:1,opacity:1};
+    };
+    return L.geoJSON(data,{
+      style:speciesStyle,
+      onEachFeature:(f,l)=>{
+        const p=f.properties||{};
+        const rows=Object.entries(p).filter(([k,v])=>k!=='Shape'&&k!=='FID'&&v!==null&&v!=='').slice(0,10).map(([k,v])=>`<tr><td>${escapeHTML(k)}</td><td>${escapeHTML(v)}</td></tr>`).join('');
+        const titles={sitios_valor_sagrado:'Sitio de valor sagrado',rio_parapeti:'Río Parapetí',salinas:'Salinas',sitios_serranias:'Sitio de valor en serranía',banados_isoso:'Bañados del Isoso',guanaco_charagua:'Distribución de guanaco',solitario_charagua:'Distribución de solitario',jaguar_charagua:'Distribución de jaguar',sistemas_ecologicos_charagua:'Sistema ecológico',charagua_inra:'Tenencia de la tierra',no_contactados:'Pueblos no contactados',tioc_charagua:'Territorio indígena originario'};
+        l.bindPopup(`<div class="feature-popup"><h5>${titles[id]||layerDef.name}</h5><table>${rows}</table></div>`,{maxWidth:320});
+      }
+    });
+  }
   if(id==='aioc_charagua_zonas'){
     const AIOC_COLORS = {
       'Parque Nacional Kaa Iya del Gran Chaco':'#45ddb0',
@@ -1865,18 +2059,19 @@ function createGeoJSONLayer(id, layerDef){
     };
     return L.geoJSON(data,{
       style:f=>{
-        const zone = f.properties?.Zona || f.properties?.Zonas || '';
+        const updatedZoneColors={'Parque Nacional  Otuquis':'#343434','Parque Nacional Kaa Iya del Gran Chaco':'#343434','Zona Alto Isoso':'#343434','Zona Bajo Isoso':'#cdcd66','Zona Charagua Pueblo':'#ffaa00','Zona Estacion Charagua':'#e64c00','Zona Norte Charagua':'#e8beff','Zona Parapitiguasu':'#cd6666','Ñembi Guasu':'#beffe8'};
+        const zone = f.properties?.Clase || f.properties?.Zona || f.properties?.Zonas || '';
         return {
           color:'#6e6e6e',
           weight:0.7,
           opacity:1,
-          fillColor:AIOC_COLORS[zone] || layerDef.color || '#45ddb0',
-          fillOpacity:0.72
+          fillColor:updatedZoneColors[zone] || AIOC_COLORS[zone] || layerDef.color || '#45ddb0',
+          fillOpacity:1
         };
       },
       onEachFeature:(f,l)=>{
         const p=f.properties||{};
-        const zone=p.Zona || p.Zonas || 'Zona AIOC Charagua Iyambae';
+        const zone=p.Clase || p.Zona || p.Zonas || 'Zona AIOC Charagua Iyambae';
         l.bindTooltip(`<span>${escapeHTML(zone)}</span>`,{
           permanent:true,
           direction:'center',
@@ -2324,6 +2519,7 @@ function createPMTilesLayer(layerDef){
   }
   const id = layerDef.id;
   let paintRules;
+  let labelRules = [];
   if(id === 'humedales'){
     const colorByMeses = m => {
       const v = +m || 0;
@@ -2337,6 +2533,27 @@ function createPMTilesLayer(layerDef){
         opacity: 1,
         stroke: '#1a4a7a',
         width: 0.3
+      })
+    }];
+  } else if(id === 'comunidades_charagua'){
+    paintRules = [{
+      dataLayer: layerDef.pmlayer || id,
+      symbolizer: new protomapsL.CircleSymbolizer({
+        radius: 4,
+        fill: '#e1e1e1',
+        stroke: '#000000',
+        width: 1
+      })
+    }];
+    labelRules = [{
+      dataLayer: layerDef.pmlayer || id,
+      minzoom: 7,
+      symbolizer: new protomapsL.TextSymbolizer({
+        labelProps: ['nombre_c_4'],
+        fontSize: 10,
+        fill: '#222222',
+        stroke: '#ffffff',
+        width: 2
       })
     }];
   } else if(id === 'sistemas_acuaticos_ap' || id === 'bofedales_ap'){
@@ -2499,6 +2716,7 @@ function createPMTilesLayer(layerDef){
   const layer = protomapsL.leafletLayer({
     url: layerDef.pmtiles,
     paintRules,
+    labelRules,
     interactive: true,
     maxDataZoom: layerDef.maxDataZoom || 12,
     attribution: '© PMTiles · datos: WWF / SERNAP'
@@ -3520,9 +3738,38 @@ const ACTIVE_LAYER_LEGENDS={
   amenaza_sequia:{title:'Amenaza de Sequia',items:DROUGHT_LEGEND,key:'sequia'},
   amenaza_sequia_mdryt:{title:'Amenaza de Sequia MDRyT',items:DROUGHT_LEGEND,key:'sequia-mdryt'},
   aioc_charagua_zonas:{title:'Zonas AIOC Charagua Iyambae',items:[
-    {c:'#b7e3a1',l:'Zona',v:''},
-    {c:'#2f7d32',l:'Borde / etiqueta Zonas',v:''},
+    {c:'#343434',l:'Parques nacionales',v:''},{c:'#cdcd66',l:'Zona Bajo Isoso',v:''},{c:'#ffaa00',l:'Zona Charagua Pueblo',v:''},
+    {c:'#e64c00',l:'Zona Estacion Charagua',v:''},{c:'#e8beff',l:'Zona Norte Charagua',v:''},{c:'#cd6666',l:'Zona Parapitiguasu',v:''},{c:'#beffe8',l:'Ñembi Guasu',v:''}
   ]},
+  charagua_limite:{title:'Charagua',items:[{c:'#e1e1e1',l:'Área AIOC Charagua Iyambae',v:''},{c:'#000000',l:'Límite',v:''}]},
+  comunidades_charagua:{title:'Comunidades',items:[{c:'#e1e1e1',l:'Comunidad',v:''}]},
+  sitios_valor_sagrado:{title:'Sitios de valor sagrado',items:[{c:'#55ff00',l:'Sitio de valor sagrado',v:''}]},
+  rio_parapeti:{title:'Río Parapetí',items:[{c:'#0070ff',l:'Río Parapetí',v:''}]},
+  salinas:{title:'Salinas',items:[{c:'#c500ff',l:'Salinas',v:''}]},
+  sitios_serranias:{title:'Sitios de valor en serranías',items:[{c:'#cdaa66',l:'Sitios de valor clasificados',v:''}]},
+  banados_isoso:{title:'Bañados del Isoso',items:[{c:'#beffe8',l:'Bañados del Isoso',v:''}]},
+  guanaco_charagua:{title:'Distribución de guanaco',items:[{c:'#4ec97a',l:'Distribución de guanaco',v:''}]},
+  solitario_charagua:{title:'Distribución de solitario',items:[{c:'#a900e6',l:'Distribución de solitario',v:''}]},
+  jaguar_charagua:{title:'Distribución de jaguar',items:[{c:'#55ff00',l:'Área núcleo',v:''},{c:'#ffaa00',l:'Corredor',v:''}]},
+  sistemas_ecologicos_charagua:{title:'Sistemas ecológicos',items:[{c:'#8ab000',l:'Bosque chaqueño en llanura',v:''},{c:'#7af5ca',l:'Bosque en serranías',v:''}]},
+  charagua_inra:{title:'Tenencia de la tierra',items:[{c:'#ff0000',l:'Colonia Menonita',v:''},{c:'#55ff00',l:'Comunidad Campesina',v:''},{c:'#d7c29e',l:'Comunidad indígena',v:''},{c:'#ffff00',l:'Empresa Hidrocarburos',v:''},{c:'#ff7f7f',l:'Fuerzas armadas del Estado',v:''},{c:'#005ce6',l:'Otros',v:''},{c:'#c500ff',l:'Propiedad privada',v:''},{c:'#e1e1e1',l:'Tierra Fiscal',v:''},{c:'#730000',l:'Área Urbana',v:''}]},
+  tioc_charagua:{title:'Territorios indígenas originarios',items:[{c:'#804242',l:'Charagua Norte',v:''},{c:'#e69800',l:'Charagua Sur (Parapitiguasu)',v:''},{c:'#d7c29e',l:'Isoso',v:''},{c:'#73c4ba',l:'Kaaguazu',v:''},{c:'#ffff00',l:'Kaami',v:''},{c:'#d9a8de',l:'Kaipependi Karovaicho',v:''},{c:'#e600a9',l:'Santa Teresita',v:''}]},
+  no_contactados:{title:'Distribución de pueblos no contactados',items:[{c:'#ff0000',l:'Avistamiento',v:''},{c:'#ff00c5',l:'Área de prioridad DS nro 1286',v:''},{c:'#00c5ff',l:'Distribución verificada',v:''}]},
+  uso_suelo_charagua:{title:'Uso del suelo',items:[{c:'#1f8d49',l:'Bosque',v:''},{c:'#026975',l:'Bosque inundable',v:''},{c:'#d6bc74',l:'Herbazal / arbustal',v:''},{c:'#eddf8e',l:'Pastura',v:''},{c:'#ffefc3',l:'Mosaico de usos',v:''},{c:'#d4271e',l:'Infraestructura urbana',v:''},{c:'#2532e4',l:'Río, lago',v:''},{c:'#ffa07a',l:'Playa, duna y banco de arena',v:''}]},
+  sistemas_ecologicos_charagua:{title:'Sistemas ecológicos',items:[{c:'#ffaa00',l:'Abayoy',v:''},{c:'#ff0000',l:'Antrópico',v:''},{c:'#a80000',l:'Arbustales y bosques riparios',v:''},{c:'#26b500',l:'Bosque de los arenales del chaco',v:''},{c:'#008670',l:'Bosques Boliviano-Tucumano',v:''},{c:'#00c5ff',l:'Cuerpo de agua',v:''},{c:'#ffff00',l:'Sabana herbácea inundada',v:''},{c:'#c500ff',l:'Sabana arbolada',v:''}]},
+  presion_concesion_minera:{title:'Presiones Antropicas · Concesión minera',items:[{c:'#e69800',l:'Concesión minera',v:''}]},
+  presion_area_reservada_ypfb:{title:'Presiones Antropicas · Área reservada a favor de YPFB',items:[{c:'#00ffc5',l:'Área reservada',v:''}]},
+  presion_camino_potencial:{title:'Presiones Antropicas · Camino potencial',items:[{c:'#ffff00',l:'Camino potencial',v:''}]},
+  presion_pesca_ilegal:{title:'Presiones Antropicas · Pesca ilegal',items:[{c:'#c500ff',l:'Pesca ilegal',v:''}]},
+  presion_asentamiento_irregular:{title:'Presiones Antropicas · Asentamiento irregular',items:[{c:'#c500ff',l:'Asentamiento irregular',v:''}]},
+  presion_actividad_petrolera:{title:'Presiones Antropicas · Actividad petrolera',items:[{c:'#610000',l:'Actividad petrolera',v:''}]},
+  presion_uso_rrnn:{title:'Presiones Antropicas · Uso de recursos naturales',items:[{c:'#c500ff',l:'Uso de recursos naturales',v:''}]},
+  presion_caceria_ilegal:{title:'Presiones Antropicas · Cacería ilegal',items:[{c:'#abcd66',l:'Cacería ilegal',v:''}]},
+  presion_ganaderia_pastura:{title:'Presiones Antropicas · Ganadería',items:[{c:'#ffaa00',l:'Ganadería de pastura',v:''},{c:'#d7d79e',l:'Ganadería de ramoneo',v:''}]},
+  presion_contaminacion_agua:{title:'Presiones Antropicas · Contaminación y extracción de agua',items:[{c:'#c500ff',l:'Contaminación y extracción de agua',v:''}]},
+  presion_pesca:{title:'Presiones Antropicas · Pesca',items:[{c:'#c500ff',l:'Pesca',v:''}]},
+  presion_quemas_incendios:{title:'Presiones Antropicas · Quemas e incendios',items:[{c:'#d6452c',l:'Quemas e incendios',v:''}]},
+  presion_deforestacion:{title:'Presiones Antropicas · Deforestación',items:[{c:'#6f8b2d',l:'Deforestación',v:''}]},
 };
 
 function legendRowsHTML(items){
