@@ -55,7 +55,7 @@
     const formatted=unit==='km'
       ? value.toLocaleString('es-BO',{minimumFractionDigits:2,maximumFractionDigits:2})+' km'
       : formatHaCell(value);
-    return `<div class="m2-metric-row">
+    return `<div class="m4-metric-row">
       <span class="mark" style="background:${color}"></span>
       <span class="label">${label}</span>
       <span class="value">${formatted}</span>
@@ -68,8 +68,8 @@
     return `${selectedAPs.size} áreas protegidas seleccionadas`;
   }
 
-  function renderM2DataPanel(){
-    if(currentModule!=='2') return;
+  function renderM4DataPanel(){
+    if(currentModule!=='4') return;
     const rows=scopedMetrics();
     const grid=document.querySelector('.kpi-grid');
     if(!grid||!donutCard||!breakdownCard) return;
@@ -80,7 +80,7 @@
     const bofedalesHa=sum(rows,'bofedalesHa');
     const label=scopeLabel(rows);
     const clearLink=selectedAPs.size
-      ? ` · <a href="#" id="m2ClearAPFilter" style="color:var(--accent)">limpiar</a>`
+      ? ` · <a href="#" id="m4ClearAPFilter" style="color:var(--accent)">limpiar</a>`
       : '';
 
     grid.innerHTML=`
@@ -92,7 +92,7 @@
 
     donutCard.innerHTML=`
       <h4>Desglose de superficies <span class="mono" style="color:var(--text-dim);font-size:10px">${label}</span></h4>
-      <div class="m2-metric-list">
+      <div class="m4-metric-list">
         ${metricRow('Aguas blancas',sum(rows,'whiteHa'),'#0084a8','ha')}
         ${metricRow('Aguas claras',sum(rows,'clearHa'),'#004da8','ha')}
         ${metricRow('Aguas mixtas',sum(rows,'mixedHa'),'#ffaa00','ha')}
@@ -100,20 +100,20 @@
         ${metricRow('Inundación estacional',sum(rows,'seasonalHa'),'#9f9fe8','ha')}
         ${metricRow('Inundación frecuente',sum(rows,'frequentHa'),'#5656c7','ha')}
       </div>
-      <div class="m2-metric-note">Valores de superficie en hectáreas. No se muestran porcentajes.</div>
+      <div class="m4-metric-note">Valores de superficie en hectáreas. No se muestran porcentajes.</div>
     `;
 
     breakdownCard.innerHTML=`
       <h4>Longitud de ríos por clase CSI</h4>
-      <div class="m2-metric-list">
+      <div class="m4-metric-list">
         ${metricRow('Clase 1',sum(rows,'river1Km'),'#1f78b4','km')}
         ${metricRow('Clase 2',sum(rows,'river2Km'),'#ffd43b','km')}
         ${metricRow('Clase 3',sum(rows,'river3Km'),'#d7191c','km')}
       </div>
-      <div class="m2-metric-note">Longitudes geodésicas acumuladas para las áreas protegidas visibles.</div>
+      <div class="m4-metric-note">Longitudes geodésicas acumuladas para las áreas protegidas visibles.</div>
     `;
 
-    const clear=document.getElementById('m2ClearAPFilter');
+    const clear=document.getElementById('m4ClearAPFilter');
     if(clear) clear.addEventListener('click',event=>{event.preventDefault();clearSelection();});
     updateRightContext(rows);
     updateFilterControls();
@@ -163,7 +163,7 @@
     updateAPMapFilter();
     renderAPList();
     updateMapView();
-    renderM2DataPanel();
+    renderM4DataPanel();
     renderFilterList(filterSearch.value);
     if(selectionMode==='single') closeFilter();
   }
@@ -173,7 +173,7 @@
     updateAPMapFilter();
     renderAPList();
     updateMapView();
-    renderM2DataPanel();
+    renderM4DataPanel();
     renderFilterList(filterSearch.value);
   }
 
@@ -233,7 +233,7 @@
       const first=selectedAPs.values().next().value;
       selectedAPs.clear();
       if(first) selectedAPs.add(first);
-      updateAPMapFilter(); renderAPList(); updateMapView(); renderM2DataPanel();
+      updateAPMapFilter(); renderAPList(); updateMapView(); renderM4DataPanel();
     }
     renderFilterList(filterSearch.value);
   });
@@ -242,17 +242,19 @@
   document.addEventListener('click',event=>{if(!filterWrap.contains(event.target))closeFilter();});
   document.addEventListener('keydown',event=>{if(event.key==='Escape')closeFilter();});
 
-  toggleAPSelection=function(name){ applySelection(name); };
-  renderM2Stats=function(){ renderM2DataPanel(); };
-  renderM2Donut=function(){};
+  const originalToggleAPSelection = toggleAPSelection;
+  toggleAPSelection=function(name){
+    if(currentModule==='4') applySelection(name);
+    else originalToggleAPSelection(name);
+  };
   renderModule=function(modId){
-    if(modId!=='2') restoreDefaultCards();
+    if(modId!=='4') restoreDefaultCards();
     originalRenderModule(modId);
-    filterWrap.classList.toggle('module-hidden',modId!=='2');
-    if(modId==='2') renderM2DataPanel();
+    filterWrap.classList.toggle('module-hidden',modId!=='4');
+    if(modId==='4') renderM4DataPanel();
   };
 
-  filterWrap.classList.toggle('module-hidden',currentModule!=='2');
+  filterWrap.classList.toggle('module-hidden',currentModule!=='4');
   renderFilterList();
-  if(currentModule==='2') renderM2DataPanel();
+  if(currentModule==='4') renderM4DataPanel();
 })();

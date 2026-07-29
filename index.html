@@ -651,16 +651,16 @@
   .breakdown-table .sp-name { color: var(--text); }
   .breakdown-table .sp-name.italic { font-style: italic; }
   .breakdown-table .empty { text-align: center; color: var(--text-dim); padding: 14px 6px; font-size: 11px; }
-  .m2-metric-list { display: flex; flex-direction: column; gap: 3px; }
-  .m2-metric-row {
+  .m4-metric-list { display: flex; flex-direction: column; gap: 3px; }
+  .m4-metric-row {
     display: grid; grid-template-columns: 10px 1fr auto; align-items: center; gap: 8px;
     padding: 7px 0; border-bottom: 1px solid var(--border);
   }
-  .m2-metric-row:last-child { border-bottom: 0; }
-  .m2-metric-row .mark { width: 8px; height: 8px; border-radius: 2px; background: var(--accent-4); }
-  .m2-metric-row .label { color: var(--text-soft); font-size: 11px; line-height: 1.3; }
-  .m2-metric-row .value { color: var(--text); font: 600 10.5px 'JetBrains Mono', monospace; white-space: nowrap; }
-  .m2-metric-note { margin-top: 9px; color: var(--text-dim); font-size: 10px; line-height: 1.4; }
+  .m4-metric-row:last-child { border-bottom: 0; }
+  .m4-metric-row .mark { width: 8px; height: 8px; border-radius: 2px; background: var(--accent-4); }
+  .m4-metric-row .label { color: var(--text-soft); font-size: 11px; line-height: 1.3; }
+  .m4-metric-row .value { color: var(--text); font: 600 10.5px 'JetBrains Mono', monospace; white-space: nowrap; }
+  .m4-metric-note { margin-top: 9px; color: var(--text-dim); font-size: 10px; line-height: 1.4; }
   .statusbar { display: flex; align-items: center; padding: 0 14px; background: var(--bg-elev); border-top: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--text-dim); gap: 16px; }
   .statusbar .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 5px; display: inline-block; box-shadow: 0 0 6px var(--accent); }
   .statusbar .right-status { margin-left: auto; display: flex; gap: 14px; }
@@ -729,7 +729,7 @@
       </button>
       <div class="ap-filter-panel" id="apFilterPanel" role="dialog" aria-label="Filtro espacial de áreas protegidas">
         <div class="ap-filter-head">
-          <div><strong>Filtrar áreas protegidas</strong><span>La selección actualiza el mapa y los indicadores de M2.</span></div>
+          <div><strong>Filtrar áreas protegidas</strong><span>La selección actualiza el mapa y los indicadores de M4.</span></div>
         </div>
         <div class="ap-filter-modes" role="group" aria-label="Modo de selección">
           <button class="ap-filter-mode active" id="apFilterSingle" type="button" aria-pressed="true">Selección simple</button>
@@ -1050,17 +1050,6 @@ const MODULES = {
     layers:[
       {id:'departamentos',name:'Departamentos de Bolivia', group:'Marco espacial',          color:'#000000',opacity:100,on:true},
       {id:'apn',       name:'Áreas Protegidas',  group:'Marco espacial',          color:'#2c8a4d',opacity:100,on:true},
-      {id:'sea',       name:'Sistemas Ecológicos Acuáticos', group:'Marco espacial', color:'#49AE6F',opacity:70,on:false, pmtiles:"https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/sea.pmtiles", pmlayer:'sea', maxDataZoom:12},
-      {id:'cuencas',         name:'Cuencas (balance hídrico)',    group:'Hidrología', color:'#005ce6',opacity:80,on:false},
-      {id:'cuencas_n8',      name:'Sub-cuencas HydroBASINS nivel 8',group:'Hidrología', color:'#1e5694',opacity:85,on:false, pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/cuencas_n8.pmtiles', pmlayer:'cuencas_n8', maxDataZoom:12},
-      {id:'cuencas_n9',      name:'Sub-cuencas HydroBASINS nivel 9',group:'Hidrología', color:'#5b8db8',opacity:85,on:false, pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/cuencas_n9.pmtiles', pmlayer:'cuencas_n9', maxDataZoom:12},
-      {id:'ffr',             name:'Ríos FFR (estado conectividad)', group:'Hidrología', color:'#1f6dc7',opacity:90,on:false, gradient:true},
-      {id:'ffr_current_csi_ff123',name:'FFR current · categorías CSI_FF123',group:'Conectividad de agua dulce',color:'#1f6dc7',opacity:100,on:false,pmtiles:'assets/tiles/ffr_current_rivord_1_6.pmtiles',pmlayer:'ffr_current_rivord_1_6',maxDataZoom:12,bounds:[-69.59499286483255,-20.393749999999955,-59.98162804034164,-9.64695311384219]},
-      {id:'ffr_current_csi',name:'FFR current · índice CSI',group:'Conectividad de agua dulce',color:'#ffd43b',opacity:100,on:false,gradient:true,swatch:'linear-gradient(90deg,#d7191c 0%,#ffe066 50%,#2c7bb6 100%)',pmtiles:'assets/tiles/ffr_current_rivord_1_6.pmtiles',pmlayer:'ffr_current_rivord_1_6',maxDataZoom:12,bounds:[-69.59499286483255,-20.393749999999955,-59.98162804034164,-9.64695311384219]},
-      {id:'especies_ff123',name:'Especies',group:'Conectividad de agua dulce',color:'#1f6dc7',opacity:100,on:false,pmtiles:'assets/tiles/especies.pmtiles',pmlayer:'especies',maxDataZoom:12,bounds:[-69.59499286483255,-20.022916666999947,-60.37291666699997,-9.64695311384219]},
-      {id:'lagos',           name:'Lagos y lagunas 2016',          group:'Hidrología', color:'#2374b5',opacity:80,on:false},
-      {id:'humedales',       name:'Humedales (meses inundados)', group:'Hidrología', color:'#2271ae',opacity:80,on:false, gradient:true, pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/humedales.pmtiles', pmlayer:'humedales', maxDataZoom:12},
-      {id:'ramsar',          name:'Sitios Ramsar (11 sitios)',    group:'Hidrología', color:'#4aa3e3',opacity:80,on:false},
       {id:'jaguar',    name:'Jaguar',            group:'Objetos de conservación', color:'#7fa860',opacity:50,on:false, iucn:'NT',sci:'Panthera onca'},
       {id:'paraba_bb', name:'Paraba Barba Azul', group:'Objetos de conservación', color:'#7a1a1a',opacity:50,on:false, iucn:'CR',sci:'Ara glaucogularis'},
 
@@ -1157,13 +1146,20 @@ const MODULES = {
     layers:[
       {id:'departamentos',name:'Departamentos de Bolivia',color:'#000000',opacity:100,on:true},
       {id:'apn',    name:'Áreas Protegidas',              color:'#2c8a4d',opacity:100,on:true},
+      {id:'sea',name:'Sistemas Ecológicos Acuáticos',group:'Hidrología',color:'#49AE6F',opacity:70,on:false,pmtiles:"https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/sea.pmtiles",pmlayer:'sea',maxDataZoom:12},
       {id:'sistemas_acuaticos_ap',name:'Sistemas Acuáticos',group:'Hidrología',color:'#49AE6F',opacity:70,on:false,pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/sistemas_acuaticos_ap.pmtiles',pmlayer:'sistemas_acuaticos_ap',maxDataZoom:12,downloadUrl:'assets/downloads/sistemas_acuaticos_ap.zip',downloadLabel:'Descargar shapefile ZIP'},
       {id:'rios_nacional_ap',name:'Ríos Nacional',group:'Hidrología',color:'#125b8a',opacity:100,on:false,pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/rios_nacional_ap.pmtiles',pmlayer:'rios_nacional_ap',maxDataZoom:12,downloadUrl:'assets/downloads/rios_nacional_ap.zip',downloadLabel:'Descargar shapefile ZIP'},
       {id:'bofedales_ap',name:'Bofedales',group:'Hidrología',color:'#2271ae',opacity:75,on:false,pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/bofedales_ap.pmtiles',pmlayer:'bofedales_ap',maxDataZoom:12,downloadUrl:'assets/downloads/bofedales_ap.zip',downloadLabel:'Descargar shapefile ZIP'},
-      {id:'lagos',  name:'Lagos y lagunas 2016',            color:'#2374b5',opacity:80,on:false},
-      {id:'ramsar',    name:'Sitios Ramsar (11 sitios)',    color:'#4aa3e3',opacity:90,on:true},
-      {id:'cuencas',name:'Cuencas (balance hídrico)',     color:'#005ce6',opacity:80,on:false},
-      {id:'cuencas_n8',name:'Sub-cuencas HydroBASINS nivel 8',color:'#1e5694',opacity:85,on:false, pmtiles:'assets/tiles/cuencas_n8.pmtiles', pmlayer:'cuencas_n8', maxDataZoom:12},
+      {id:'lagos',name:'Lagos y lagunas 2016',group:'Hidrología',color:'#2374b5',opacity:80,on:false},
+      {id:'humedales',name:'Humedales (meses inundados)',group:'Hidrología',color:'#2271ae',opacity:80,on:false,gradient:true,pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/humedales.pmtiles',pmlayer:'humedales',maxDataZoom:12},
+      {id:'ramsar',name:'Sitios Ramsar (11 sitios)',group:'Hidrología',color:'#4aa3e3',opacity:90,on:true},
+      {id:'cuencas',name:'Cuencas (balance hídrico)',group:'Hidrología',color:'#005ce6',opacity:80,on:false},
+      {id:'cuencas_n8',name:'Sub-cuencas HydroBASINS nivel 8',group:'Hidrología',color:'#1e5694',opacity:85,on:false,pmtiles:'assets/tiles/cuencas_n8.pmtiles',pmlayer:'cuencas_n8',maxDataZoom:12},
+      {id:'cuencas_n9',name:'Sub-cuencas HydroBASINS nivel 9',group:'Hidrología',color:'#5b8db8',opacity:85,on:false,pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/cuencas_n9.pmtiles',pmlayer:'cuencas_n9',maxDataZoom:12},
+      {id:'ffr',name:'Ríos FFR (estado conectividad)',group:'Hidrología',color:'#1f6dc7',opacity:90,on:false,gradient:true},
+      {id:'ffr_current_csi_ff123',name:'FFR current · categorías CSI_FF123',group:'Conectividad de agua dulce',color:'#1f6dc7',opacity:100,on:false,pmtiles:'assets/tiles/ffr_current_rivord_1_6.pmtiles',pmlayer:'ffr_current_rivord_1_6',maxDataZoom:12,bounds:[-69.59499286483255,-20.393749999999955,-59.98162804034164,-9.64695311384219]},
+      {id:'ffr_current_csi',name:'FFR current · índice CSI',group:'Conectividad de agua dulce',color:'#ffd43b',opacity:100,on:false,gradient:true,swatch:'linear-gradient(90deg,#d7191c 0%,#ffe066 50%,#2c7bb6 100%)',pmtiles:'assets/tiles/ffr_current_rivord_1_6.pmtiles',pmlayer:'ffr_current_rivord_1_6',maxDataZoom:12,bounds:[-69.59499286483255,-20.393749999999955,-59.98162804034164,-9.64695311384219]},
+      {id:'especies_ff123',name:'Especies',group:'Conectividad de agua dulce',color:'#1f6dc7',opacity:100,on:false,pmtiles:'assets/tiles/especies.pmtiles',pmlayer:'especies',maxDataZoom:12,bounds:[-69.59499286483255,-20.022916666999947,-60.37291666699997,-9.64695311384219]},
     ],
     legend:{title:'Humedales · meses inundados',ind:'I.5',items:[
       {c:'#E8F4FB',l:'0 — 1 mes',v:''},
@@ -4373,6 +4369,6 @@ loadAllGeoData().then(()=>{
   if(searchInput?.value) renderSearchPanel(searchResults(searchInput.value),searchInput.value);
 });
 </script>
-<script src="assets/capas/m2_ap_filter_panel.js"></script>
+<script src="assets/capas/m4_ap_filter_panel.js"></script>
 </body>
 </html>
