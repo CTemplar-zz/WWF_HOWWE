@@ -8,8 +8,13 @@ Index/
 
 # Temporary working files
 arcgis_tmp/
+.claude/
+*.inspect.ndjson
+~$*.xlsx
 *.tmp
 *.bak
+node_modules/
+__pycache__/
 
 # OS
 .DS_Store
