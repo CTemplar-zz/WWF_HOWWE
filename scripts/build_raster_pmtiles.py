@@ -12,7 +12,7 @@ from pmtiles.tile import Compression, TileType, zxy_to_tileid
 from pmtiles.writer import Writer
 from rasterio.enums import Resampling
 from rasterio.transform import from_bounds
-from rasterio.warp import reproject
+from rasterio.warp import reproject, transform_bounds
 
 
 MAPBIOMAS_CLASSES = {
@@ -48,19 +48,45 @@ MAPBIOMAS_CLASSES = {
     82: ("Pajonal y arbustal andino inundable", "#66b2a3"),
 }
 
+DEFORESTATION_CLASSES = {
+    1: ("2016", "#ffffcc"),
+    2: ("2017", "#ffeda0"),
+    3: ("2018", "#fed976"),
+    4: ("2019", "#feb24c"),
+    5: ("2020", "#fd8d3c"),
+    6: ("2021", "#fc4e2a"),
+    7: ("2022", "#e31a1c"),
+    8: ("2023", "#800026"),
+}
+
+STYLES = {
+    "mapbiomas": {
+        "classes": MAPBIOMAS_CLASSES,
+        "name": "Cobertura MapBiomas Bolivia 2024",
+        "description": "Raster de cobertura y uso del suelo de Bolivia, simbolizado con la paleta MapBiomas Coleccion 3.",
+        "attribution": "MapBiomas Bolivia",
+    },
+    "deforestation": {
+        "classes": DEFORESTATION_CLASSES,
+        "name": "Deforestacion Bolivia 2016-2023",
+        "description": "Ano de la primera deforestacion observada por pixel de 30 m. En superposiciones conserva el ano mas antiguo.",
+        "attribution": "WWF Bolivia - procesamiento propio",
+    },
+}
+
 
 def hex_to_rgb(value):
     value = value.lstrip("#")
     return tuple(int(value[i : i + 2], 16) for i in (0, 2, 4))
 
 
-def png_for_tile(values):
+def png_for_tile(values, classes):
     if not np.any(values):
         return None
 
     palette = [0] * (256 * 3)
     alpha = [0] * 256
-    for code, (_, hex_color) in MAPBIOMAS_CLASSES.items():
+    for code, (_, hex_color) in classes.items():
         r, g, b = hex_to_rgb(hex_color)
         palette[code * 3 : code * 3 + 3] = [r, g, b]
         alpha[code] = 255
@@ -74,15 +100,32 @@ def png_for_tile(values):
     return buf.getvalue()
 
 
-def build(input_tif, output_pmtiles, minzoom=0, maxzoom=12):
+def encode_values(values, style):
+    if style == "deforestation":
+        encoded = np.zeros(values.shape, dtype=np.uint8)
+        for code, year in enumerate(range(2016, 2024), 1):
+            encoded[values == year] = code
+        return encoded
+    return values.astype(np.uint8)
+
+
+def build(input_tif, output_pmtiles, minzoom=0, maxzoom=12, style="mapbiomas"):
     input_tif = Path(input_tif)
     output_pmtiles = Path(output_pmtiles)
     output_pmtiles.parent.mkdir(parents=True, exist_ok=True)
+    style_config = STYLES[style]
+    classes = style_config["classes"]
 
     with rasterio.open(input_tif) as src:
         if not src.crs:
             raise RuntimeError("El raster no tiene CRS definido.")
-        bounds = src.bounds
+        lonlat_bounds = transform_bounds(src.crs, "EPSG:4326", *src.bounds, densify_pts=21)
+        bounds = type("Bounds", (), {
+            "left": lonlat_bounds[0],
+            "bottom": lonlat_bounds[1],
+            "right": lonlat_bounds[2],
+            "top": lonlat_bounds[3],
+        })()
         tiles = list(mercantile.tiles(bounds.left, bounds.bottom, bounds.right, bounds.top, range(minzoom, maxzoom + 1)))
         tiles.sort(key=lambda t: zxy_to_tileid(t.z, t.x, t.y))
 
@@ -98,17 +141,21 @@ def build(input_tif, output_pmtiles, minzoom=0, maxzoom=12):
             "center_zoom": 5,
         }
         metadata = {
-            "name": "Cobertura MapBiomas Bolivia 2024",
-            "description": "Raster de cobertura y uso del suelo de Bolivia, simbolizado con la paleta MapBiomas Coleccion 3.",
-            "attribution": "MapBiomas Bolivia",
+            "name": style_config["name"],
+            "description": style_config["description"],
+            "attribution": style_config["attribution"],
             "bounds": [bounds.left, bounds.bottom, bounds.right, bounds.top],
             "minzoom": minzoom,
             "maxzoom": maxzoom,
             "type": "raster",
             "format": "png",
             "legend": [
-                {"value": code, "label": label, "color": color}
-                for code, (label, color) in sorted(MAPBIOMAS_CLASSES.items())
+                {
+                    "value": int(label) if style == "deforestation" else code,
+                    "label": label,
+                    "color": color,
+                }
+                for code, (label, color) in sorted(classes.items())
             ],
         }
 
@@ -118,7 +165,7 @@ def build(input_tif, output_pmtiles, minzoom=0, maxzoom=12):
             total = len(tiles)
             for i, tile in enumerate(tiles, 1):
                 merc = mercantile.xy_bounds(tile)
-                dst = np.zeros((256, 256), dtype=np.uint8)
+                dst = np.zeros((256, 256), dtype=src.dtypes[0])
                 dst_transform = from_bounds(merc.left, merc.bottom, merc.right, merc.top, 256, 256)
                 reproject(
                     source=rasterio.band(src, 1),
@@ -127,12 +174,12 @@ def build(input_tif, output_pmtiles, minzoom=0, maxzoom=12):
                     src_crs=src.crs,
                     dst_transform=dst_transform,
                     dst_crs="EPSG:3857",
-                    src_nodata=0,
+                    src_nodata=src.nodata,
                     dst_nodata=0,
                     resampling=Resampling.nearest,
                     num_threads=2,
                 )
-                png = png_for_tile(dst)
+                png = png_for_tile(encode_values(dst, style), classes)
                 if png:
                     writer.write_tile(zxy_to_tileid(tile.z, tile.x, tile.y), png)
                     written += 1
@@ -151,8 +198,9 @@ def main():
     parser.add_argument("output_pmtiles")
     parser.add_argument("--minzoom", type=int, default=0)
     parser.add_argument("--maxzoom", type=int, default=12)
+    parser.add_argument("--style", choices=sorted(STYLES), default="mapbiomas")
     args = parser.parse_args()
-    build(args.input_tif, args.output_pmtiles, args.minzoom, args.maxzoom)
+    build(args.input_tif, args.output_pmtiles, args.minzoom, args.maxzoom, args.style)
 
 
 if __name__ == "__main__":

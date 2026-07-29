@@ -43,6 +43,7 @@
 <script src="assets/capas/geo_lagos.js"></script>
 <!-- geo_cuencas_n8.js y geo_cuencas_n9.js removidos: migrados a PMTiles en assets/tiles/ -->
 <script src="assets/capas/geo_intersection.js"></script>
+<script src="assets/capas/geo_ap_metrics_m2.js"></script>
 <!-- geo_sea.js removido: migrado a PMTiles en assets/tiles/sea.pmtiles -->
 <style>
   :root {
@@ -155,6 +156,70 @@
   .topbar-search:focus-within { border-color: var(--accent); background: var(--bg-elev); }
   .topbar-search input { flex: 1; background: transparent; border: 0; outline: 0; color: var(--text); font-family: inherit; font-size: 13px; }
   .topbar-search .kbd { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 2px 6px; border: 1px solid var(--border-strong); border-radius: 4px; color: var(--text-dim); }
+  .ap-filter-wrap { position: relative; flex: 0 0 auto; }
+  .ap-filter-wrap.module-hidden { display: none; }
+  .ap-filter-btn {
+    width: 36px; height: 36px; display: grid; place-items: center;
+    border: 1px solid var(--border); border-radius: 9px;
+    background: var(--bg-elev); color: var(--text-soft); cursor: pointer;
+    position: relative; transition: background .15s, color .15s, border-color .15s;
+  }
+  .ap-filter-btn:hover, .ap-filter-btn.active {
+    background: var(--accent-soft); color: var(--accent); border-color: var(--accent);
+  }
+  .ap-filter-count {
+    position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px;
+    padding: 0 5px; display: none; place-items: center; border-radius: 999px;
+    background: var(--accent); color: #fff; border: 2px solid var(--bg-elev);
+    font: 600 9px/1 'JetBrains Mono', monospace;
+  }
+  .ap-filter-count.visible { display: grid; }
+  .ap-filter-panel {
+    position: absolute; top: calc(100% + 8px); left: 0; width: 350px;
+    background: var(--bg-elev); border: 1px solid var(--border); border-radius: 10px;
+    box-shadow: var(--shadow); padding: 12px; z-index: 3200; display: none;
+  }
+  .ap-filter-panel.open { display: block; }
+  .ap-filter-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .ap-filter-head strong { display: block; font-size: 12.5px; color: var(--text); }
+  .ap-filter-head span { display: block; margin-top: 2px; color: var(--text-dim); font-size: 10.5px; line-height: 1.35; }
+  .ap-filter-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 9px; }
+  .ap-filter-mode {
+    border: 1px solid var(--border); background: var(--bg-soft); color: var(--text-soft);
+    border-radius: 6px; padding: 7px 8px; font: 600 11px/1 'Inter', sans-serif; cursor: pointer;
+  }
+  .ap-filter-mode.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+  .ap-filter-search {
+    width: 100%; height: 32px; border: 1px solid var(--border); border-radius: 7px;
+    background: var(--bg); color: var(--text); padding: 0 10px; outline: none;
+    font: 11.5px 'Inter', sans-serif; margin-bottom: 8px;
+  }
+  .ap-filter-search:focus { border-color: var(--accent); }
+  .ap-filter-list { max-height: 290px; overflow-y: auto; display: flex; flex-direction: column; gap: 3px; }
+  .ap-filter-item {
+    width: 100%; border: 0; background: transparent; color: var(--text);
+    display: grid; grid-template-columns: 18px 1fr auto; align-items: center; gap: 8px;
+    padding: 7px 8px; border-radius: 6px; text-align: left; cursor: pointer; font: inherit;
+  }
+  .ap-filter-item:hover { background: var(--bg-soft); }
+  .ap-filter-item.selected { background: var(--accent-soft); }
+  .ap-filter-check {
+    width: 16px; height: 16px; border: 1px solid var(--border-strong);
+    border-radius: 4px; display: grid; place-items: center; color: #fff; font-size: 10px;
+  }
+  .ap-filter-mode-single .ap-filter-check { border-radius: 50%; }
+  .ap-filter-item.selected .ap-filter-check { background: var(--accent); border-color: var(--accent); }
+  .ap-filter-item-name { font-size: 11.5px; line-height: 1.25; }
+  .ap-filter-item-cat { color: var(--text-dim); font: 9px 'JetBrains Mono', monospace; }
+  .ap-filter-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px; border-top: 1px solid var(--border); margin-top: 9px; padding-top: 9px;
+  }
+  .ap-filter-summary { color: var(--text-dim); font-size: 10.5px; }
+  .ap-filter-clear {
+    border: 0; background: transparent; color: var(--accent); cursor: pointer;
+    padding: 4px 0; font: 600 10.5px 'Inter', sans-serif;
+  }
   .search-panel {
     position: absolute;
     top: calc(100% + 8px);
@@ -586,6 +651,16 @@
   .breakdown-table .sp-name { color: var(--text); }
   .breakdown-table .sp-name.italic { font-style: italic; }
   .breakdown-table .empty { text-align: center; color: var(--text-dim); padding: 14px 6px; font-size: 11px; }
+  .m2-metric-list { display: flex; flex-direction: column; gap: 3px; }
+  .m2-metric-row {
+    display: grid; grid-template-columns: 10px 1fr auto; align-items: center; gap: 8px;
+    padding: 7px 0; border-bottom: 1px solid var(--border);
+  }
+  .m2-metric-row:last-child { border-bottom: 0; }
+  .m2-metric-row .mark { width: 8px; height: 8px; border-radius: 2px; background: var(--accent-4); }
+  .m2-metric-row .label { color: var(--text-soft); font-size: 11px; line-height: 1.3; }
+  .m2-metric-row .value { color: var(--text); font: 600 10.5px 'JetBrains Mono', monospace; white-space: nowrap; }
+  .m2-metric-note { margin-top: 9px; color: var(--text-dim); font-size: 10px; line-height: 1.4; }
   .statusbar { display: flex; align-items: center; padding: 0 14px; background: var(--bg-elev); border-top: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--text-dim); gap: 16px; }
   .statusbar .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 5px; display: inline-block; box-shadow: 0 0 6px var(--accent); }
   .statusbar .right-status { margin-left: auto; display: flex; gap: 14px; }
@@ -646,6 +721,27 @@
       <input type="text" id="globalSearchInput" placeholder="Buscar capa…" autocomplete="off" />
       <span class="kbd">⌘K</span>
       <div class="search-panel" id="searchPanel" role="listbox"></div>
+    </div>
+    <div class="ap-filter-wrap" id="apFilterWrap">
+      <button class="ap-filter-btn" id="apFilterBtn" type="button" title="Filtrar áreas protegidas" aria-label="Filtrar áreas protegidas" aria-expanded="false">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16l-6.2 7.1v5.6l-3.6 1.8v-7.4z"/><path d="M8 5V3h8v2"/></svg>
+        <span class="ap-filter-count" id="apFilterCount">0</span>
+      </button>
+      <div class="ap-filter-panel" id="apFilterPanel" role="dialog" aria-label="Filtro espacial de áreas protegidas">
+        <div class="ap-filter-head">
+          <div><strong>Filtrar áreas protegidas</strong><span>La selección actualiza el mapa y los indicadores de M2.</span></div>
+        </div>
+        <div class="ap-filter-modes" role="group" aria-label="Modo de selección">
+          <button class="ap-filter-mode active" id="apFilterSingle" type="button" aria-pressed="true">Selección simple</button>
+          <button class="ap-filter-mode" id="apFilterMultiple" type="button" aria-pressed="false">Selección múltiple</button>
+        </div>
+        <input class="ap-filter-search" id="apFilterSearch" type="search" placeholder="Buscar área protegida…" autocomplete="off" />
+        <div class="ap-filter-list ap-filter-mode-single" id="apFilterList"></div>
+        <div class="ap-filter-footer">
+          <span class="ap-filter-summary" id="apFilterSummary">Todas las áreas</span>
+          <button class="ap-filter-clear" id="apFilterClear" type="button">Limpiar filtro</button>
+        </div>
+      </div>
     </div>
     <div class="topbar-spacer"></div>
     <div class="topbar-actions">
@@ -959,6 +1055,9 @@ const MODULES = {
       {id:'cuencas_n8',      name:'Sub-cuencas HydroBASINS nivel 8',group:'Hidrología', color:'#1e5694',opacity:85,on:false, pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/cuencas_n8.pmtiles', pmlayer:'cuencas_n8', maxDataZoom:12},
       {id:'cuencas_n9',      name:'Sub-cuencas HydroBASINS nivel 9',group:'Hidrología', color:'#5b8db8',opacity:85,on:false, pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/cuencas_n9.pmtiles', pmlayer:'cuencas_n9', maxDataZoom:12},
       {id:'ffr',             name:'Ríos FFR (estado conectividad)', group:'Hidrología', color:'#1f6dc7',opacity:90,on:false, gradient:true},
+      {id:'ffr_current_csi_ff123',name:'FFR current · categorías CSI_FF123',group:'Conectividad de agua dulce',color:'#1f6dc7',opacity:100,on:false,pmtiles:'assets/tiles/ffr_current_rivord_1_6.pmtiles',pmlayer:'ffr_current_rivord_1_6',maxDataZoom:12,bounds:[-69.59499286483255,-20.393749999999955,-59.98162804034164,-9.64695311384219]},
+      {id:'ffr_current_csi',name:'FFR current · índice CSI',group:'Conectividad de agua dulce',color:'#ffd43b',opacity:100,on:false,gradient:true,swatch:'linear-gradient(90deg,#d7191c 0%,#ffe066 50%,#2c7bb6 100%)',pmtiles:'assets/tiles/ffr_current_rivord_1_6.pmtiles',pmlayer:'ffr_current_rivord_1_6',maxDataZoom:12,bounds:[-69.59499286483255,-20.393749999999955,-59.98162804034164,-9.64695311384219]},
+      {id:'especies_ff123',name:'Especies',group:'Conectividad de agua dulce',color:'#1f6dc7',opacity:100,on:false,pmtiles:'assets/tiles/especies.pmtiles',pmlayer:'especies',maxDataZoom:12,bounds:[-69.59499286483255,-20.022916666999947,-60.37291666699997,-9.64695311384219]},
       {id:'lagos',           name:'Lagos y lagunas 2016',          group:'Hidrología', color:'#2374b5',opacity:80,on:false},
       {id:'humedales',       name:'Humedales (meses inundados)', group:'Hidrología', color:'#2271ae',opacity:80,on:false, gradient:true, pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/humedales.pmtiles', pmlayer:'humedales', maxDataZoom:12},
       {id:'ramsar',          name:'Sitios Ramsar (11 sitios)',    group:'Hidrología', color:'#4aa3e3',opacity:80,on:false},
@@ -1036,12 +1135,20 @@ const MODULES = {
       {id:'wms_plan_uso_suelos',name:'Plan de uso de suelos',group:'SINACAR / INRA',color:'#8a6f3e',opacity:85,on:false,wmsLayer:'sinacar:layer_plan_de_uso_de_suelos_6couij',wms:INRA_WMS_URL,bounds:[-69.56353759765625,-22.913942337036133,-57.49848556518555,-9.658485412597656]},
       {id:'wms_quemas_incendios_2019_2022',name:'Quemas e incendios 2019-2022',group:'SINACAR / INRA',color:'#e87522',opacity:85,on:false,wmsLayer:'sinacar:layer_quemasincendios19_22_9vror',wms:INRA_WMS_URL,bounds:[-69.5682373046875,-22.868593215942383,-57.6021614074707,-9.678046226501465]},
       {id:'wms_quemas_incendios_2023_2025',name:'Quemas e incendios 2023-2025',group:'SINACAR / INRA',color:'#a43b1d',opacity:85,on:false,wmsLayer:'sinacar:layer_quemasincendios23_25_5xk55',wms:INRA_WMS_URL,bounds:[-69.56733703613281,-22.762861251831055,-57.46281433105469,-9.687928199768066]},
-      {id:'wms_deforestacion',name:'Deforestación',group:'SINACAR / INRA',color:'#6f8b2d',opacity:85,on:false,wmsLayer:'sinacar:layer_deforestacion_5fxh4i',wms:INRA_WMS_URL,bounds:[-69.56841278076172,-22.87550926208496,-57.45443344116211,-9.67728042602539]},
+      {id:'deforestacion_2016_2023',name:'Deforestación 2016-2023',group:'Procesamiento propio',color:'#e31a1c',opacity:100,on:false,rasterPmtiles:'assets/tiles/deforestacion_2016_2023.pmtiles',maxDataZoom:12,bounds:[-69.91981275060164,-22.875657283846408,-57.29586204901586,-9.585587371420294],attribution:'WWF Bolivia',swatch:'linear-gradient(90deg,#ffffcc 0%,#fed976 28%,#fd8d3c 55%,#e31a1c 78%,#800026 100%)'},
 
     ],
     legend:{title:'Marco espacial',ind:'M3',items:[
       {c:'#000000',l:'Departamentos de Bolivia',v:''},
       {c:'#2c8a4d',l:'Areas Protegidas',v:''},
+      {c:'#ffffcc',l:'Deforestación 2016',v:'2016'},
+      {c:'#ffeda0',l:'Deforestación 2017',v:'2017'},
+      {c:'#fed976',l:'Deforestación 2018',v:'2018'},
+      {c:'#feb24c',l:'Deforestación 2019',v:'2019'},
+      {c:'#fd8d3c',l:'Deforestación 2020',v:'2020'},
+      {c:'#fc4e2a',l:'Deforestación 2021',v:'2021'},
+      {c:'#e31a1c',l:'Deforestación 2022',v:'2022'},
+      {c:'#800026',l:'Deforestación 2023',v:'2023'},
 
     ]}
   },
@@ -1202,6 +1309,15 @@ const LAYER_METADATA = {
     ],
     links: [{label:'MapBiomas Bolivia', url:'https://bolivia.mapbiomas.org/'}]
   },
+  deforestacion_2016_2023: {
+    title: 'Deforestación 2016-2023',
+    body: [
+      'Raster anual de deforestación con resolución espacial de 30 m.',
+      'Cada píxel representa el primer año de deforestación observado entre 2016 y 2023; cuando existen superposiciones se conserva el año más antiguo.',
+      'La visualización se sirve como PMTiles hasta el nivel de zoom 12.'
+    ],
+    note: 'Procesamiento propio a partir de las capas anuales de deforestación.'
+  },
   sea: {
     title: 'Sistemas ecológicos acuáticos',
     body: [
@@ -1262,6 +1378,27 @@ const LAYER_METADATA = {
       'La metodología evalúa la conectividad fluvial y permite identificar ríos con menor alteración longitudinal, lateral, vertical y temporal.'
     ],
     links: [{label:'WWF - Free Flowing Rivers Study', url:'https://www.worldwildlife.org/publications/free-flowing-rivers-study-full-map/'}]
+  },
+  ffr_current_csi_ff123: {
+    title: 'FFR current · categorías CSI_FF123',
+    body: [
+      'Red FFR_current recortada al área de Bolivia con buffer de 2 km y filtrada para conservar únicamente RIV_ORD entre 1 y 6.',
+      'La simbología representa las categorías 1, 2 y 3 del campo CSI_FF123.'
+    ]
+  },
+  ffr_current_csi: {
+    title: 'FFR current · índice CSI',
+    body: [
+      'Segunda visualización de la misma red FFR_current filtrada por RIV_ORD entre 1 y 6.',
+      'El índice CSI se representa de menor a mayor mediante un gradiente rojo, amarillo y azul.'
+    ]
+  },
+  especies_ff123: {
+    title: 'Especies',
+    body: [
+      'Capa Species recortada con Limites_departamentales_buffer_2km.',
+      'La simbología usa el campo FF123: 1 azul, 2 amarillo y 3 rojo.'
+    ]
   },
   lagos: {
     title: 'Lagos y lagunas 2016',
@@ -1463,12 +1600,33 @@ const TILES = {
   }
 };
 let currentBM='streets', currentTheme='light', activeTileLayer=null;
+function refreshVisibleOverlays(){
+  map.invalidateSize(false);
+  try{
+    const mod=MODULES[currentModule];
+    if(mod && typeof reapplyLayerOrder==='function') reapplyLayerOrder(currentModule,mod);
+  }catch(_){
+    // The module layer registry may not exist during initial page setup.
+  }
+  if(typeof moduleLayers==='object'){
+    Object.values(moduleLayers).forEach(layer=>{
+      if(layer && map.hasLayer(layer) && typeof layer.redraw==='function') layer.redraw();
+    });
+  }
+  map.invalidateSize(false);
+}
 function setBasemap(bm){
+  if(!TILES[bm] || !TILES[bm][currentTheme]) return;
   currentBM=bm;
   if(activeTileLayer) map.removeLayer(activeTileLayer);
   activeTileLayer=TILES[bm][currentTheme];
   activeTileLayer.addTo(map);
+  if(typeof activeTileLayer.bringToBack==='function') activeTileLayer.bringToBack();
   document.querySelectorAll('.basemap-switch button').forEach(b=>b.classList.toggle('active',b.dataset.bm===bm));
+  // Rebind/redraw overlays after the base tile layer changes. This avoids
+  // requiring users to toggle each visible layer off and on again.
+  requestAnimationFrame(refreshVisibleOverlays);
+  setTimeout(refreshVisibleOverlays,250);
 }
 setBasemap('streets');
 // === GeoJSON real layers ===
@@ -2591,6 +2749,33 @@ function createPMTilesLayer(layerDef){
         opacity: 0.95
       })
     }];
+  } else if(id === 'ffr_current_csi_ff123' || id === 'ffr_current_csi' || id === 'especies_ff123'){
+    const categoryColor = value => {
+      const v = Number(value);
+      return v === 1 ? '#1f78b4' : v === 2 ? '#ffd43b' : v === 3 ? '#d7191c' : '#7f8a7d';
+    };
+    const mixColor = (a,b,t) => {
+      const x = a.match(/\w\w/g).map(v=>parseInt(v,16));
+      const y = b.match(/\w\w/g).map(v=>parseInt(v,16));
+      return `rgb(${x.map((v,i)=>Math.round(v+(y[i]-v)*t)).join(',')})`;
+    };
+    const csiColor = value => {
+      const t = Math.max(0,Math.min(1,(Number(value)-24.91819)/(100-24.91819)));
+      return t <= 0.5
+        ? mixColor('#d7191c','#ffe066',t*2)
+        : mixColor('#ffe066','#2c7bb6',(t-0.5)*2);
+    };
+    const riverWidth = value => Math.max(0.8,Math.min(2.4,0.45+(Number(value)||2)*0.3));
+    paintRules = [{
+      dataLayer: layerDef.pmlayer || id,
+      symbolizer: new protomapsL.LineSymbolizer({
+        color: (z,f) => id === 'ffr_current_csi'
+          ? csiColor(f.props.CSI)
+          : categoryColor(id === 'especies_ff123' ? f.props.FF123 : f.props.CSI_FF123),
+        width: (z,f) => id === 'especies_ff123' ? 1.25 : riverWidth(f.props.RIV_ORD),
+        opacity: 0.96
+      })
+    }];
   } else if(id === 'sea'){
     const seaColors = {
       'Altiplano BN6':'#49AE6F','Beni subandino BN4':'#3FF362','Llanura aluvial BN2':'#BBF6D8',
@@ -2800,6 +2985,21 @@ function createPMTilesLayer(layerDef){
           <tr><td>Orden</td><td>${props.order_nm || '-'}</td></tr>
           <tr><td>Familia</td><td>${props.family_nm || '-'}</td></tr>
         </table></div>`;
+      } else if (id === 'ffr_current_csi_ff123' || id === 'ffr_current_csi') {
+        html = `<div class="feature-popup"><h5>${layerDef.name}</h5><table>
+          <tr><td>Orden del río</td><td><b>${props.RIV_ORD ?? '-'}</b></td></tr>
+          <tr><td>CSI_FF123</td><td>${props.CSI_FF123 ?? '-'}</td></tr>
+          <tr><td>CSI</td><td>${props.CSI != null ? Number(props.CSI).toFixed(2) : '-'}%</td></tr>
+          <tr><td>Cuenca</td><td>${props.BAS_NAME || '-'}</td></tr>
+        </table></div>`;
+      } else if (id === 'especies_ff123') {
+        html = `<div class="feature-popup"><h5>Especies</h5><table>
+          <tr><td>FF123</td><td><b>${props.FF123 ?? '-'}</b></td></tr>
+          <tr><td>Tortugas</td><td>${props.Turtle ?? '-'}</td></tr>
+          <tr><td>Peces</td><td>${props.Fish ?? '-'}</td></tr>
+          <tr><td>Delfines</td><td>${props.Dolphin ?? '-'}</td></tr>
+          <tr><td>Total especies</td><td>${props.AllSpecies ?? '-'}</td></tr>
+        </table></div>`;
       } else {
         // Genérico: muestra todas las propiedades
         const rows = Object.entries(props).map(([k,v]) =>
@@ -2857,7 +3057,7 @@ function createRasterPMTilesLayer(layerDef){
     maxNativeZoom: layerDef.maxDataZoom || 12,
     maxZoom: 18,
     opacity: (layerDef.opacity ?? 100) / 100,
-    attribution: 'MapBiomas Bolivia'
+    attribution: layerDef.attribution || 'Geoportal WWF Bolivia'
   });
   if(layerDef.id === 'cobertura_mapbiomas_2024'){
     const canvas = document.createElement('canvas');
@@ -3731,6 +3931,19 @@ const ACTIVE_LAYER_LEGENDS={
   cuencas_n8:{title:'Sub-cuencas HydroBASINS nivel 8',items:[{c:'#003f73',l:'Borde de sub-cuenca',v:''}]},
   cuencas_n9:{title:'Sub-cuencas HydroBASINS nivel 9',items:[{c:'#003f73',l:'Borde de sub-cuenca',v:''}]},
   ffr:{title:'Rios FFR (estado conectividad)',items:[{c:'linear-gradient(90deg,#1f6dc7,#b7d9ff)',l:'Estado de conectividad',v:''}]},
+  ffr_current_csi_ff123:{title:'FFR current · CSI_FF123',items:[
+    {c:'#1f78b4',l:'CSI_FF123 = 1',v:'1'},
+    {c:'#ffd43b',l:'CSI_FF123 = 2',v:'2'},
+    {c:'#d7191c',l:'CSI_FF123 = 3',v:'3'}
+  ]},
+  ffr_current_csi:{title:'FFR current · índice CSI',items:[
+    {c:'linear-gradient(90deg,#d7191c 0%,#ffe066 50%,#2c7bb6 100%)',l:'Menor a mayor CSI',v:'24,92–100'}
+  ]},
+  especies_ff123:{title:'Especies · FF123',items:[
+    {c:'#1f78b4',l:'FF123 = 1',v:'1'},
+    {c:'#ffd43b',l:'FF123 = 2',v:'2'},
+    {c:'#d7191c',l:'FF123 = 3',v:'3'}
+  ]},
   lagos:{title:'Lagos y lagunas 2016',items:[{c:'#2374b5',l:'Lagos y lagunas',v:''}]},
   humedales:{title:'Humedales (meses inundados)',items:[{c:'linear-gradient(90deg,#d7efff,#1f6dc7)',l:'Menos a mas meses inundados',v:''}]},
   ramsar:{title:'Sitios Ramsar',items:[{c:'#4aa3e3',l:'Sitios Ramsar',v:''}]},
@@ -4160,5 +4373,6 @@ loadAllGeoData().then(()=>{
   if(searchInput?.value) renderSearchPanel(searchResults(searchInput.value),searchInput.value);
 });
 </script>
+<script src="assets/capas/m2_ap_filter_panel.js"></script>
 </body>
 </html>

@@ -13,6 +13,8 @@ arcgis_tmp/
 ~$*.xlsx
 *.tmp
 *.bak
+node_modules/
+__pycache__/
 
 # OS
 .DS_Store
