@@ -44,6 +44,8 @@
 <!-- geo_cuencas_n8.js y geo_cuencas_n9.js removidos: migrados a PMTiles en assets/tiles/ -->
 <script src="assets/capas/geo_intersection.js"></script>
 <script src="assets/capas/geo_ap_metrics_m2.js"></script>
+<script src="assets/capas/geo_deforestation_m3.js"></script>
+<script src="assets/capas/geo_landcover_m1.js"></script>
 <!-- geo_sea.js removido: migrado a PMTiles en assets/tiles/sea.pmtiles -->
 <style>
   :root {
@@ -65,6 +67,7 @@
     --shadow: 0 1px 2px rgba(0,0,0,.04), 0 6px 16px rgba(0,0,0,.06);
     --tab-active-bg: #ffffff;
     --map-pad: #e7e3d8;
+    --right-panel-width: 340px;
   }
   [data-theme="dark"] {
     --bg: #0e120f;
@@ -319,14 +322,16 @@
   .tab .tab-dot { width: 8px; height: 8px; border-radius: 2px; }
   .main {
     display: grid;
-    grid-template-columns: 380px 1fr 340px;
+    grid-template-columns: 380px minmax(0,1fr) var(--right-panel-width);
     overflow: hidden;
     transition: grid-template-columns .28s cubic-bezier(.4,0,.2,1);
     position: relative;
   }
-  .app.left-collapsed  .main { grid-template-columns: 0 1fr 340px; }
-  .app.right-collapsed .main { grid-template-columns: 380px 1fr 0; }
-  .app.left-collapsed.app.right-collapsed .main { grid-template-columns: 0 1fr 0; }
+  .app.left-collapsed  .main { grid-template-columns: 0 minmax(0,1fr) var(--right-panel-width); }
+  .app.right-collapsed .main { grid-template-columns: 380px minmax(0,1fr) 0; }
+  .app.left-collapsed.app.right-collapsed .main { grid-template-columns: 0 minmax(0,1fr) 0; }
+  .app.right-panel-resizing .main,
+  .app.right-panel-resizing .sb-toggle { transition: none; }
   .sb-toggle {
     position: fixed;
     top: calc(100px + (100vh - 126px) / 2);
@@ -346,7 +351,7 @@
   .sb-toggle:hover svg { transform: scale(1.2); }
   .sb-toggle svg { width: 16px; height: 16px; stroke-width: 3; }
   .sb-toggle.left { left: 380px; border-left: 0; border-radius: 0 8px 8px 0; }
-  .sb-toggle.right { right: 340px; border-right: 0; border-radius: 8px 0 0 8px; }
+  .sb-toggle.right { right: var(--right-panel-width); border-right: 0; border-radius: 8px 0 0 8px; }
   .sb-toggle.left.panel-hidden  { left: 0; }
   .sb-toggle.right.panel-hidden { right: 0; }
   .sb-toggle svg { transition: transform .25s; }
@@ -607,8 +612,40 @@
   .scale-bar .bar::before, .scale-bar .bar::after { content: ""; position: absolute; top: 0; bottom: 0; width: 1px; background: var(--text-soft); }
   .scale-bar .bar::before { left: 0; }
   .scale-bar .bar::after  { right: 0; }
-  .right { background: var(--bg-panel); border-left: 1px solid var(--border); overflow-y: auto; overflow-x: hidden; transition: opacity .2s; }
+  .right { background: var(--bg-panel); border-left: 1px solid var(--border); overflow-y: auto; overflow-x: hidden; transition: opacity .2s; position: relative; }
   .app.right-collapsed aside.right { opacity: 0; pointer-events: none; border-left: 0; }
+  .right-resize-handle {
+    position: fixed;
+    top: 100px;
+    bottom: 26px;
+    right: calc(var(--right-panel-width) - 4px);
+    width: 9px;
+    z-index: 9998;
+    cursor: ew-resize;
+    touch-action: none;
+    background: transparent;
+  }
+  .right-resize-handle::after {
+    content: "";
+    position: absolute;
+    top: 42%;
+    bottom: 42%;
+    left: 3px;
+    width: 3px;
+    min-height: 42px;
+    border-radius: 3px;
+    background: var(--border-strong);
+    opacity: .4;
+    transition: opacity .15s, background .15s;
+  }
+  .right-resize-handle:hover::after,
+  .right-resize-handle:focus-visible::after,
+  .app.right-panel-resizing .right-resize-handle::after {
+    background: var(--accent);
+    opacity: 1;
+  }
+  .right-resize-handle:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .app.right-collapsed .right-resize-handle { display: none; }
   .panel-section .panel-h { cursor: pointer; user-select: none; }
   .panel-section .panel-h .caret { width: 14px; height: 14px; display: inline-block; margin-right: 4px; transition: transform .2s; color: var(--text-dim); }
   .panel-section.collapsed .panel-h .caret { transform: rotate(-90deg); }
@@ -661,6 +698,120 @@
   .m4-metric-row .label { color: var(--text-soft); font-size: 11px; line-height: 1.3; }
   .m4-metric-row .value { color: var(--text); font: 600 10.5px 'JetBrains Mono', monospace; white-space: nowrap; }
   .m4-metric-note { margin-top: 9px; color: var(--text-dim); font-size: 10px; line-height: 1.4; }
+  .m1-landcover-list {
+    display: flex; flex-direction: column; gap: 11px;
+    max-height: 510px; overflow-y: auto; padding: 1px 5px 3px 0;
+  }
+  .m1-landcover-row { min-width: 0; }
+  .m1-landcover-head {
+    display: grid; grid-template-columns: 10px minmax(0,1fr) auto auto;
+    align-items: center; gap: 7px; margin-bottom: 5px;
+  }
+  .m1-landcover-swatch { width: 9px; height: 9px; border-radius: 2px; }
+  .m1-landcover-name {
+    min-width: 0; color: var(--text-soft); font-size: 10.5px;
+    line-height: 1.25; overflow-wrap: anywhere;
+  }
+  .m1-landcover-code {
+    color: var(--text-dim); font: 500 8.5px 'JetBrains Mono',monospace;
+  }
+  .m1-landcover-value {
+    color: var(--text); font: 600 9.5px 'JetBrains Mono',monospace;
+    white-space: nowrap;
+  }
+  .m1-landcover-track {
+    height: 8px; overflow: hidden; border-radius: 4px;
+    background: rgba(0,0,0,.055); border: 1px solid rgba(0,0,0,.035);
+  }
+  .m1-landcover-bar {
+    display: block; height: 100%; min-width: 2px; border-radius: 4px;
+    transition: width .2s ease;
+  }
+  .m1-panel-note {
+    margin-top: 11px; color: var(--text-dim); font-size: 10px; line-height: 1.4;
+  }
+  .kpi .val.m1-dominant {
+    font-family: 'Inter',sans-serif; font-size: 12px; line-height: 1.25;
+  }
+  .m3-chart-wrap { width: 100%; min-height: 190px; }
+  .m3-chart-svg { width: 100%; height: auto; min-height: 190px; display: block; overflow: visible; }
+  .m3-chart-grid { stroke: var(--border); stroke-width: 1; }
+  .m3-chart-axis { fill: var(--text-dim); font: 10px 'JetBrains Mono', monospace; }
+  .m3-chart-value { fill: var(--text-soft); font: 600 9px 'JetBrains Mono', monospace; }
+  .m3-chart-bar { fill: #d6452c; opacity: .82; transition: opacity .15s; }
+  .m3-chart-bar.latest { fill: #a52f20; opacity: 1; }
+  .m3-chart-bar:hover { opacity: 1; }
+  .m3-chart-wrap.mining .m3-chart-bar { fill: #b24b24; }
+  .m3-chart-wrap.mining .m3-chart-bar.latest { fill: #7f1d1d; }
+  .m3-panel-tabs {
+    display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 5px;
+    margin: 0 16px 12px; padding: 4px; border: 1px solid var(--border);
+    border-radius: 8px; background: var(--bg-soft);
+  }
+  .m3-panel-tabs[hidden] { display: none; }
+  .m3-panel-tab {
+    min-width: 0; border: 1px solid transparent; border-radius: 6px;
+    padding: 7px 5px; background: transparent; color: var(--text-dim);
+    font-family: inherit; font-size: 9.5px; font-weight: 600; cursor: pointer;
+  }
+  .m3-panel-tab:hover:not(:disabled) { color: var(--text); border-color: var(--border); }
+  .m3-panel-tab.active {
+    color: var(--accent-2); border-color: rgba(214,69,44,.35);
+    background: var(--bg-panel); box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+  .m3-panel-tab:disabled { opacity: .42; cursor: not-allowed; }
+  .kpi-grid.m3-three-kpis .kpi:last-child { grid-column: 1 / -1; }
+  .m3-mining-ap-chart {
+    display: grid; grid-template-columns: repeat(5,minmax(42px,1fr));
+    align-items: end; gap: 7px; min-height: 205px; padding: 8px 2px 0;
+  }
+  .m3-mining-ap-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .m3-mining-ap-heading h4 { margin: 0; }
+  .m3-mining-ap-item {
+    display: grid; grid-template-rows: 22px 130px minmax(34px,auto);
+    align-items: end; gap: 5px; min-width: 0; padding: 4px 3px 6px;
+    border: 1px solid transparent; border-radius: 6px;
+    background: transparent; color: var(--text-soft); cursor: pointer;
+    font-family: inherit; text-align: center;
+  }
+  .m3-mining-ap-item:hover { border-color: var(--border-strong); background: var(--bg-panel); }
+  .m3-mining-ap-item.active { border-color: rgba(180,35,24,.48); background: rgba(180,35,24,.07); }
+  .m3-mining-ap-value { align-self: end; font: 600 9px 'JetBrains Mono',monospace; color: var(--text-soft); }
+  .m3-mining-ap-track {
+    align-self: stretch; display: flex; align-items: end; justify-content: center;
+    border-bottom: 1px solid var(--border-strong);
+  }
+  .m3-mining-ap-bar {
+    display: block; width: min(32px,72%); min-height: 2px;
+    border-radius: 4px 4px 0 0; background: #e87522; opacity: .78;
+    transition: height .18s ease,background .15s ease,opacity .15s ease;
+  }
+  .m3-mining-ap-item:hover .m3-mining-ap-bar { opacity: 1; }
+  .m3-mining-ap-item.active .m3-mining-ap-bar { background: #b42318; opacity: 1; }
+  .m3-mining-ap-label { align-self: start; font-size: 9px; line-height: 1.2; overflow-wrap: anywhere; }
+  .m3-eco-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 2px 0 9px; }
+  .m3-eco-summary { color: var(--text-dim); font-size: 10px; line-height: 1.35; }
+  .m3-eco-clear {
+    border: 0; border-radius: 5px; padding: 4px 7px; cursor: pointer;
+    background: var(--accent-soft); color: var(--accent);
+    font-family: inherit; font-size: 10px; font-weight: 600;
+  }
+  .m3-eco-list { display: flex; flex-direction: column; gap: 4px; max-height: 260px; overflow-y: auto; padding-right: 2px; }
+  .m3-eco-option {
+    display: grid; grid-template-columns: 17px minmax(0,1fr) auto; align-items: center; gap: 7px;
+    width: 100%; padding: 7px 8px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--bg-panel); color: var(--text-soft); text-align: left; cursor: pointer;
+    font-family: inherit; font-size: 10.5px;
+  }
+  .m3-eco-option:hover { border-color: var(--border-strong); color: var(--text); }
+  .m3-eco-option.active { border-color: #d6452c; background: rgba(214,69,44,.08); color: var(--text); }
+  .m3-eco-check {
+    width: 15px; height: 15px; display: grid; place-items: center; border-radius: 4px;
+    border: 1px solid var(--border-strong); color: #fff; font-size: 10px; font-weight: 700;
+  }
+  .m3-eco-option.active .m3-eco-check { background: #d6452c; border-color: #d6452c; }
+  .m3-eco-value { color: var(--text-dim); font: 500 9.5px 'JetBrains Mono', monospace; white-space: nowrap; }
+  .m3-panel-note { margin-top: 8px; color: var(--text-dim); font-size: 10px; line-height: 1.4; }
   .statusbar { display: flex; align-items: center; padding: 0 14px; background: var(--bg-elev); border-top: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--text-dim); gap: 16px; }
   .statusbar .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 5px; display: inline-block; box-shadow: 0 0 6px var(--accent); }
   .statusbar .right-status { margin-left: auto; display: flex; gap: 14px; }
@@ -729,7 +880,7 @@
       </button>
       <div class="ap-filter-panel" id="apFilterPanel" role="dialog" aria-label="Filtro espacial de áreas protegidas">
         <div class="ap-filter-head">
-          <div><strong>Filtrar áreas protegidas</strong><span>La selección actualiza el mapa y los indicadores de M4.</span></div>
+          <div><strong>Filtrar áreas protegidas</strong><span>La selección actualiza el mapa y los indicadores del módulo activo.</span></div>
         </div>
         <div class="ap-filter-modes" role="group" aria-label="Modo de selección">
           <button class="ap-filter-mode active" id="apFilterSingle" type="button" aria-pressed="true">Selección simple</button>
@@ -837,6 +988,7 @@
       </div>
     </section>
     <aside class="right" id="right">
+      <div class="right-resize-handle" id="rightResizeHandle" role="separator" aria-label="Cambiar ancho del panel derecho" aria-orientation="vertical" aria-valuemin="300" aria-valuemax="720" aria-valuenow="340" tabindex="0" title="Arrastra para cambiar el ancho · doble clic para restablecer"></div>
       <div class="info-h">
         <h3 id="rightTitle">Bolivia</h3>
         <span class="badge">Resumen</span>
@@ -921,6 +1073,7 @@ const MAPBIOMAS_LEGEND = [
   {c:'#ffa07a',l:'Playa, duna y banco de arena',v:'23'},
   {c:'#d4271e',l:'Infraestructura urbana',v:'24'},
   {c:'#db4d4f',l:'Otra área antrópica sin vegetación',v:'25'},
+  {c:'#ffffff',l:'No observado',v:'27'},
   {c:'#ffaa5f',l:'Afloramiento rocoso',v:'29'},
   {c:'#9c0027',l:'Minería',v:'30'},
   {c:'#091077',l:'Acuicultura',v:'31'},
@@ -1125,6 +1278,7 @@ const MODULES = {
       {id:'wms_quemas_incendios_2019_2022',name:'Quemas e incendios 2019-2022',group:'SINACAR / INRA',color:'#e87522',opacity:85,on:false,wmsLayer:'sinacar:layer_quemasincendios19_22_9vror',wms:INRA_WMS_URL,bounds:[-69.5682373046875,-22.868593215942383,-57.6021614074707,-9.678046226501465]},
       {id:'wms_quemas_incendios_2023_2025',name:'Quemas e incendios 2023-2025',group:'SINACAR / INRA',color:'#a43b1d',opacity:85,on:false,wmsLayer:'sinacar:layer_quemasincendios23_25_5xk55',wms:INRA_WMS_URL,bounds:[-69.56733703613281,-22.762861251831055,-57.46281433105469,-9.687928199768066]},
       {id:'deforestacion_2016_2023',name:'Deforestación 2016-2023',group:'Procesamiento propio',color:'#e31a1c',opacity:100,on:false,rasterPmtiles:'assets/tiles/deforestacion_2016_2023.pmtiles',maxDataZoom:12,bounds:[-69.91981275060164,-22.875657283846408,-57.29586204901586,-9.585587371420294],attribution:'WWF Bolivia',swatch:'linear-gradient(90deg,#ffffcc 0%,#fed976 28%,#fd8d3c 55%,#e31a1c 78%,#800026 100%)'},
+      {id:'mineria_ilegal',name:'Minería ilegal 2018-2025',group:'Procesamiento propio',color:'#9c0027',opacity:78,on:false,bounds:[-68.926465,-18.391773,-60.727119,-9.737141],downloadUrl:'assets/downloads/mineria_ilegal_ap_todos.zip',downloadLabel:'Descargar shapefile ZIP'},
 
     ],
     legend:{title:'Marco espacial',ind:'M3',items:[
@@ -1138,6 +1292,7 @@ const MODULES = {
       {c:'#fc4e2a',l:'Deforestación 2021',v:'2021'},
       {c:'#e31a1c',l:'Deforestación 2022',v:'2022'},
       {c:'#800026',l:'Deforestación 2023',v:'2023'},
+      {c:'#9c0027',l:'Minería ilegal',v:'2018-2025'},
 
     ]}
   },
@@ -1313,6 +1468,15 @@ const LAYER_METADATA = {
       'La visualización se sirve como PMTiles hasta el nivel de zoom 12.'
     ],
     note: 'Procesamiento propio a partir de las capas anuales de deforestación.'
+  },
+  mineria_ilegal: {
+    title: 'Minería ilegal 2018-2025',
+    body: [
+      'Polígonos identificados de minería ilegal en Bolivia.',
+      'La capa conserva todos los registros originales y utiliza nombre_ap para indicar el área protegida intersectada; los registros fuera de áreas protegidas mantienen este campo vacío.',
+      'La superficie reportada corresponde al atributo MINED_HA.'
+    ],
+    note: 'Procesamiento propio mediante unión espacial con las áreas protegidas del proyecto.'
   },
   sea: {
     title: 'Sistemas ecológicos acuáticos',
@@ -1661,6 +1825,7 @@ const DATA_FILES = {
   'cuencas':         'assets/capas/Cuencas.geojson',
   'ffr':             'assets/capas/FFR_Bolivia.geojson',
   'lagos':           'assets/capas/Lagos_2016.geojson',
+  'mineria_ilegal':  'assets/capas/Mineria_Ilegal_AP_Todos.geojson',
   // amenaza_sequia: ahora servida como vector tiles (assets/tiles/amenaza_sequia.pmtiles)
   'amenaza_sequia_mdryt': 'assets/capas/amenaza_sequia_mdryt.geojson',
   'aioc_charagua_zonas': 'assets/capas/ZONAS_AIOC_CHARAGUA.geojson',
@@ -1995,10 +2160,56 @@ function blueGradient(t){
   return `rgb(${r},${g},${b})`;
 }
 
+function normalizeAPKey(value){
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g,' ')
+    .trim();
+}
+
+function miningFeatureVisible(feature){
+  const area=normalizeAPKey(feature?.properties?.nombre_ap);
+  if(window.m3MiningOutsideOnly) return !area;
+  if(selectedAPs.size===0) return true;
+  if(!area) return false;
+  return [...selectedAPs].some(name=>normalizeAPKey(name)===area);
+}
+
+function miningFeatureStyle(feature,opacity=.78){
+  const visible=miningFeatureVisible(feature);
+  const inProtectedArea=Boolean(String(feature?.properties?.nombre_ap || '').trim());
+  return {
+    color:inProtectedArea?'#b42318':'#e87522',
+    weight:inProtectedArea?1.5:1.15,
+    opacity:visible?Math.min(1,opacity+.18):0,
+    fillColor:'transparent',
+    fillOpacity:0
+  };
+}
+
 function createGeoJSONLayer(id, layerDef){
   let data=geoData[id];
   if(layerDef.recordLayer && geoData['registros_peces_m2']) data=geoData['registros_peces_m2'];
   if(!data) return L.layerGroup();
+  if(id==='mineria_ilegal'){
+    const opacity=Math.max(0,Math.min(1,(layerDef.opacity??78)/100));
+    return L.geoJSON(data,{
+      style:feature=>miningFeatureStyle(feature,opacity),
+      onEachFeature:(feature,layer)=>{
+        const p=feature.properties||{};
+        const area=String(p.nombre_ap||'').trim();
+        const minedHa=Number(p.MINED_HA||0).toLocaleString('es-BO',{maximumFractionDigits:2});
+        layer.bindPopup(`<div class="feature-popup"><h5>Minería ilegal</h5><table>
+          <tr><td>Superficie</td><td><b>${minedHa} ha</b></td></tr>
+          <tr><td>Año</td><td>${p.ANIO||'—'}</td></tr>
+          <tr><td>Periodo</td><td>${escapeHTML(p.PERIODO||'—')}</td></tr>
+          <tr><td>Área protegida</td><td>${area?escapeHTML(area):'Fuera de área protegida'}</td></tr>
+        </table></div>`,{maxWidth:290});
+      }
+    });
+  }
   // Capas de riqueza: gradiente por N_ESP, popup con lista de especies
   if(id.startsWith('riq_')){
     const nesps=data.features.map(f=>+f.properties.N_ESP||0);
@@ -3240,6 +3451,13 @@ function applyLayerOpacity(layerId, leafletLayer, pct){
     return;
   }
   if(!leafletLayer.setStyle) return;
+  if(layerId==='mineria_ilegal' && leafletLayer.eachLayer){
+    leafletLayer.eachLayer(featureLayer=>{
+      if(!featureLayer.feature||!featureLayer.setStyle) return;
+      featureLayer.setStyle(miningFeatureStyle(featureLayer.feature,o));
+    });
+    return;
+  }
   if((layerId==='amenaza_sequia' || layerId==='amenaza_sequia_mdryt') && leafletLayer.eachLayer){
     leafletLayer.eachLayer(fl=>{
       if(!fl.feature || !fl.setStyle) return;
@@ -4370,5 +4588,7 @@ loadAllGeoData().then(()=>{
 });
 </script>
 <script src="assets/capas/m4_ap_filter_panel.js"></script>
+<script src="assets/capas/m3_deforestation_panel.js"></script>
+<script src="assets/capas/m1_landcover_panel.js"></script>
 </body>
 </html>

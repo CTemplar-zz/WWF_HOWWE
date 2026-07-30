@@ -15,6 +15,7 @@
   const defaultDonutHTML = donutCard ? donutCard.innerHTML : '';
   const defaultBreakdownHTML = breakdownCard ? breakdownCard.innerHTML : '';
   const originalRenderModule = renderModule;
+  const filterModules = new Set(Object.keys(MODULES));
   let selectionMode = 'single';
 
   const normalize = value => String(value || '')
@@ -119,6 +120,15 @@
     updateFilterControls();
   }
 
+  function refreshActiveDataPanel(){
+    if(currentModule==='4') renderM4DataPanel();
+    else if(currentModule==='3' && typeof window.renderM3DataPanel==='function'){
+      window.renderM3DataPanel();
+    }else if(currentModule==='1' && typeof window.renderM1DataPanel==='function'){
+      window.renderM1DataPanel();
+    }
+  }
+
   function restoreDefaultCards(){
     if(donutCard) donutCard.innerHTML=defaultDonutHTML;
     if(breakdownCard) breakdownCard.innerHTML=defaultBreakdownHTML;
@@ -163,7 +173,7 @@
     updateAPMapFilter();
     renderAPList();
     updateMapView();
-    renderM4DataPanel();
+    refreshActiveDataPanel();
     renderFilterList(filterSearch.value);
     if(selectionMode==='single') closeFilter();
   }
@@ -173,7 +183,7 @@
     updateAPMapFilter();
     renderAPList();
     updateMapView();
-    renderM4DataPanel();
+    refreshActiveDataPanel();
     renderFilterList(filterSearch.value);
   }
 
@@ -233,7 +243,7 @@
       const first=selectedAPs.values().next().value;
       selectedAPs.clear();
       if(first) selectedAPs.add(first);
-      updateAPMapFilter(); renderAPList(); updateMapView(); renderM4DataPanel();
+      updateAPMapFilter(); renderAPList(); updateMapView(); refreshActiveDataPanel();
     }
     renderFilterList(filterSearch.value);
   });
@@ -244,17 +254,17 @@
 
   const originalToggleAPSelection = toggleAPSelection;
   toggleAPSelection=function(name){
-    if(currentModule==='4') applySelection(name);
+    if(filterModules.has(currentModule)) applySelection(name);
     else originalToggleAPSelection(name);
   };
   renderModule=function(modId){
     if(modId!=='4') restoreDefaultCards();
     originalRenderModule(modId);
-    filterWrap.classList.toggle('module-hidden',modId!=='4');
+    filterWrap.classList.toggle('module-hidden',!filterModules.has(modId));
     if(modId==='4') renderM4DataPanel();
   };
 
-  filterWrap.classList.toggle('module-hidden',currentModule!=='4');
+  filterWrap.classList.toggle('module-hidden',!filterModules.has(currentModule));
   renderFilterList();
   if(currentModule==='4') renderM4DataPanel();
 })();
