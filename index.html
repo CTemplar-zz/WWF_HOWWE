@@ -979,6 +979,7 @@
     <button class="tab" data-mod="5"><span class="tab-dot" style="background:#e8a417"></span><span class="tab-num">M5</span>Cambio climático</button>
     <button class="tab" data-mod="6"><span class="tab-dot" style="background:#4a8aa8"></span><span class="tab-num">M6</span>Comunidades y bienestar</button>
     <button class="tab" data-mod="7"><span class="tab-dot" style="background:#8a6f3e"></span><span class="tab-num">M7</span>AIOC Charagua Iyambae</button>
+    <button class="tab" data-mod="8"><span class="tab-dot" style="background:#5b6fb3"></span><span class="tab-num">M8</span>Datos INE</button>
   </nav>
   <main class="main">
     <aside class="left">
@@ -1462,6 +1463,21 @@ const MODULES = {
       {c:'#b5f0ce',l:'Área de Conservación e Importancia Ecológica de la Nación Guaraní Ñembi Guasu',v:''},
       {c:'#2c8a4d',l:'Áreas Protegidas',v:''},
       {c:'#000000',l:'Departamentos de Bolivia',v:''},
+    ]}
+  },
+  '8': { title:'Datos INE', sub:'Comunidades, manzanas y fichas oficiales del Censo 2024', color:'#5b6fb3',
+    icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M4 20h16M6 20V9l6-5 6 5v11M9 13h2v2H9zM13 13h2v2h-2zM9 17h2v3H9zM13 17h2v3h-2z"/></svg>',
+    layers:[
+      {id:'departamentos',name:'Departamentos de Bolivia',group:'Marco espacial',color:'#000000',opacity:100,on:true},
+      {id:'apn',name:'Áreas Protegidas',group:'Marco espacial',color:'#2c8a4d',opacity:100,on:true},
+      {id:'ine_comunidades_m8',name:'Comunidades y centros urbanos INE',group:'Censo 2024',color:'#5b6fb3',opacity:95,on:true,geojsonUrl:'assets/capas/ine_comunidades_m8.geojson'},
+      {id:'ine_manzanas_m8',name:'Manzanas censales INE',group:'Censo 2024',color:'#e08a24',opacity:70,on:false,geojsonUrl:'assets/capas/ine_manzanas_m8.geojson'},
+    ],
+    legend:{title:'Unidades censales INE',ind:'M8',items:[
+      {c:'#5b6fb3',l:'Comunidad rural',v:'Punto'},
+      {c:'#8c5bc0',l:'Centro urbano',v:'Punto'},
+      {c:'#e08a24',l:'Manzana censal',v:'Polígono'},
+      {c:'#2c8a4d',l:'Área protegida',v:''},
     ]}
   }
 };
@@ -4649,5 +4665,7 @@ loadAllGeoData().then(()=>{
 <script src="assets/capas/m3_deforestation_panel.js"></script>
 <script src="assets/capas/m1_landcover_panel.js"></script>
 <script src="assets/capas/m6_nbi_panel.js"></script>
+<script src="assets/capas/ine_m8_config.js"></script>
+<script src="assets/capas/m8_ine_panel.js"></script>
 </body>
 </html>

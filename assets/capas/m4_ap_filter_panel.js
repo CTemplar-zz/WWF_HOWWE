@@ -126,6 +126,8 @@
       window.renderM3DataPanel();
     }else if(currentModule==='1' && typeof window.renderM1DataPanel==='function'){
       window.renderM1DataPanel();
+    }else if(currentModule==='8' && typeof window.renderM8DataPanel==='function'){
+      window.renderM8DataPanel();
     }
   }
 
