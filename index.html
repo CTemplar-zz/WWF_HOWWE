@@ -1236,6 +1236,7 @@ const MODULES = {
     icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2 4 7v10l8 5 8-5V7z"/><path d="m4 7 8 5 8-5M12 12v10"/></svg>',
     layers:[
       {id:'departamentos',name:'Departamentos de Bolivia', color:'#000000',opacity:100,on:true},
+      {id:'limites_municipales',name:'Límites municipales',color:'#000000',opacity:100,on:false,pmtiles:'assets/tiles/limites_municipales.pmtiles',pmlayer:'limites_municipales',maxDataZoom:12,bounds:[-69.64524603576484,-22.906568378770086,-57.454433527709995,-9.669633002177594],noDownload:true},
       {id:'apn',   name:'Áreas Protegidas (33 polígonos)',  color:'#2c8a4d',opacity:100,on:true},
       {id:'limite',name:'Límite Bolivia',                    color:'#6a6a6a',opacity:80,on:true},
       {id:'ecoregiones',name:'Ecoregiones',                   color:'#56a800',opacity:15,on:false,pmtiles:ECOREGIONES_PMTILES_URL,pmlayer:'ecoregiones',maxDataZoom:12,bounds:[-69.64435362999996,-22.89806221899994,-57.45333544299996,-9.665009243999975],downloadUrl:'assets/downloads/ecoregiones.zip',downloadLabel:'Descargar shapefile ZIP'},
@@ -1247,6 +1248,7 @@ const MODULES = {
       ...MAPBIOMAS_LEGEND,
       {c:'#2c8a4d',l:'Área protegida',v:''},
       {c:'#000000',l:'Departamentos de Bolivia',v:''},
+      {c:'#000000',l:'Límites municipales',v:'Sin relleno'},
       {c:'#6a6a6a',l:'Límite Bolivia',v:''},
       {c:'#1f6b3a',l:'Parque Nacional',v:'9 áreas'},
       {c:'#4ec97a',l:'Reserva de la Biosfera',v:'3 áreas'},
@@ -1469,7 +1471,8 @@ const MODULES = {
     icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M4 20h16M6 20V9l6-5 6 5v11M9 13h2v2H9zM13 13h2v2h-2zM9 17h2v3H9zM13 17h2v3h-2z"/></svg>',
     layers:[
       {id:'departamentos',name:'Departamentos de Bolivia',group:'Marco espacial',color:'#000000',opacity:100,on:true},
-      {id:'apn',name:'Áreas Protegidas',group:'Marco espacial',color:'#2c8a4d',opacity:100,on:true},
+      {id:'limites_municipales',name:'Límites municipales',group:'Marco espacial',color:'#000000',opacity:100,on:false,pmtiles:'assets/tiles/limites_municipales.pmtiles',pmlayer:'limites_municipales',maxDataZoom:12,bounds:[-69.64524603576484,-22.906568378770086,-57.454433527709995,-9.669633002177594],noDownload:true},
+      {id:'apn',name:'Áreas Protegidas · población 2024',group:'Marco espacial',color:'linear-gradient(90deg,#fff2b2,#f2a45d,#c62828)',opacity:100,on:true,populationChoropleth:true},
       {id:'ine_comunidades_m8',name:'Comunidades y centros urbanos INE',group:'Censo 2024',color:'#5b6fb3',opacity:95,on:true,geojsonUrl:'assets/capas/ine_comunidades_m8.geojson'},
       {id:'ine_manzanas_m8',name:'Manzanas censales INE',group:'Censo 2024',color:'#e08a24',opacity:70,on:false,geojsonUrl:'assets/capas/ine_manzanas_m8.geojson'},
     ],
@@ -1477,7 +1480,8 @@ const MODULES = {
       {c:'#5b6fb3',l:'Comunidad rural',v:'Punto'},
       {c:'#8c5bc0',l:'Centro urbano',v:'Punto'},
       {c:'#e08a24',l:'Manzana censal',v:'Polígono'},
-      {c:'#2c8a4d',l:'Área protegida',v:''},
+      {c:'linear-gradient(90deg,#fff2b2,#f2a45d,#c62828)',l:'Población en áreas protegidas',v:'Menor → mayor'},
+      {c:'#000000',l:'Límites municipales',v:'Sin relleno'},
     ]}
   }
 };
@@ -3155,6 +3159,16 @@ function createPMTilesLayer(layerDef){
         opacity: 1,
         stroke: '#001b33',
         width: 0.55
+      })
+    }];
+  } else if(id === 'limites_municipales'){
+    paintRules = [{
+      dataLayer: layerDef.pmlayer || id,
+      symbolizer: new protomapsL.PolygonSymbolizer({
+        fill: 'rgba(0,0,0,0)',
+        opacity: 1,
+        stroke: '#000000',
+        width: 0.8
       })
     }];
   } else if(id === 'cuencas_n8' || id === 'cuencas_n9'){

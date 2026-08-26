@@ -189,6 +189,20 @@
     renderFilterList(filterSearch.value);
   }
 
+  window.setProtectedAreaFilter=function(names){
+    selectedAPs.clear();
+    (Array.isArray(names)?names:[]).forEach(name=>{
+      const match=APN.find(ap=>normalize(ap.name)===normalize(name));
+      if(match) selectedAPs.add(match.name);
+    });
+    updateAPMapFilter();
+    renderAPList();
+    updateMapView();
+    refreshActiveDataPanel();
+    renderFilterList(filterSearch.value);
+  };
+  window.clearProtectedAreaFilter=clearSelection;
+
   function renderFilterList(query=''){
     const q=normalize(query);
     const rows=APN.filter(ap=>!q||normalize(`${ap.name} ${ap.cat}`).includes(q));

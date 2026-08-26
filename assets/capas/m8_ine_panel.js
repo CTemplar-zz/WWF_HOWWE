@@ -3,6 +3,8 @@
   const COMMUNITIES_ID='ine_comunidades_m8';
   const BLOCKS_ID='ine_manzanas_m8';
   const DATA_URL='assets/capas/ine_m8_data.json';
+  const AP_DATA_URL='assets/capas/ine_ap_censo_2024.json';
+  const EXCEL_URL='assets/downloads/Datos_INE_Areas_Protegidas_2024.xlsx';
   const COMMUNITIES_URL='assets/capas/ine_comunidades_m8.geojson';
   const BLOCKS_URL='assets/capas/ine_manzanas_m8.geojson';
   const grid=document.querySelector('.kpi-grid');
@@ -19,8 +21,13 @@
   let communitiesData=null;
   let blocksData=null;
   let loadPromise=null;
+  let apData=null;
+  let apLoadPromise=null;
   let communitiesLayer=null;
   let blocksLayer=null;
+  let populationAPLayer=null;
+  let populationAPOpacity=1;
+  let panelMode='points';
   let selectionLabel='Sin selección para reporte';
   let statusMessage='Selecciona una o más áreas protegidas, unidades en el mapa o dibuja un límite.';
   let statusKind='info';
@@ -45,6 +52,13 @@
     .m8-unit-row i{width:8px;height:8px;border-radius:50%;background:#5b6fb3}.m8-unit-row small{color:var(--text-dim)}
     .m8-draw-help{font-size:10px;color:var(--text-dim);line-height:1.45;margin:4px 0 8px}.m8-draw-active{outline:2px solid #5b6fb3!important}
     .m8-source-note{font-size:9px;color:var(--text-dim);line-height:1.4;margin-top:8px}
+    .m8-view-tabs{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;background:var(--panel-2);border:1px solid var(--border);border-radius:9px}
+    .m8-view-tab{border:0;border-radius:6px;background:transparent;color:var(--text-dim);font:600 10px Inter,sans-serif;padding:8px 5px;cursor:pointer}
+    .m8-view-tab.active{background:var(--panel);color:#40579d;box-shadow:0 1px 4px rgba(35,48,90,.12)}
+    .m8-ap-section{margin-top:11px}.m8-ap-section:first-of-type{margin-top:4px}.m8-ap-section h5{margin:0 0 7px;font:700 10px Inter,sans-serif;letter-spacing:.055em;text-transform:uppercase;color:var(--text-dim)}
+    .m8-metric{display:grid;grid-template-columns:minmax(92px,1fr) 1.35fr auto;gap:7px;align-items:center;margin:6px 0;font-size:10px}
+    .m8-metric-name{line-height:1.25}.m8-metric-track{height:7px;border-radius:5px;background:var(--panel-2);overflow:hidden}.m8-metric-fill{height:100%;border-radius:5px;min-width:2px}.m8-metric-value{text-align:right;font-family:monospace;font-size:9px;color:var(--text-dim);white-space:nowrap}
+    .m8-ap-list{display:flex;flex-direction:column;gap:4px;max-height:330px;overflow:auto;margin-top:8px}.m8-ap-row{display:grid;grid-template-columns:11px 1fr auto;gap:7px;align-items:center;width:100%;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:7px;padding:7px;text-align:left;cursor:pointer;font:500 10px Inter,sans-serif}.m8-ap-row:hover{border-color:#d17b56}.m8-ap-row.selected{border-color:#c94b3e;background:color-mix(in srgb,#f2a45d 12%,var(--panel))}.m8-ap-row i{width:9px;height:9px;border-radius:2px}.m8-ap-row b{font-family:monospace;font-size:9px}.m8-ap-row.no-data{opacity:.62}.m8-ap-actions{display:flex;justify-content:space-between;align-items:center;gap:8px}.m8-ap-actions a{font-size:9px;color:#40579d;text-decoration:none}.m8-ap-actions a:hover{text-decoration:underline}
   `;
   document.head.appendChild(style);
 
@@ -67,6 +81,41 @@
   const normalize=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
   const codeOf=feature=>String(feature?.properties?.COD_INE||'');
   const groupOf=feature=>`${normalize(feature?.properties?.NOMBRE)}|${feature?.properties?.COD_MPIO||''}`;
+
+  function populationRecords(){return apData?.records||[];}
+  function populationRecord(name){const key=normalize(name);return populationRecords().find(row=>normalize(row.area_protegida)===key);}
+  function populationExtent(){
+    const values=populationRecords().filter(row=>row.tiene_ficha).map(row=>num(row.edad_total_total)).filter(value=>value>0);
+    return {min:values.length?Math.min(...values):1,max:values.length?Math.max(...values):1};
+  }
+  function mixColor(a,b,t){
+    const rgb=hex=>[parseInt(hex.slice(1,3),16),parseInt(hex.slice(3,5),16),parseInt(hex.slice(5,7),16)];
+    const x=rgb(a),y=rgb(b);return '#'+x.map((value,index)=>Math.round(value+(y[index]-value)*t).toString(16).padStart(2,'0')).join('');
+  }
+  function populationColor(value){
+    if(!value)return '#d9d9d9';
+    const extent=populationExtent();const min=Math.log1p(extent.min),max=Math.log1p(extent.max);const t=max===min?1:(Math.log1p(value)-min)/(max-min);
+    return mixColor('#fff2b2','#c62828',Math.max(0,Math.min(1,t)));
+  }
+  function populationAPStyle(feature){
+    const name=feature?.properties?.nombre_ap||'';const record=populationRecord(name);const selected=selectedAPs.size===0||[...selectedAPs].some(value=>normalize(value)===normalize(name));
+    const color=populationColor(record?.edad_total_total);
+    return {color:selected?'#6e3027':'#a9a39a',weight:selected?1.5:.4,opacity:selected?populationAPOpacity:.18,fillColor:color,fillOpacity:selected?Math.min(.8,populationAPOpacity*.72):.05};
+  }
+  function refreshPopulationAPLayer(){
+    populationAPLayer?.eachLayer(layer=>{
+      if(!layer.feature||!layer.setStyle)return;
+      layer.setStyle(populationAPStyle(layer.feature));
+      const p=layer.feature.properties||{};const record=populationRecord(p.nombre_ap);const population=record?.tiene_ficha?compact(record.edad_total_total):'Sin ficha disponible';
+      layer.bindTooltip(`<b>${escapeHTML(p.nombre_ap||'Área protegida')}</b><br>Población: ${population}`,{sticky:true,direction:'top'});
+      layer.bindPopup(`<div class="feature-popup"><h5>${escapeHTML(p.nombre_ap||'Área protegida')}</h5><table>
+        <tr><td>Población 2024</td><td><b>${population}</b></td></tr>
+        <tr><td>Categoría</td><td>${escapeHTML(p.categoria||'—')}</td></tr>
+        <tr><td>Superficie</td><td>${p.sup_ha?`${num(p.sup_ha).toLocaleString('es-BO')} ha`:'—'}</td></tr>
+        <tr><td>Fuente</td><td>Ficha INE · Censo 2024</td></tr>
+      </table></div>`,{maxWidth:300});
+    });
+  }
 
   function pointStyle(feature){
     const code=codeOf(feature);
@@ -121,6 +170,13 @@
       });
       return blocksLayer;
     }
+    if(id==='apn'&&layerDef.populationChoropleth){
+      populationAPOpacity=Math.max(0,Math.min(1,num(layerDef.opacity??100)/100));
+      populationAPLayer=previousCreateGeoJSONLayer(id,layerDef);
+      refreshPopulationAPLayer();
+      ensureAPData().then(refreshPopulationAPLayer);
+      return populationAPLayer;
+    }
     return previousCreateGeoJSONLayer(id,layerDef);
   };
 
@@ -134,8 +190,24 @@
       layer?.eachLayer(child=>{if(child.feature&&child.setStyle)child.setStyle(blockStyle(child.feature,opacity));});
       return;
     }
+    if(id==='apn'&&layer===populationAPLayer){
+      populationAPOpacity=Math.max(0,Math.min(1,num(pct)/100));
+      refreshPopulationAPLayer();
+      return;
+    }
     previousApplyLayerOpacity(id,layer,pct);
   };
+
+  function ensureAPData(){
+    if(apData)return Promise.resolve(apData);
+    if(!apLoadPromise){
+      apLoadPromise=fetch(AP_DATA_URL).then(response=>{
+        if(!response.ok)throw new Error('No se pudieron cargar las fichas consolidadas por área protegida');
+        return response.json();
+      }).then(data=>{apData=data;refreshPopulationAPLayer();return data;}).catch(error=>{statusMessage=error.message;statusKind='error';console.warn(error);});
+    }
+    return apLoadPromise;
+  }
 
   function ensureData(){
     if(censusData&&communitiesData&&blocksData) return Promise.resolve();
@@ -284,18 +356,19 @@
     [...(communitiesData?.features||[]),...(blocksData?.features||[])].forEach(feature=>{if(codes.has(codeOf(feature)))rows.push(feature.properties||{});});
     return rows.slice(0,20);
   }
-  function renderLoading(){
-    grid.innerHTML='<div class="kpi" style="grid-column:1/-1"><div class="lbl">Datos INE</div><div class="trend">Cargando comunidades, manzanas y relaciones…</div></div>';
-    donutCard.innerHTML='<h4>Generación de ficha oficial</h4><div class="m8-status working">Preparando datos censales…</div>';breakdownCard.style.display='none';
+  function tabsHTML(){return `<div class="m8-view-tabs"><button class="m8-view-tab${panelMode==='points'?' active':''}" type="button" data-m8-mode="points">Datos puntuales</button><button class="m8-view-tab${panelMode==='areas'?' active':''}" type="button" data-m8-mode="areas">Por área protegida</button></div>`;}
+  function bindTabs(){document.querySelectorAll('[data-m8-mode]').forEach(button=>button.addEventListener('click',()=>{panelMode=button.dataset.m8Mode;cancelDrawing(true);renderM8DataPanel();}));}
+  function renderLoading(label){
+    grid.classList.remove('m3-three-kpis');grid.innerHTML=`${tabsHTML()}<div class="kpi" style="grid-column:1/-1"><div class="lbl">Datos INE</div><div class="trend">${escapeHTML(label)}</div></div>`;
+    donutCard.innerHTML='<h4>Censo 2024</h4><div class="m8-status working">Preparando datos censales…</div>';breakdownCard.style.display='none';bindTabs();
   }
-  function renderM8DataPanel(){
-    if(currentModule!==MODULE_ID||!grid||!donutCard||!breakdownCard)return;
-    if(!censusData||!communitiesData||!blocksData){renderLoading();ensureData().then(()=>{if(currentModule===MODULE_ID)renderM8DataPanel();});return;}
+  function renderPointPanel(){
+    if(!censusData||!communitiesData||!blocksData){renderLoading('Cargando comunidades, manzanas y relaciones…');ensureData().then(()=>{if(currentModule===MODULE_ID&&panelMode==='points')renderM8DataPanel();});return;}
     const rows=scopedSummary();const reportCodes=normalizedReportCodes();const rural=sum(rows,'COM_RURALES');const urban=sum(rows,'CENTROS_URB');const blocks=sum(rows,'MANZANAS');
-    grid.classList.remove('m3-three-kpis');grid.innerHTML=`
+    grid.classList.remove('m3-three-kpis');grid.innerHTML=`${tabsHTML()}
       <div class="kpi"><div class="lbl">Personas</div><div class="val">${compact(sum(rows,'PERSONAS'))}</div><div class="trend">${selectedAPLabel()}</div></div>
       <div class="kpi"><div class="lbl">Viviendas</div><div class="val">${compact(sum(rows,'VIVIENDAS'))}</div><div class="trend">Datos validados por INE</div></div>
-      <div class="kpi"><div class="lbl">Comunidades</div><div class="val">${compact(rural+urban)}</div><div class="trend">${compact(rural)} rurales · ${compact(urban)} centros urbanos</div></div>
+      <div class="kpi"><div class="lbl">Comunidades</div><div class="val">${compact(rural+urban)}</div><div class="trend">${compact(rural)} rurales · ${compact(urban)} urbanas</div></div>
       <div class="kpi"><div class="lbl">Manzanas</div><div class="val">${compact(blocks)}</div><div class="trend">Centroide dentro del AP</div></div>`;
     donutCard.innerHTML=`<h4>Generar ficha oficial INE <span class="mono" style="color:var(--text-dim);font-size:10px">Censo 2024</span></h4>
       <div class="m8-scope"><strong>${escapeHTML(selectionLabel)}</strong><br>${reportCodes.length.toLocaleString('es-BO')} códigos listos para enviar.</div>
@@ -307,13 +380,48 @@
         <button class="m8-btn" id="m8Validate" type="button"${!reportCodes.length||busy?' disabled':''}>Verificar con INE</button>
         <button class="m8-btn primary" id="m8Report" type="button"${!reportCodes.length||busy?' disabled':''}>${busy?'Procesando…':'Generar y descargar PDF'}</button>
       </div>
-      <div class="m8-draw-help">También puedes activar las capas y hacer clic en comunidades o manzanas individuales. Para un área protegida completa, utiliza el filtro superior y luego “Usar AP filtradas”.</div>
+      <div class="m8-draw-help">Activa las capas y selecciona unidades en el mapa, dibuja un límite o utiliza las áreas protegidas del filtro superior.</div>
       <div class="m8-status ${statusKind}">${escapeHTML(statusMessage)}</div>
-      <div class="m8-source-note">La ficha se genera en tiempo real mediante el servicio oficial del INE. La selección se ajusta para no sumar simultáneamente un centro urbano y sus manzanas.</div>`;
+      <div class="m8-source-note">La ficha se genera en tiempo real mediante el servicio oficial del INE. La selección evita sumar simultáneamente un centro urbano y sus manzanas.</div>`;
     const selectedRows=recentSelectedRows();breakdownCard.style.display='';breakdownCard.innerHTML=`<h4>Unidades seleccionadas <span class="mono" style="color:var(--text-dim);font-size:10px">${reportCodes.length.toLocaleString('es-BO')}</span></h4>
       <div class="m8-unit-list">${selectedRows.length?selectedRows.map(row=>`<div class="m8-unit-row"><i style="background:${row.TIPO_UNIDAD==='MANZANA'?'#e08a24':row.TIPO_UNIDAD==='CENTRO_URBANO'?'#8c5bc0':'#5b6fb3'}"></i><span>${escapeHTML(row.NOMBRE||'Unidad')}<br><small>${escapeHTML(row.MUNICIPIO||'')} · ${escapeHTML(row.COD_INE||'')}</small></span><small>${escapeHTML((row.TIPO_UNIDAD||'').replaceAll('_',' '))}</small></div>`).join(''):'<div class="m8-status">Aún no hay unidades seleccionadas para el reporte.</div>'}</div>${reportCodes.length>20?`<div class="m8-source-note">Se muestran las primeras 20 de ${reportCodes.length.toLocaleString('es-BO')} unidades.</div>`:''}`;
-    document.getElementById('m8UseAP')?.addEventListener('click',applyProtectedAreaSelection);document.getElementById('m8Clear')?.addEventListener('click',clearReportSelection);document.getElementById('m8Rectangle')?.addEventListener('click',beginRectangle);document.getElementById('m8Polygon')?.addEventListener('click',beginPolygon);document.getElementById('m8Validate')?.addEventListener('click',()=>callWorker('/validate',false));document.getElementById('m8Report')?.addEventListener('click',()=>callWorker('/report',true));
-    const title=document.getElementById('rightTitle');const sub=document.getElementById('rightSub');if(title)title.textContent=selectedAPs.size?selectedAPLabel():'Datos INE';if(sub)sub.textContent='Comunidades, manzanas y fichas oficiales · Censo 2024';
+    bindTabs();document.getElementById('m8UseAP')?.addEventListener('click',applyProtectedAreaSelection);document.getElementById('m8Clear')?.addEventListener('click',clearReportSelection);document.getElementById('m8Rectangle')?.addEventListener('click',beginRectangle);document.getElementById('m8Polygon')?.addEventListener('click',beginPolygon);document.getElementById('m8Validate')?.addEventListener('click',()=>callWorker('/validate',false));document.getElementById('m8Report')?.addEventListener('click',()=>callWorker('/report',true));
+  }
+  function scopedPopulationRecords(){
+    const rows=populationRecords();if(selectedAPs.size===0)return rows;
+    const selected=new Set([...selectedAPs].map(normalize));return rows.filter(row=>selected.has(normalize(row.area_protegida)));
+  }
+  function metricRow(rows,label,key,denominator,color){
+    const value=sum(rows,key),base=sum(rows,denominator),percent=base?value/base*100:0;
+    return `<div class="m8-metric"><span class="m8-metric-name">${escapeHTML(label)}</span><span class="m8-metric-track"><span class="m8-metric-fill" style="display:block;width:${Math.min(100,percent).toFixed(1)}%;background:${color}"></span></span><span class="m8-metric-value">${compact(value)} · ${percent.toLocaleString('es-BO',{maximumFractionDigits:1})}%</span></div>`;
+  }
+  function metricSection(title,rows,items){return `<section class="m8-ap-section"><h5>${escapeHTML(title)}</h5>${items.map(item=>metricRow(rows,...item)).join('')}</section>`;}
+  function renderAreaPanel(){
+    if(!apData){renderLoading('Cargando las fichas consolidadas por área protegida…');ensureAPData().then(()=>{if(currentModule===MODULE_ID&&panelMode==='areas')renderM8DataPanel();});return;}
+    const rows=scopedPopulationRecords();const valid=rows.filter(row=>row.tiene_ficha);const population=sum(valid,'edad_total_total');const women=sum(valid,'edad_total_mujeres');const housing=sum(valid,'vivienda_total');
+    grid.classList.remove('m3-three-kpis');grid.innerHTML=`${tabsHTML()}
+      <div class="kpi"><div class="lbl">Población</div><div class="val">${compact(population)}</div><div class="trend">${selectedAPLabel()}</div></div>
+      <div class="kpi"><div class="lbl">Mujeres</div><div class="val">${compact(women)}</div><div class="trend">${population?(women/population*100).toLocaleString('es-BO',{maximumFractionDigits:1}):0}% de la población</div></div>
+      <div class="kpi"><div class="lbl">Viviendas</div><div class="val">${compact(housing)}</div><div class="trend">Viviendas particulares y colectivas</div></div>
+      <div class="kpi"><div class="lbl">Fichas disponibles</div><div class="val">${compact(valid.length)}</div><div class="trend">de ${compact(rows.length)} áreas en el filtro</div></div>`;
+    donutCard.innerHTML=`<h4>Variables principales <span class="mono" style="color:var(--text-dim);font-size:10px">Censo 2024</span></h4>
+      ${valid.length?`${metricSection('Estructura por edad',valid,[['0–19 años','edad_0_19_total','edad_total_total','#f0b657'],['20–39 años','edad_20_39_total','edad_total_total','#df8150'],['40–59 años','edad_40_59_total','edad_total_total','#bd5446'],['60 años o más','edad_60_mas_total','edad_total_total','#873c45']])}
+      ${metricSection('Educación · población de 19 años o más',valid,[['Sin nivel','educacion_ninguno_total','educacion_total_19_mas_total','#b95f55'],['Primaria','educacion_primaria_total','educacion_total_19_mas_total','#de955f'],['Secundaria','educacion_secundaria_total','educacion_total_19_mas_total','#e8c35c'],['Superior','educacion_superior_total','educacion_total_19_mas_total','#728f6f']])}
+      ${metricSection('Seguro de salud',valid,[['SUS','seguro_salud_sus_total','seguro_salud_total_total','#5f8e9e'],['Caja de salud','seguro_salud_caja_salud_total','seguro_salud_total_total','#6177a8'],['Seguro privado','seguro_salud_seguro_privado_total','seguro_salud_total_total','#8f6fa4'],['Ninguno','seguro_salud_ninguno_total','seguro_salud_total_total','#b86858']])}
+      ${metricSection('Actividad económica · población ocupada',valid,[['Agricultura','actividad_agricultura_total','actividad_total_14_mas_total','#748b51'],['Comercio','actividad_comercio_total','actividad_total_14_mas_total','#d19a42'],['Manufactura','actividad_manufactura_total','actividad_total_14_mas_total','#bb714f'],['Construcción','actividad_construccion_total','actividad_total_14_mas_total','#877c6d'],['Transporte','actividad_transporte_total','actividad_total_14_mas_total','#607f9a']])}
+      ${metricSection('Servicios en el hogar',valid,[['Electricidad pública','electricidad_servicio_publico','electricidad_total','#dbbd45'],['Agua por red','agua_red','agua_total','#4f91bd'],['Alcantarillado','saneamiento_alcantarillado','saneamiento_total','#667fa8'],['Internet','tic_internet','tic_total_hogares','#7b64a7']])}`:'<div class="m8-status">No hay una ficha disponible para el área protegida seleccionada.</div>'}
+      <div class="m8-source-note">Fuente: fichas de población del INE, Censo 2024. Los totales corresponden a la suma de las fichas visibles; si existen áreas superpuestas, pueden compartir unidades censales.</div>`;
+    const allRows=populationRecords().slice().sort((a,b)=>num(b.edad_total_total)-num(a.edad_total_total)||a.area_protegida.localeCompare(b.area_protegida,'es'));
+    breakdownCard.style.display='';breakdownCard.innerHTML=`<div class="m8-ap-actions"><h4 style="margin:0">Áreas protegidas por población</h4><a href="${EXCEL_URL}" download>Descargar Excel</a></div>
+      <button class="m8-btn" id="m8ClearAPPopulation" type="button" style="width:100%;margin-top:8px"${selectedAPs.size===0?' disabled':''}>Limpiar filtro de áreas protegidas</button>
+      <div class="m8-ap-list">${allRows.map((row,index)=>{const selected=[...selectedAPs].some(value=>normalize(value)===normalize(row.area_protegida));const value=row.tiene_ficha?compact(row.edad_total_total):'Sin ficha';return `<button class="m8-ap-row${selected?' selected':''}${row.tiene_ficha?'':' no-data'}" type="button" data-m8-ap-index="${index}"><i style="background:${populationColor(row.edad_total_total)}"></i><span>${escapeHTML(row.area_protegida)}</span><b>${value}</b></button>`;}).join('')}</div>
+      <div class="m8-source-note">Selecciona un área para filtrar el mapa y todas las variables. La lista está ordenada de mayor a menor población.</div>`;
+    bindTabs();document.getElementById('m8ClearAPPopulation')?.addEventListener('click',()=>window.clearProtectedAreaFilter?.());document.querySelectorAll('[data-m8-ap-index]').forEach(button=>button.addEventListener('click',()=>window.setProtectedAreaFilter?.([allRows[num(button.dataset.m8ApIndex)].area_protegida])));
+  }
+  function renderM8DataPanel(){
+    if(currentModule!==MODULE_ID||!grid||!donutCard||!breakdownCard)return;
+    if(panelMode==='areas')renderAreaPanel();else renderPointPanel();
+    const title=document.getElementById('rightTitle');const sub=document.getElementById('rightSub');if(title)title.textContent=selectedAPs.size?selectedAPLabel():'Datos INE';if(sub)sub.textContent=panelMode==='areas'?'Indicadores por área protegida · Censo 2024':'Comunidades, manzanas y fichas oficiales · Censo 2024';
   }
   function restoreDefault(){
     cancelDrawing(true);if(grid)grid.innerHTML=defaultGridHTML;if(donutCard)donutCard.innerHTML=defaultDonutHTML;if(breakdownCard){breakdownCard.style.display='';breakdownCard.innerHTML=defaultBreakdownHTML;}
