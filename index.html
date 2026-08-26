@@ -7,8 +7,11 @@
 <link rel="stylesheet" href="assets/lib/leaflet.css" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="assets/lib/leaflet.js"></script>
+<script src="assets/lib/esri-leaflet.js"></script>
+<script src="assets/lib/esri-leaflet-vector.js"></script>
 <script src="assets/lib/pmtiles.js"></script>
 <script src="assets/lib/protomaps-leaflet.js"></script>
+<script src="assets/capas/arcgis_basemap_config.js"></script>
 <script src="assets/capas/geo_limite.js"></script>
 <script src="assets/capas/geo_departamentos.js"></script>
 <script src="assets/capas/geo_apn.js"></script>
@@ -600,6 +603,33 @@
   }
   .basemap-switch button { border: 0; background: transparent; color: var(--text-soft); padding: 6px 12px; font-family: inherit; font-size: 11.5px; border-radius: 5px; cursor: pointer; font-weight: 500; }
   .basemap-switch button.active { background: var(--accent-soft); color: var(--accent); }
+  .basemap-switch .basemap-gallery-trigger { display:flex; align-items:center; gap:5px; }
+  .basemap-gallery {
+    bottom: 58px; right: 14px; width: min(590px,calc(100% - 28px)); max-height: min(680px,calc(100% - 84px));
+    display:none; flex-direction:column; overflow:hidden; pointer-events:auto;
+    background:var(--bg-elev); border:1px solid var(--border); border-radius:12px; box-shadow:0 14px 38px rgba(31,42,55,.24);
+  }
+  .basemap-gallery.open { display:flex; }
+  .basemap-gallery-h { display:flex; align-items:flex-start; gap:12px; padding:13px 14px 10px; border-bottom:1px solid var(--border); }
+  .basemap-gallery-h strong { display:block; font-size:13px; color:var(--text); }
+  .basemap-gallery-h small { display:block; margin-top:2px; font-size:9.5px; color:var(--text-dim); }
+  .basemap-gallery-close { margin-left:auto; border:0; background:transparent; color:var(--text-soft); cursor:pointer; font-size:20px; line-height:1; padding:0 2px; }
+  .basemap-gallery-tools { display:flex; align-items:center; gap:8px; padding:9px 12px; border-bottom:1px solid var(--border); }
+  .basemap-gallery-search { flex:1; min-width:0; border:1px solid var(--border); border-radius:7px; background:var(--bg); color:var(--text); padding:7px 9px; font:11px Inter,sans-serif; outline:none; }
+  .basemap-gallery-search:focus { border-color:#6b83c6; box-shadow:0 0 0 2px rgba(91,111,179,.12); }
+  .basemap-status { font-size:9px; color:var(--text-dim); white-space:nowrap; }
+  .basemap-gallery-body { overflow:auto; padding:4px 12px 13px; }
+  .basemap-group-title { margin:10px 0 7px; color:var(--text-dim); font-size:9px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+  .basemap-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+  .basemap-card { border:1px solid var(--border); border-radius:8px; overflow:hidden; padding:0; background:var(--bg); color:var(--text); text-align:left; cursor:pointer; transition:transform .12s,border-color .12s,box-shadow .12s; }
+  .basemap-card:hover { transform:translateY(-1px); border-color:#8a9bc9; box-shadow:0 4px 12px rgba(31,42,55,.10); }
+  .basemap-card.active { border-color:#4f68ad; box-shadow:0 0 0 2px rgba(79,104,173,.16); }
+  .basemap-card-preview { height:63px; background-position:center; background-size:cover; position:relative; }
+  .basemap-card.active .basemap-card-preview::after { content:'✓'; position:absolute; top:5px; right:5px; width:19px; height:19px; display:grid; place-items:center; border-radius:50%; background:#40579d; color:#fff; font-size:11px; font-weight:700; box-shadow:0 1px 4px rgba(0,0,0,.25); }
+  .basemap-card-label { display:block; padding:6px 7px 7px; font-size:9.5px; font-weight:600; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .basemap-empty { padding:22px 8px; text-align:center; color:var(--text-dim); font-size:11px; }
+  @media(max-width:900px){.basemap-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.basemap-switch button{padding:6px 8px}.basemap-switch button[data-bm="arcgis/topographic"]{display:none}}
+  @media(max-width:620px){.basemap-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.basemap-gallery{right:7px;width:calc(100% - 14px)}.basemap-switch{right:7px}.basemap-switch button{font-size:10px}}
   .scale-bar {
     bottom: 14px; left: 14px;
     background: var(--bg-elev); border: 1px solid var(--border);
@@ -1038,10 +1068,22 @@
         <span style="opacity:.5">·</span>
         <span id="latlon">-16.85, -63.91</span>
       </div>
+      <div class="map-overlay basemap-gallery" id="basemapGallery" aria-hidden="true">
+        <div class="basemap-gallery-h">
+          <div><strong>Galería de mapas base</strong><small>ArcGIS Basemap Styles · etiquetas en español</small></div>
+          <button class="basemap-gallery-close" id="basemapGalleryClose" type="button" aria-label="Cerrar galería">×</button>
+        </div>
+        <div class="basemap-gallery-tools">
+          <input class="basemap-gallery-search" id="basemapSearch" type="search" placeholder="Buscar mapa base…" autocomplete="off" />
+          <span class="basemap-status" id="basemapStatus">ArcGIS conectado</span>
+        </div>
+        <div class="basemap-gallery-body" id="basemapGalleryBody"></div>
+      </div>
       <div class="map-overlay basemap-switch">
-        <button data-bm="terrain">Relieve</button>
-        <button data-bm="satellite">Satélite</button>
-        <button data-bm="streets" class="active">Calles</button>
+        <button data-bm="arcgis/topographic">Relieve</button>
+        <button data-bm="arcgis/imagery">Satélite</button>
+        <button data-bm="arcgis/streets" class="active">Calles</button>
+        <button class="basemap-gallery-trigger" id="basemapGalleryTrigger" type="button" aria-expanded="false" title="Ver todos los mapas base"><span aria-hidden="true">▦</span> Más mapas</button>
       </div>
     </section>
     <aside class="right" id="right">
@@ -1088,7 +1130,7 @@
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
   </button>
   <footer class="statusbar">
-    <span><span class="dot"></span>Servicios activos: OSM · ESRI · MapTiler · FIRMS</span>
+    <span><span class="dot"></span>Servicios activos: ArcGIS · OSM · FIRMS</span>
     <span>EPSG:4326 (WGS84)</span>
     <span id="zoomLevel">z: 6</span>
     <div class="right-status">
@@ -1823,21 +1865,88 @@ let APN = [
   {code:'AP-2305',name:'El Cardón',                    cat:'Parque Natural y Area de Manejo Integrado',    center:[-21.6,-64.5]},
 ];
 const map = L.map('map',{zoomControl:false,attributionControl:true,worldCopyJump:true}).setView([-16.5,-64.5],5);
-const TILES = {
-  terrain:{
-    light:L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{attribution:'© OpenTopoMap · OSM',maxZoom:17}),
-    dark:L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',{attribution:'© CARTO · OSM',subdomains:'abcd',maxZoom:19})
-  },
-  satellite:{
-    light:L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri World Imagery'}),
-    dark:L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri World Imagery'})
-  },
-  streets:{
-    light:L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',{attribution:'© CARTO · OSM',subdomains:'abcd'}),
-    dark:L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',{attribution:'© CARTO · OSM',subdomains:'abcd'})
-  }
+const ARCGIS_API_KEY=String(window.ARCGIS_API_KEY||'').trim();
+const BASEMAP_PREVIEWS={
+  streets:'linear-gradient(26deg,transparent 43%,#f3c567 44%,#f3c567 48%,transparent 49%),linear-gradient(145deg,#d9ead6 0 33%,#f7f4ea 34% 68%,#cfe5f1 69%)',
+  relief:'radial-gradient(ellipse at 22% 78%,#71885c 0 8%,transparent 9%),linear-gradient(150deg,#d5e3b8 0 28%,#afc68f 29% 46%,#e8dec0 47% 67%,#93b9d1 68%)',
+  imagery:'url("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/6/35/20")',
+  light:'linear-gradient(35deg,transparent 46%,#c7cdd2 47% 49%,transparent 50%),linear-gradient(145deg,#edf0f1 0 44%,#f9faf9 45% 70%,#dbe6eb 71%)',
+  dark:'linear-gradient(35deg,transparent 46%,#8794a1 47% 49%,transparent 50%),linear-gradient(145deg,#232a31 0 44%,#363e46 45% 70%,#172834 71%)',
+  ocean:'radial-gradient(circle at 24% 35%,#c8dca7 0 16%,transparent 17%),linear-gradient(145deg,#69a9cf,#124f7c)',
+  creative:'repeating-linear-gradient(45deg,rgba(255,255,255,.22) 0 2px,transparent 2px 8px),linear-gradient(145deg,#c48667,#6e7694)',
+  open:'linear-gradient(25deg,transparent 45%,#efce7e 46% 49%,transparent 50%),linear-gradient(145deg,#dcebd2 0 37%,#f4f0dd 38% 68%,#c8e0ed 69%)'
 };
-let currentBM='streets', currentTheme='light', activeTileLayer=null;
+const BASEMAPS=[
+  {id:'arcgis/streets',label:'Calles',group:'Más utilizados',preview:'streets'},
+  {id:'arcgis/imagery',label:'Imágenes satelitales',group:'Más utilizados',preview:'imagery'},
+  {id:'arcgis/topographic',label:'Topográfico',group:'Más utilizados',preview:'relief'},
+  {id:'arcgis/streets-relief',label:'Calles con relieve',group:'Más utilizados',preview:'relief'},
+  {id:'arcgis/navigation',label:'Navegación',group:'Calles y navegación',preview:'streets'},
+  {id:'arcgis/outdoor',label:'Exteriores',group:'Calles y navegación',preview:'relief'},
+  {id:'arcgis/terrain',label:'Terreno',group:'Calles y navegación',preview:'relief'},
+  {id:'arcgis/streets-night',label:'Calles nocturno',group:'Calles y navegación',preview:'dark'},
+  {id:'arcgis/navigation-night',label:'Navegación nocturna',group:'Calles y navegación',preview:'dark'},
+  {id:'arcgis/imagery/standard',label:'Satélite sin etiquetas',group:'Imágenes y océanos',preview:'imagery'},
+  {id:'arcgis/oceans',label:'Océanos',group:'Imágenes y océanos',preview:'ocean'},
+  {id:'arcgis/light-gray',label:'Gris claro',group:'Mapas de referencia',preview:'light'},
+  {id:'arcgis/dark-gray',label:'Gris oscuro',group:'Mapas de referencia',preview:'dark'},
+  {id:'arcgis/human-geography',label:'Geografía humana',group:'Mapas de referencia',preview:'light'},
+  {id:'arcgis/human-geography-dark',label:'Geografía humana oscuro',group:'Mapas de referencia',preview:'dark'},
+  {id:'arcgis/community',label:'Comunidad',group:'Estilos creativos',preview:'creative'},
+  {id:'arcgis/nova',label:'Nova',group:'Estilos creativos',preview:'dark'},
+  {id:'arcgis/newspaper',label:'Periódico',group:'Estilos creativos',preview:'light'},
+  {id:'arcgis/midcentury',label:'Mediados de siglo',group:'Estilos creativos',preview:'creative'},
+  {id:'arcgis/modern-antique',label:'Antiguo moderno',group:'Estilos creativos',preview:'creative'},
+  {id:'arcgis/charted-territory',label:'Territorio cartografiado',group:'Estilos creativos',preview:'creative'},
+  {id:'arcgis/colored-pencil',label:'Lápiz de color',group:'Estilos creativos',preview:'creative'},
+  {id:'open/osm-style',label:'OSM estándar',group:'Mapas abiertos de ArcGIS',preview:'open'},
+  {id:'open/osm-style-relief',label:'OSM con relieve',group:'Mapas abiertos de ArcGIS',preview:'relief'},
+  {id:'open/streets',label:'Calles abiertas',group:'Mapas abiertos de ArcGIS',preview:'open'},
+  {id:'open/streets-relief',label:'Calles abiertas con relieve',group:'Mapas abiertos de ArcGIS',preview:'relief'},
+  {id:'open/streets-night',label:'Calles abiertas nocturno',group:'Mapas abiertos de ArcGIS',preview:'dark'},
+  {id:'open/navigation',label:'Navegación abierta',group:'Mapas abiertos de ArcGIS',preview:'open'},
+  {id:'open/navigation-dark',label:'Navegación abierta oscura',group:'Mapas abiertos de ArcGIS',preview:'dark'},
+  {id:'open/light-gray',label:'Gris claro abierto',group:'Mapas abiertos de ArcGIS',preview:'light'},
+  {id:'open/dark-gray',label:'Gris oscuro abierto',group:'Mapas abiertos de ArcGIS',preview:'dark'},
+  {id:'open/blueprint',label:'Plano técnico',group:'Mapas abiertos de ArcGIS',preview:'creative'},
+  {id:'open/hybrid',label:'Híbrido abierto',group:'Mapas abiertos de ArcGIS',preview:'imagery'}
+];
+const BASEMAP_BY_ID=new Map(BASEMAPS.map(item=>[item.id,item]));
+const basemapGallery=document.getElementById('basemapGallery');
+const basemapGalleryBody=document.getElementById('basemapGalleryBody');
+const basemapStatus=document.getElementById('basemapStatus');
+let currentBM='arcgis/streets', currentTheme='light', activeTileLayer=null, basemapErrorCount=0;
+
+function createFallbackBasemap(){
+  return L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19,crossOrigin:true});
+}
+function createArcGISBasemap(definition){
+  if(!ARCGIS_API_KEY||!window.L?.esri?.Vector?.vectorBasemapLayer)return createFallbackBasemap();
+  const options={apikey:ARCGIS_API_KEY,version:2,language:'es'};
+  if(/^(arcgis\/(streets|navigation|imagery))/.test(definition.id))options.places='none';
+  return L.esri.Vector.vectorBasemapLayer(definition.id,options);
+}
+function basemapMatchesSearch(item,query){
+  const normalize=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const q=normalize(query).trim();return !q||normalize(`${item.label} ${item.group} ${item.id}`).includes(q);
+}
+function renderBasemapGallery(query=''){
+  if(!basemapGalleryBody)return;
+  const visible=BASEMAPS.filter(item=>basemapMatchesSearch(item,query));
+  const groups=[...new Set(visible.map(item=>item.group))];
+  basemapGalleryBody.innerHTML=groups.map(group=>{
+    const cards=visible.filter(item=>item.group===group).map(item=>`<button class="basemap-card${item.id===currentBM?' active':''}" type="button" data-gallery-basemap="${item.id}" title="${escapeHTML(item.label)}"><span class="basemap-card-preview" style="display:block;background-image:${BASEMAP_PREVIEWS[item.preview]}"></span><span class="basemap-card-label">${escapeHTML(item.label)}</span></button>`).join('');
+    return `<div class="basemap-group-title">${escapeHTML(group)}</div><div class="basemap-grid">${cards}</div>`;
+  }).join('')||'<div class="basemap-empty">No se encontraron mapas base.</div>';
+  basemapGalleryBody.querySelectorAll('[data-gallery-basemap]').forEach(button=>button.addEventListener('click',()=>setBasemap(button.dataset.galleryBasemap)));
+}
+function openBasemapGallery(){
+  basemapGallery?.classList.add('open');basemapGallery?.setAttribute('aria-hidden','false');
+  document.getElementById('basemapGalleryTrigger')?.setAttribute('aria-expanded','true');renderBasemapGallery(document.getElementById('basemapSearch')?.value||'');
+}
+function closeBasemapGallery(){
+  basemapGallery?.classList.remove('open');basemapGallery?.setAttribute('aria-hidden','true');document.getElementById('basemapGalleryTrigger')?.setAttribute('aria-expanded','false');
+}
 function refreshVisibleOverlays(){
   map.invalidateSize(false);
   try{
@@ -1854,19 +1963,37 @@ function refreshVisibleOverlays(){
   map.invalidateSize(false);
 }
 function setBasemap(bm){
-  if(!TILES[bm] || !TILES[bm][currentTheme]) return;
-  currentBM=bm;
+  const definition=BASEMAP_BY_ID.get(bm)||BASEMAP_BY_ID.get('arcgis/streets');
+  if(!definition)return;
+  currentBM=definition.id;basemapErrorCount=0;
   if(activeTileLayer) map.removeLayer(activeTileLayer);
-  activeTileLayer=TILES[bm][currentTheme];
+  activeTileLayer=createArcGISBasemap(definition);
+  const watchedLayer=activeTileLayer;
+  const handleBasemapError=()=>{
+    if(watchedLayer!==activeTileLayer||++basemapErrorCount<4)return;
+    map.removeLayer(activeTileLayer);activeTileLayer=createFallbackBasemap();activeTileLayer.addTo(map);activeTileLayer.bringToBack?.();
+    if(basemapStatus)basemapStatus.textContent='Respaldo OSM activo';refreshVisibleOverlays();
+  };
+  const handleStyleLoadError=()=>{
+    if(watchedLayer!==activeTileLayer)return;
+    basemapErrorCount=3;handleBasemapError();
+  };
+  activeTileLayer.on?.('error',handleBasemapError);activeTileLayer.on?.('tileerror',handleBasemapError);
+  activeTileLayer.on?.('load-error',handleStyleLoadError);
   activeTileLayer.addTo(map);
   if(typeof activeTileLayer.bringToBack==='function') activeTileLayer.bringToBack();
-  document.querySelectorAll('.basemap-switch button').forEach(b=>b.classList.toggle('active',b.dataset.bm===bm));
+  document.querySelectorAll('.basemap-switch [data-bm]').forEach(button=>button.classList.toggle('active',button.dataset.bm===currentBM));
+  if(basemapStatus)basemapStatus.textContent=ARCGIS_API_KEY?definition.label:'Respaldo OSM activo';
+  try{localStorage.setItem('wwf-howwe-basemap',currentBM);}catch(_){ }
+  renderBasemapGallery(document.getElementById('basemapSearch')?.value||'');closeBasemapGallery();
   // Rebind/redraw overlays after the base tile layer changes. This avoids
   // requiring users to toggle each visible layer off and on again.
   requestAnimationFrame(refreshVisibleOverlays);
   setTimeout(refreshVisibleOverlays,250);
 }
-setBasemap('streets');
+let savedBasemap='arcgis/streets';
+try{const stored=localStorage.getItem('wwf-howwe-basemap');if(BASEMAP_BY_ID.has(stored))savedBasemap=stored;}catch(_){ }
+setBasemap(savedBasemap);
 // === GeoJSON real layers ===
 const DATA_FILES = {
   'apn':      'assets/capas/AreasProtegidas_Bolivia.geojson',
@@ -4613,9 +4740,15 @@ document.getElementById('themeToggle').addEventListener('click',()=>{
   document.body.setAttribute('data-theme',currentTheme);
   document.getElementById('iconSun').style.display=currentTheme==='light'?'block':'none';
   document.getElementById('iconMoon').style.display=currentTheme==='dark'?'block':'none';
-  setBasemap(currentBM);
+  refreshVisibleOverlays();
 });
-document.querySelectorAll('.basemap-switch button').forEach(b=>b.addEventListener('click',()=>setBasemap(b.dataset.bm)));
+document.querySelectorAll('.basemap-switch [data-bm]').forEach(button=>button.addEventListener('click',()=>setBasemap(button.dataset.bm)));
+document.getElementById('basemapGalleryTrigger')?.addEventListener('click',event=>{event.stopPropagation();basemapGallery?.classList.contains('open')?closeBasemapGallery():openBasemapGallery();});
+document.getElementById('basemapGalleryClose')?.addEventListener('click',closeBasemapGallery);
+document.getElementById('basemapSearch')?.addEventListener('input',event=>renderBasemapGallery(event.target.value));
+basemapGallery?.addEventListener('click',event=>event.stopPropagation());
+document.addEventListener('click',event=>{if(basemapGallery?.classList.contains('open')&&!event.target.closest('#basemapGalleryTrigger'))closeBasemapGallery();});
+document.addEventListener('keydown',event=>{if(event.key==='Escape')closeBasemapGallery();});
 document.getElementById('zoomIn').addEventListener('click',()=>map.zoomIn());
 document.getElementById('zoomOut').addEventListener('click',()=>map.zoomOut());
 document.getElementById('resetView').addEventListener('click',()=>{
