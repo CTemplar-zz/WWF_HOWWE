@@ -3084,6 +3084,84 @@ function createPMTilesArchive(url){
   return new pmtiles.PMTiles(pmtilesBufferedSourceCache.get(url));
 }
 
+class RiverCourseLabelSymbolizer {
+  constructor(options={}){
+    this.labelProp=options.labelProp||'name';
+    this.fill=options.fill||'#064a73';
+    this.stroke=options.stroke||'#ffffff';
+    this.strokeWidth=options.strokeWidth??3;
+    this.offset=options.offset??2;
+    this.repeatDistance=options.repeatDistance??700;
+  }
+  static lineLength(line){
+    let length=0;
+    for(let i=1;i<line.length;i++) length+=line[i-1].dist(line[i]);
+    return length;
+  }
+  static pointAtDistance(line,target){
+    let walked=0;
+    for(let i=1;i<line.length;i++){
+      const a=line[i-1],b=line[i],segment=a.dist(b);
+      if(walked+segment>=target){
+        const ratio=segment ? (target-walked)/segment : 0;
+        return a.clone().add(b.clone().sub(a).mult(ratio));
+      }
+      walked+=segment;
+    }
+    return line[line.length-1].clone();
+  }
+  place(layout,geom,feature){
+    const name=String(feature.props?.[this.labelProp]||'').trim();
+    if(!name)return;
+    const candidates=(geom||[])
+      .filter(line=>line?.length>1)
+      .map(line=>({line,length:RiverCourseLabelSymbolizer.lineLength(line)}))
+      .sort((a,b)=>b.length-a.length);
+    if(!candidates.length)return;
+    const zoom=layout.zoom;
+    const fontSize=zoom<10?10:zoom<12?11:12;
+    const font=`italic 600 ${fontSize}px Arial, sans-serif`;
+    layout.scratch.font=font;
+    const metrics=layout.scratch.measureText(name);
+    const textWidth=metrics.width;
+    const textHeight=(metrics.actualBoundingBoxAscent||fontSize*.75)+(metrics.actualBoundingBoxDescent||fontSize*.25);
+    const selected=candidates.find(item=>item.length>=textWidth+12);
+    if(!selected)return;
+    const middle=selected.length/2;
+    const tangentHalf=Math.min(Math.max(textWidth*.38,18),selected.length*.35);
+    const start=RiverCourseLabelSymbolizer.pointAtDistance(selected.line,middle-tangentHalf);
+    const end=RiverCourseLabelSymbolizer.pointAtDistance(selected.line,middle+tangentHalf);
+    const anchor=RiverCourseLabelSymbolizer.pointAtDistance(selected.line,middle);
+    let angle=Math.atan2(end.y-start.y,end.x-start.x);
+    if(angle>Math.PI/2)angle-=Math.PI;
+    if(angle<-Math.PI/2)angle+=Math.PI;
+    const halfW=textWidth/2+4,halfH=textHeight/2+4;
+    const extentX=Math.abs(Math.cos(angle))*halfW+Math.abs(Math.sin(angle))*halfH;
+    const extentY=Math.abs(Math.sin(angle))*halfW+Math.abs(Math.cos(angle))*halfH;
+    const draw=ctx=>{
+      ctx.globalAlpha=1;
+      ctx.rotate(angle);
+      ctx.translate(0,-this.offset);
+      ctx.font=font;
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.lineJoin='round';
+      ctx.lineWidth=this.strokeWidth;
+      ctx.strokeStyle=this.stroke;
+      ctx.strokeText(name,0,0);
+      ctx.fillStyle=this.fill;
+      ctx.fillText(name,0,0);
+    };
+    return [{
+      anchor,
+      bboxes:[{minX:anchor.x-extentX,minY:anchor.y-extentY,maxX:anchor.x+extentX,maxY:anchor.y+extentY}],
+      draw,
+      deduplicationKey:name,
+      deduplicationDistance:this.repeatDistance
+    }];
+  }
+}
+
 function createPMTilesLayer(layerDef){
   if(typeof protomapsL === 'undefined'){
     console.warn('protomaps-leaflet no cargó'); return L.layerGroup();
@@ -3160,16 +3238,13 @@ function createPMTilesLayer(layerDef){
       dataLayer: layerDef.pmlayer || id,
       minzoom: 8,
       filter: (z,f) => Boolean(String(f.props.name || '').trim()),
-      symbolizer: new protomapsL.LineLabelSymbolizer({
-        labelProps: ['name'],
-        font: 'italic 600 12px Arial, sans-serif',
+      symbolizer: new RiverCourseLabelSymbolizer({
+        labelProp: 'name',
         fill: '#064a73',
         stroke: '#ffffff',
-        width: 4,
+        strokeWidth: 4,
         offset: 2,
-        position: protomapsL.LineLabelPlacement.Above,
-        repeatDistance: 700,
-        maxLabelChars: 100
+        repeatDistance: 700
       })
     }];
   } else if(id === 'rios_nacional_ap'){
