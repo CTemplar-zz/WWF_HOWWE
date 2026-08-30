@@ -1,0 +1,3 @@
+// Clave pública restringida por referrer para los mapas base de ArcGIS.
+window.ARCGIS_API_KEY="AAPTa5AUo87Yyk7VVlyorNAYY3g..2CiPlA31TppnvCs-VupzmYGWMwkClbrfJlqTFnyh9QU0A1y_xUjcewwOVI-zFTxqhhNiOb7Kaong5_CgelZFexKYAqbqtElZaL68XDNKZk2gZacYZh3Bql0pMjYknQV_qsMniCQ0BzipfUC62NHxFathMxtzbj8GuDDejZv5-eByjSaf0lY2rpTkeQiPZ1wPdDdLuzhyg98BuLXjQD-hkgPpr0gdkJTL9YrZuONLvlRQCV-YOFnuSQo.AT1_41dE95VJ";
+

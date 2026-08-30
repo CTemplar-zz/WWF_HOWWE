@@ -1,4 +1,4 @@
-﻿window['GEOLAY_borochi']={
+window['GEOLAY_borochi']={
 "type": "FeatureCollection",
 "name": "Chrysocyon_brachyurus_Borochi",
 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },

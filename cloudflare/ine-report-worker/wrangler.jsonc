@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "geoportal-ine-pdf",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-11",
+  "workers_dev": true,
+  "vars": {
+    "ALLOWED_ORIGINS": "https://ctemplar-zz.github.io,http://localhost:8000,http://127.0.0.1:8000",
+    "MAX_CODES": "5000",
+    "INE_API_BASE": "https://wgeoportal.ine.gob.bo/api/v1"
+  }
+}
