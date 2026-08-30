@@ -119,8 +119,17 @@ function tileRanges(bounds, z) {
   return { minX, maxX, minY, maxY };
 }
 
-function buildPmtiles({ input, output, layerName, minZoom, maxZoom, tolerance }) {
+function buildPmtiles({ input, output, layerName, minZoom, maxZoom, tolerance, fields }) {
   const geojson = JSON.parse(fs.readFileSync(input, 'utf8'));
+  if (fields?.length) {
+    const allowed = new Set(fields);
+    for (const feature of geojson.features) {
+      const properties = feature.properties || {};
+      feature.properties = Object.fromEntries(
+        Object.entries(properties).filter(([key]) => allowed.has(key)),
+      );
+    }
+  }
   const bounds = getBounds(geojson);
   const tileIndex = geojsonvt(geojson, {
     maxZoom,
@@ -180,22 +189,25 @@ function buildPmtiles({ input, output, layerName, minZoom, maxZoom, tolerance })
   }
 
   const rootDirectory = zlib.gzipSync(serializeDirectory(rootEntries), { level: 9 });
-  const metadata = zlib.gzipSync(Buffer.from(JSON.stringify({
-    name: layerName,
-    description: 'Sistemas Ecologicos Acuaticos',
-    attribution: 'WWF / FAUNAGUA',
-    vector_layers: [{
-      id: layerName,
-      description: 'Sistemas Ecologicos Acuaticos',
-      minzoom: minZoom,
-      maxzoom: maxZoom,
-      fields: {
+  const metadataFields = fields?.length
+    ? Object.fromEntries(fields.map(field => [field, 'String']))
+    : {
         FID: 'Number',
         TA_DATE: 'String',
         SEA: 'String',
         NOMBRE: 'String',
         SUBCUENCA: 'String',
-      },
+      };
+  const metadata = zlib.gzipSync(Buffer.from(JSON.stringify({
+    name: layerName,
+    description: layerName,
+    attribution: 'WWF / FAUNAGUA',
+    vector_layers: [{
+      id: layerName,
+      description: layerName,
+      minzoom: minZoom,
+      maxzoom: maxZoom,
+      fields: metadataFields,
     }],
   })), { level: 9 });
 
@@ -245,9 +257,9 @@ function buildPmtiles({ input, output, layerName, minZoom, maxZoom, tolerance })
   }, null, 2));
 }
 
-const [input, output, layerName = 'sea', minZoom = '0', maxZoom = '13', tolerance = '3'] = process.argv.slice(2);
+const [input, output, layerName = 'sea', minZoom = '0', maxZoom = '13', tolerance = '3', fieldsArg = ''] = process.argv.slice(2);
 if (!input || !output) {
-  console.error('Usage: node scripts/build_pmtiles.mjs input.geojson output.pmtiles [layerName] [minZoom] [maxZoom] [tolerance]');
+  console.error('Usage: node scripts/build_pmtiles.mjs input.geojson output.pmtiles [layerName] [minZoom] [maxZoom] [tolerance] [fieldsCsv]');
   process.exit(1);
 }
 
@@ -258,4 +270,5 @@ buildPmtiles({
   minZoom: Number(minZoom),
   maxZoom: Number(maxZoom),
   tolerance: Number(tolerance),
+  fields: fieldsArg.split(',').map(field => field.trim()).filter(Boolean),
 });

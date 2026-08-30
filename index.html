@@ -1405,6 +1405,7 @@ const MODULES = {
       {id:'sea',name:'Sistemas Ecológicos Acuáticos',group:'Hidrología',color:'#49AE6F',opacity:70,on:false,pmtiles:"https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/sea.pmtiles",pmlayer:'sea',maxDataZoom:12},
       {id:'sistemas_acuaticos_ap',name:'Sistemas Acuáticos',group:'Hidrología',color:'#49AE6F',opacity:70,on:false,pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/sistemas_acuaticos_ap.pmtiles',pmlayer:'sistemas_acuaticos_ap',maxDataZoom:12,downloadUrl:'assets/downloads/sistemas_acuaticos_ap.zip',downloadLabel:'Descargar shapefile ZIP'},
       {id:'rios_nacional_ap',name:'Ríos Nacional',group:'Hidrología',color:'#125b8a',opacity:100,on:false,pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/rios_nacional_ap.pmtiles',pmlayer:'rios_nacional_ap',maxDataZoom:12,downloadUrl:'assets/downloads/rios_nacional_ap.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'rios_osm',name:'Ríos (OSM)',group:'Hidrología',color:'#1686c7',opacity:100,on:false,pmtiles:`${R2_PMTILES_BASE}/rios_osm.pmtiles`,pmlayer:'rios_osm',maxDataZoom:14,bounds:[-69.6450073,-22.8825986,-57.4556129,-9.6710442],noDownload:true,attribution:'© OpenStreetMap contributors'},
       {id:'bofedales_ap',name:'Bofedales',group:'Hidrología',color:'#2271ae',opacity:75,on:false,pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/bofedales_ap.pmtiles',pmlayer:'bofedales_ap',maxDataZoom:12,downloadUrl:'assets/downloads/bofedales_ap.zip',downloadLabel:'Descargar shapefile ZIP'},
       {id:'lagos',name:'Lagos y lagunas 2016',group:'Hidrología',color:'#2374b5',opacity:80,on:false},
       {id:'humedales',name:'Humedales (meses inundados)',group:'Hidrología',color:'#2271ae',opacity:80,on:false,gradient:true,pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/humedales.pmtiles',pmlayer:'humedales',maxDataZoom:12},
@@ -3146,6 +3147,30 @@ function createPMTilesLayer(layerDef){
         width: id === 'bofedales_ap' ? 0.7 : 0
       })
     }];
+  } else if(id === 'rios_osm'){
+    paintRules = [{
+      dataLayer: layerDef.pmlayer || id,
+      symbolizer: new protomapsL.LineSymbolizer({
+        color: layerDef.color || '#1686c7',
+        width: z => z < 7 ? 0.35 : z < 10 ? 0.55 : z < 12 ? 0.8 : 1.15,
+        opacity: 0.92
+      })
+    }];
+    labelRules = [{
+      dataLayer: layerDef.pmlayer || id,
+      minzoom: 8,
+      filter: (z,f) => Boolean(String(f.props.name || '').trim()),
+      symbolizer: new protomapsL.LineLabelSymbolizer({
+        labelProps: ['name'],
+        font: z => `italic 600 ${z < 11 ? 10 : 11}px Inter, sans-serif`,
+        fill: '#0b4f79',
+        stroke: '#ffffff',
+        width: 3,
+        position: protomapsL.LineLabelPlacement.Center,
+        repeatDistance: 1000,
+        maxLabelChars: 70
+      })
+    }];
   } else if(id === 'rios_nacional_ap'){
     const riverStyle = value => {
       const v = String(value || '').trim().toLowerCase();
@@ -3326,7 +3351,7 @@ function createPMTilesLayer(layerDef){
     labelRules,
     interactive: true,
     maxDataZoom: layerDef.maxDataZoom || 12,
-    attribution: '© PMTiles · datos: WWF / SERNAP'
+    attribution: layerDef.attribution || '© PMTiles · datos: WWF / SERNAP'
   });
 
   // Popup al click: query features en (lng,lat) via la API de protomaps-leaflet
