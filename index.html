@@ -3158,17 +3158,18 @@ function createPMTilesLayer(layerDef){
     }];
     labelRules = [{
       dataLayer: layerDef.pmlayer || id,
-      minzoom: 8,
+      minzoom: 11,
       filter: (z,f) => Boolean(String(f.props.name || '').trim()),
       symbolizer: new protomapsL.LineLabelSymbolizer({
         labelProps: ['name'],
-        font: z => `italic 600 ${z < 11 ? 10 : 11}px Inter, sans-serif`,
-        fill: '#0b4f79',
+        font: 'italic 600 12px Arial, sans-serif',
+        fill: '#064a73',
         stroke: '#ffffff',
-        width: 3,
-        position: protomapsL.LineLabelPlacement.Center,
-        repeatDistance: 1000,
-        maxLabelChars: 70
+        width: 4,
+        offset: 2,
+        position: protomapsL.LineLabelPlacement.Above,
+        repeatDistance: 700,
+        maxLabelChars: 100
       })
     }];
   } else if(id === 'rios_nacional_ap'){
