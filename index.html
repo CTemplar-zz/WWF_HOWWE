@@ -3158,7 +3158,7 @@ function createPMTilesLayer(layerDef){
     }];
     labelRules = [{
       dataLayer: layerDef.pmlayer || id,
-      minzoom: 11,
+      minzoom: 8,
       filter: (z,f) => Boolean(String(f.props.name || '').trim()),
       symbolizer: new protomapsL.LineLabelSymbolizer({
         labelProps: ['name'],
