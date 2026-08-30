@@ -41,6 +41,7 @@
 <script src="assets/capas/geo_cuencas_n8.js"></script>
 <script src="assets/capas/geo_cuencas_n9.js"></script>
 <script src="assets/capas/geo_intersection.js"></script>
+<script src="assets/capas/geo_m4_intersection.js"></script>
 <style>
   :root {
     --bg: #f5f6f3;
@@ -553,7 +554,7 @@
         <div class="section-body"><div class="layer-list" id="layerList"></div></div>
       </div>
       <div class="panel-section" data-collapse>
-        <div class="panel-h"><span class="panel-h-left"><svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>Áreas Protegidas (22)</span></div>
+        <div class="panel-h"><span class="panel-h-left"><svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>Áreas Protegidas (27)</span></div>
         <div class="section-body"><div class="ap-list" id="apList"></div></div>
       </div>
     </aside>
@@ -561,7 +562,7 @@
       <div id="map"></div>
       <div class="map-overlay crumbs">
         <span class="c-region">Bolivia</span><span class="sep">›</span>
-        <span class="c-area" id="crumbArea">22 Áreas Protegidas Nacionales</span>
+        <span class="c-area" id="crumbArea">27 Áreas Protegidas</span>
       </div>
       <div class="map-overlay map-tools">
         <button class="iconbtn" id="zoomIn" title="Acercar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button>
@@ -600,7 +601,7 @@
         <h3 id="rightTitle">Bolivia</h3>
         <span class="badge">Resumen</span>
       </div>
-      <div class="info-sub" id="rightSub">Sistema Nacional de Áreas Protegidas — 22 APN</div>
+      <div class="info-sub" id="rightSub">Sistema Nacional de Áreas Protegidas — 27 áreas</div>
       <div class="kpi-grid">
         <div class="kpi"><div class="lbl">Superficie APN</div><div class="val">17.06<span class="unit">M ha</span></div><div class="trend down">▾ estable 2023</div></div>
         <div class="kpi"><div class="lbl">Cobertura forestal</div><div class="val">51.1<span class="unit">%</span></div><div class="trend down">▾ −0.4% / año</div></div>
@@ -643,8 +644,8 @@
     <span id="zoomLevel">z: 6</span>
     <div class="right-status">
       <span id="layerStatus">3 capas activas</span>
-      <span>Última actualización: 11 may 2026</span>
-      <span>v0.4.2-beta</span>
+      <span>Última actualización: 30 ago 2026</span>
+      <span>v0.4.3-beta</span>
     </div>
   </footer>
 </div>
@@ -654,7 +655,7 @@ const MODULES = {
     icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2 4 7v10l8 5 8-5V7z"/><path d="m4 7 8 5 8-5M12 12v10"/></svg>',
     layers:[
       {id:'departamentos',name:'Departamentos de Bolivia', color:'#000000',opacity:100,on:true},
-      {id:'apn',   name:'Áreas Protegidas (33 polígonos)',  color:'#2c8a4d',opacity:100,on:true},
+      {id:'apn',   name:'Áreas Protegidas (27 límites)',    color:'#2c8a4d',opacity:100,on:true},
       {id:'limite',name:'Límite Bolivia',                    color:'#6a6a6a',opacity:80,on:true},
       {id:'zon',   name:'Zonificación interna',              color:'#7fa860',opacity:50,on:false},
       {id:'amort', name:'Zonas de amortiguamiento',          color:'#c5d39a',opacity:40,on:false},
@@ -662,11 +663,11 @@ const MODULES = {
       {id:'eco',   name:'Ecorregiones',                      color:'#4a8aa8',opacity:30,on:false},
     ],
     legend:{title:'Categorías SERNAP',ind:'I.6',items:[
-      {c:'#1f6b3a',l:'Parque Nacional',v:'9 áreas'},
-      {c:'#4ec97a',l:'Reserva de la Biosfera',v:'3 áreas'},
-      {c:'#9ec979',l:'Reserva Nacional',v:'4 áreas'},
-      {c:'#7fa860',l:'Área Natural de Manejo Integrado',v:'10 áreas'},
-      {c:'#b06e3a',l:'Otras categorías',v:'7 áreas'},
+      {c:'#1f6b3a',l:'Parque Nacional',v:''},
+      {c:'#4ec97a',l:'Reserva de la Biosfera',v:''},
+      {c:'#9ec979',l:'Reserva Nacional',v:''},
+      {c:'#7fa860',l:'ANMI y categorías mixtas',v:''},
+      {c:'#b06e3a',l:'Otras categorías',v:''},
     ]}
   },
   '2': { title:'Distribución de especies', sub:'IUCN Red List · BirdLife · datos actualizados', color:'#7c5fb5',
@@ -678,8 +679,8 @@ const MODULES = {
       {id:'cuencas_n8',      name:'Sub-cuencas HydroBASINS nivel 8',group:'Hidrología', color:'#1e5694',opacity:85,on:false},
       {id:'cuencas_n9',      name:'Sub-cuencas HydroBASINS nivel 9',group:'Hidrología', color:'#5b8db8',opacity:85,on:false},
       {id:'ffr',             name:'Ríos FFR (estado conectividad)', group:'Hidrología', color:'#1f6dc7',opacity:90,on:false, gradient:true},
-      {id:'lagos',           name:'Lagos y lagunas 2016',          group:'Hidrología', color:'#2374b5',opacity:80,on:false},
-      {id:'humedales',       name:'Humedales (meses inundados)', group:'Hidrología', color:'#2271ae',opacity:80,on:false, gradient:true},
+      {id:'lagos',           name:'Lagos y lagunas actualizados',  group:'Hidrología', color:'#2374b5',opacity:80,on:false},
+      {id:'humedales',       name:'Bofedales en áreas protegidas', group:'Hidrología', color:'#1F6B3A',opacity:80,on:false},
       {id:'ramsar',          name:'Sitios Ramsar (11 sitios)',    group:'Hidrología', color:'#4aa3e3',opacity:80,on:false},
       {id:'jaguar',    name:'Jaguar',            group:'Objetos de conservación', color:'#7fa860',opacity:50,on:true,  iucn:'NT',sci:'Panthera onca'},
       {id:'paraba_bb', name:'Paraba Barba Azul', group:'Objetos de conservación', color:'#7a1a1a',opacity:50,on:false, iucn:'CR',sci:'Ara glaucogularis'},
@@ -732,13 +733,13 @@ const MODULES = {
       {c:'#3a3a3a',l:'Infraestructura AOP',v:'43 obras'},
     ]}
   },
-  '4': { title:'Ecosistemas y agua', sub:'Humedales, cuencas, glaciares, conectividad', color:'#2374b5',
+  '4': { title:'Ecosistemas y agua', sub:'Bofedales, lagos, sistemas acuáticos y conectividad', color:'#2374b5',
     icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 3s-7 8-7 13a7 7 0 1 0 14 0c0-5-7-13-7-13z"/></svg>',
     layers:[
       {id:'departamentos',name:'Departamentos de Bolivia',color:'#000000',opacity:100,on:true},
       {id:'apn',    name:'Áreas Protegidas',              color:'#2c8a4d',opacity:100,on:true},
-      {id:'lagos',  name:'Lagos y lagunas 2016',            color:'#2374b5',opacity:80,on:false},
-      {id:'humedales', name:'Humedales (meses inundados)', color:'#2271ae',opacity:90,on:false, gradient:true},
+      {id:'lagos',  name:'Lagos y lagunas actualizados',   color:'#2374b5',opacity:80,on:false},
+      {id:'humedales', name:'Bofedales en áreas protegidas', color:'#1F6B3A',opacity:90,on:false},
       {id:'ramsar',    name:'Sitios Ramsar (11 sitios)',    color:'#4aa3e3',opacity:90,on:true},
       {id:'cuencas',name:'Cuencas (balance hídrico)',     color:'#005ce6',opacity:80,on:false},
       {id:'cuencas_n8',name:'Sub-cuencas HydroBASINS nivel 8',color:'#1e5694',opacity:85,on:false},
@@ -747,15 +748,10 @@ const MODULES = {
       {id:'forest', name:'Cobertura boscosa',             color:'#2c8a4d',opacity:45,on:false},
       {id:'ffr',    name:'Ríos FFR (estado conectividad)', color:'#1f6dc7',opacity:90,on:false},
     ],
-    legend:{title:'Humedales · meses inundados',ind:'I.5',items:[
-      {c:'#E8F4FB',l:'0 — 1 mes',v:''},
-      {c:'#C9E2F2',l:'2 meses',v:''},
-      {c:'#9FCBE5',l:'3 meses',v:''},
-      {c:'#74B3D5',l:'4 meses',v:''},
-      {c:'#4A95C3',l:'5 meses',v:''},
-      {c:'#2271AE',l:'6 meses',v:''},
-      {c:'#084B8A',l:'Más de 6 meses',v:''},
-      {c:'#4aa3e3',l:'Sitio Ramsar',v:'11 sitios'},
+    legend:{title:'Ecosistemas acuáticos',ind:'M4',items:[
+      {c:'#1F6B3A',l:'Bofedales',v:'20.095 polígonos'},
+      {c:'#2374B5',l:'Lagos y lagunas',v:'5.617 polígonos'},
+      {c:'#4AA3E3',l:'Sitios Ramsar',v:'11 sitios'},
     ]}
   },
   '5': { title:'Cambio climático', sub:'Escenarios, vulnerabilidad, conectividad climática', color:'#e8a417',
@@ -892,8 +888,11 @@ const AP_CAT_COLORS = {
   'Área Natural de Manejo Integrado Nacional':'#7fa860',
   'Area Natural de Manejo Integrado':'#7fa860',
   'Area Natural de Manejo Integado':'#7fa860',
+  'Parque Nacional; Área Natural de Manejo Integrado':'#7fa860',
+  'Área Natural de Manejo Integrado; Parque Nacional':'#7fa860',
   'Parque Natural y Area de Manejo Integrado':'#7fa860',
   'Parque Natural y Área Natural de Manejo Integrado':'#7fa860',
+  'Area Natural de Manejo Integrado y Conectividad':'#7fa860',
   // Reserva de la Biosfera (verde claro)
   'Reserva de la Biosfera':'#4ec97a',
   'Reserva de la Biósfera':'#4ec97a',
@@ -921,8 +920,11 @@ const CAT_ACRONYMS = {
   'Área Natural de Manejo Integrado Nacional':'ANMI',
   'Area Natural de Manejo Integrado':'ANMI',
   'Area Natural de Manejo Integado':'ANMI',
+  'Parque Nacional; Área Natural de Manejo Integrado':'PN-ANMI',
+  'Área Natural de Manejo Integrado; Parque Nacional':'PN-ANMI',
   'Parque Natural y Area de Manejo Integrado':'PN-ANMI',
   'Parque Natural y Área Natural de Manejo Integrado':'PN-ANMI',
+  'Area Natural de Manejo Integrado y Conectividad':'ANMI-C',
   'Reserva de la Biosfera':'RB',
   'Reserva de la Biósfera':'RB',
   'Reserva de la Biosfera y Territorio Indígena':'RB-TI',
@@ -941,11 +943,11 @@ const CAT_ACRONYMS = {
 };
 function catAcronym(c){return CAT_ACRONYMS[c]||(c?c.split(' ').map(w=>w[0]).join('').toUpperCase():'—');}
 const SERNAP_LEGEND=[
-  {c:'#1f6b3a',l:'Parque Nacional',v:'9 áreas'},
-  {c:'#4ec97a',l:'Reserva de la Biosfera',v:'3 áreas'},
-  {c:'#9ec979',l:'Reserva Nacional',v:'4 áreas'},
-  {c:'#7fa860',l:'Área Natural de Manejo Integrado',v:'10 áreas'},
-  {c:'#b06e3a',l:'Otras categorías',v:'7 áreas'},
+  {c:'#1f6b3a',l:'Parque Nacional',v:''},
+  {c:'#4ec97a',l:'Reserva de la Biosfera',v:''},
+  {c:'#9ec979',l:'Reserva Nacional',v:''},
+  {c:'#7fa860',l:'ANMI y categorías mixtas',v:''},
+  {c:'#b06e3a',l:'Otras categorías',v:''},
 ];
 
 // === Selección de APs y cálculos geoespaciales ===
@@ -1102,6 +1104,7 @@ function toggleAPSelection(name){
   updateAPMapFilter();
   renderAPList();
   if(currentModule==='2'){ renderM2Stats(); renderM2Donut(); }
+  if(currentModule==='4') renderM4Stats();
 }
 const geoData = {};
 
@@ -1190,26 +1193,13 @@ function createGeoJSONLayer(id, layerDef){
     });
   }
   if(id==='humedales'){
-    const colorByMeses = m => {
-      const v = +m || 0;
-      return v <= 1 ? '#E8F4FB' :
-             v <= 2 ? '#C9E2F2' :
-             v <= 3 ? '#9FCBE5' :
-             v <= 4 ? '#74B3D5' :
-             v <= 5 ? '#4A95C3' :
-             v <= 6 ? '#2271AE' : '#084B8A';
-    };
     return L.geoJSON(data,{
-      style: f => ({
-        color:'#1a4a7a', weight:0.3, opacity:0.55,
-        fillColor: colorByMeses(f.properties.Meses), fillOpacity:0.85
-      }),
+      style:{color:'#12472A',weight:0.45,opacity:0.7,fillColor:'#1F6B3A',fillOpacity:0.72},
       onEachFeature:(f,l)=>{
-        const m = f.properties.Meses;
-        const txt = m===0||m===1 ? '0 — 1 mes'
-                  : m>6 ? 'Más de 6 meses ('+m+')'
-                  : m+' meses';
-        l.bindTooltip(`<b>Humedal</b><br>${txt} inundados/año`,{sticky:true,direction:'top',opacity:0.92});
+        const p=f.properties;
+        const ha=Number(p.AREA_HA||0).toLocaleString('es-BO',{maximumFractionDigits:2});
+        const origen=(p.MERGE_SRC||'').split('\\').pop()||'Inventario de bofedales';
+        l.bindTooltip(`<b>Bofedal</b><br>${ha} ha · ${origen}`,{sticky:true,direction:'top',opacity:0.92});
       }
     });
   }
@@ -1238,24 +1228,14 @@ function createGeoJSONLayer(id, layerDef){
     });
   }
   if(id==='lagos'){
-    // Lagos 2016: simbología por tipo hidrológico
-    // PERENE (permanente) = azul vívido / INTERMITENTE = azul claro / sin clasificar = gris-azul
-    const lakeStyle = hyp => {
-      if(hyp === 'PERENE') return {color:'#0d4577', weight:1.2, fillColor:'#2374b5', fillOpacity:0.6, opacity:0.9};
-      if(hyp === 'INTERMITENTE') return {color:'#5a9bc7', weight:0.9, fillColor:'#9fc5e8', fillOpacity:0.45, opacity:0.8, dashArray:'3,3'};
-      return {color:'#7a8b9a', weight:0.8, fillColor:'#b8c6d3', fillOpacity:0.4, opacity:0.7};
-    };
     return L.geoJSON(data, {
-      style: f => lakeStyle(f.properties.hyp),
+      style:{color:'#0d4577',weight:1.1,fillColor:'#2374b5',fillOpacity:0.58,opacity:0.9},
       onEachFeature: (f,l) => {
         const p = f.properties;
-        const name = (p.nombre && p.nombre.trim()) || (p.objeto||'Cuerpo de agua');
-        const tipo = p.hyp || 'No clasificado';
-        const tipoLabel = tipo==='PERENE' ? 'Permanente' : tipo==='INTERMITENTE' ? 'Intermitente' : tipo;
-        const tipoColor = tipo==='PERENE' ? '#2374b5' : tipo==='INTERMITENTE' ? '#5a9bc7' : '#7a8b9a';
-        l.bindPopup(`<div class="feature-popup"><h5>${name}</h5><table>
-          <tr><td>Tipo</td><td><b style="color:${tipoColor}">${tipoLabel}</b></td></tr>
-          <tr><td>Objeto</td><td>${p.objeto||'—'}</td></tr>
+        const ha=Number(p.AREA_HA||0).toLocaleString('es-BO',{maximumFractionDigits:2});
+        l.bindPopup(`<div class="feature-popup"><h5>Lago o laguna</h5><table>
+          <tr><td>ID</td><td><b>${p.ID_LAGO||'—'}</b></td></tr>
+          <tr><td>Superficie</td><td>${ha} ha</td></tr>
         </table></div>`);
       }
     });
@@ -1441,19 +1421,14 @@ function applyLayerOpacity(layerId, leafletLayer, pct){
     });
     return;
   }
-  // Caso especial: humedales usa color per-feature según Meses
+  // Caso especial: bofedales (recurso histórico id=humedales)
   if(layerId==='humedales' && leafletLayer.eachLayer){
-    const colorByMeses = m => {
-      const v = +m || 0;
-      return v <= 1 ? '#E8F4FB' : v <= 2 ? '#C9E2F2' : v <= 3 ? '#9FCBE5'
-           : v <= 4 ? '#74B3D5' : v <= 5 ? '#4A95C3' : v <= 6 ? '#2271AE' : '#084B8A';
-    };
     leafletLayer.eachLayer(fl=>{
       if(!fl.feature || !fl.setStyle) return;
       fl.setStyle({
-        color:'#1a4a7a', weight:0.3,
-        fillColor: colorByMeses(fl.feature.properties.Meses),
-        opacity: o*0.55, fillOpacity: o*0.85
+        color:'#12472A', weight:0.45,
+        fillColor:'#1F6B3A',
+        opacity:o*0.7,fillOpacity:o*0.72
       });
     });
     return;
@@ -1725,6 +1700,8 @@ function formatHaCell(ha){
 
 function renderBreakdownTable(items){
   const tbody=document.getElementById('breakdownTbody'); if(!tbody) return;
+  const head=document.querySelector('#breakdownWrap thead tr');
+  if(head) head.innerHTML=`<th style="text-align:left">Especie</th><th style="text-align:right">Sup. (ha)</th><th style="text-align:right">%</th>`;
   if(!items || items.length===0){
     tbody.innerHTML=`<tr><td colspan="3" class="empty">Sin datos. Activa una capa de especies.</td></tr>`;
     return;
@@ -1832,12 +1809,97 @@ function renderM2Stats(){
   });
 }
 
+const M4_COLORS={
+  'Bofedales':'#1F6B3A','Lagos y lagunas':'#2374B5','Sitios Ramsar':'#4AA3E3',
+  'Río principal':'#0D4577','Río secundario':'#74B3D5',
+  'Aguas blancas':'#A9D6E5','Aguas claras':'#61A5C2','Aguas mixtas':'#2C7DA0',
+  'Aguas negras':'#184E77','Inundación estacional':'#76C893','Inundación frecuente':'#40916C'
+};
+
+function getM4ScopedRows(){
+  const rows=(window['M4_INTERSECTION']&&window['M4_INTERSECTION'].details)||[];
+  return selectedAPs.size===0 ? rows : rows.filter(r=>selectedAPs.has(r.ap));
+}
+
+function m4Sum(rows,group,clase=null){
+  return rows.reduce((sum,r)=>sum+(r.grupo===group && (clase===null||r.clase===clase) ? (+r.valor||0) : 0),0);
+}
+
+function m4ScopeArea(rows){
+  const areas=new Map();
+  rows.forEach(r=>areas.set(r.ap,+r.ap_area_ha||0));
+  return [...areas.values()].reduce((a,b)=>a+b,0);
+}
+
+function formatKm(km){
+  return `${(+km||0).toLocaleString('es-BO',{minimumFractionDigits:2,maximumFractionDigits:2})} km`;
+}
+
+function renderM4Breakdown(rows,apArea){
+  const tbody=document.getElementById('breakdownTbody'); if(!tbody) return;
+  const head=document.querySelector('#breakdownWrap thead tr');
+  if(head) head.innerHTML=`<th style="text-align:left">Clase</th><th style="text-align:right">Valor</th><th style="text-align:right">% AP</th>`;
+  const surface=[
+    ['Bofedales','Bofedales','Bofedales'],
+    ['Lagos y lagunas','Lagos y lagunas','Lagos y lagunas'],
+    ['Sitios Ramsar','Sitios Ramsar','Sitios Ramsar (total)'],
+  ];
+  const aquatic=(window['M4_INTERSECTION']?.criteria?.aquatic_classes||[]).map(c=>[c,'Sistemas acuáticos',c]);
+  const areaItems=[...surface,...aquatic].map(([label,group,clase])=>({label,unit:'ha',value:m4Sum(rows,group,clase),color:M4_COLORS[label]||'#4AA3E3'}));
+  const riverItems=['Río principal','Río secundario'].map(label=>({label,unit:'km',value:m4Sum(rows,'Ríos',label),color:M4_COLORS[label]}));
+  tbody.innerHTML=[...areaItems,...riverItems].map(it=>{
+    const pct=it.unit==='ha'&&apArea>0 ? `${(it.value/apArea*100).toFixed(2)}%` : '—';
+    const value=it.unit==='ha' ? formatHaCell(it.value) : formatKm(it.value);
+    return `<tr><td><span class="dot" style="background:${it.color}"></span><span class="sp-name">${it.label}</span></td><td class="num" style="text-align:right">${value}</td><td class="num" style="text-align:right;color:var(--text);font-weight:600">${pct}</td></tr>`;
+  }).join('');
+}
+
+function renderM4Stats(){
+  const rows=getM4ScopedRows();
+  const grid=document.querySelector('.kpi-grid'); if(!grid) return;
+  const apArea=m4ScopeArea(rows);
+  const bof=m4Sum(rows,'Bofedales','Bofedales');
+  const lakes=m4Sum(rows,'Lagos y lagunas','Lagos y lagunas');
+  const ramsar=m4Sum(rows,'Sitios Ramsar','Sitios Ramsar (total)');
+  const principal=m4Sum(rows,'Ríos','Río principal');
+  const secondary=m4Sum(rows,'Ríos','Río secundario');
+  const pct=v=>apArea>0?(v/apArea*100).toFixed(2):'0.00';
+  const scope=selectedAPs.size===0 ? '27 áreas protegidas' : `${selectedAPs.size} AP${selectedAPs.size===1?'':'s'} seleccionada${selectedAPs.size===1?'':'s'}`;
+  const clear=selectedAPs.size>0?` · <a href="#" id="clearM4Sel" style="color:var(--accent)">limpiar</a>`:'';
+  grid.innerHTML=`
+    <div class="kpi"><div class="lbl">Superficie de APs</div><div class="val">${formatHa(apArea)}<span class="unit">${haUnitLabel(apArea)}</span></div><div class="trend">${scope}${clear}</div></div>
+    <div class="kpi"><div class="lbl">Bofedales</div><div class="val">${formatHa(bof)}<span class="unit">${haUnitLabel(bof)}</span></div><div class="trend">${pct(bof)}% de las APs</div></div>
+    <div class="kpi"><div class="lbl">Lagos y lagunas</div><div class="val">${formatHa(lakes)}<span class="unit">${haUnitLabel(lakes)}</span></div><div class="trend">${pct(lakes)}% de las APs</div></div>
+    <div class="kpi"><div class="lbl">Sitios Ramsar</div><div class="val">${formatHa(ramsar)}<span class="unit">${haUnitLabel(ramsar)}</span></div><div class="trend">${pct(ramsar)}% de las APs</div></div>`;
+  const clr=document.getElementById('clearM4Sel');
+  if(clr) clr.addEventListener('click',e=>{e.preventDefault();selectedAPs.clear();currentAP=null;updateAPMapFilter();renderAPList();renderM4Stats();});
+
+  const aquaticClasses=window['M4_INTERSECTION']?.criteria?.aquatic_classes||[];
+  const aquaticItems=aquaticClasses.map(c=>({label:c,color:M4_COLORS[c],ha:m4Sum(rows,'Sistemas acuáticos',c)})).filter(x=>x.ha>0);
+  const h4=document.querySelector('.donut-card h4');
+  if(h4) h4.innerHTML=`Clases de sistemas acuáticos <span class="mono" style="color:var(--text-dim);font-size:10px">${scope}</span>`;
+  drawDonutFromItems(aquaticItems);
+  const legend=document.getElementById('donutLegend');
+  if(legend){
+    const total=aquaticItems.reduce((s,i)=>s+i.ha,0);
+    legend.style.maxHeight='150px';legend.style.overflowY='auto';
+    legend.innerHTML=aquaticItems.length?aquaticItems.map(it=>`<div class="row"><span class="dot" style="background:${it.color}"></span><span style="flex:1">${it.label}</span><span class="pct mono">${total?((it.ha/total)*100).toFixed(1):'0.0'}%</span></div>`).join(''):`<div style="font-size:11px;color:var(--text-dim);padding:8px">Sin sistemas acuáticos en la selección.</div>`;
+  }
+  const tableTitle=document.getElementById('breakdownTitle');
+  if(tableTitle) tableTitle.innerHTML=`Superposición por clase <span class="mono" style="color:var(--text-dim);font-size:10px">datos ArcGIS actualizados</span>`;
+  renderM4Breakdown(rows,apArea);
+  document.getElementById('rightTitle').textContent=selectedAPs.size===1?[...selectedAPs][0]:'Ecosistemas y agua';
+  document.getElementById('rightSub').textContent=`${scope} · ${formatKm(principal)} principales · ${formatKm(secondary)} secundarios`;
+}
+
 function renderRightPanelKPIs(modId){
   _saveDefaultKPIs();
   const grid=document.querySelector('.kpi-grid'); if(!grid) return;
   if(modId==='2'){
     renderM2Stats();
     renderM2Donut();
+  } else if(modId==='4'){
+    renderM4Stats();
   } else {
     if(_defaultKPIGridHTML!==null) grid.innerHTML=_defaultKPIGridHTML;
     const h4=document.querySelector('.donut-card h4');
@@ -1936,12 +1998,18 @@ function renderAPList(){
 }
 function selectAP(ap){
   currentAP=ap;
+  if(currentModule==='4'){
+    selectedAPs.clear();
+    selectedAPs.add(ap.name);
+    updateAPMapFilter();
+  }
   document.getElementById('crumbArea').textContent=`${ap.name} · ${ap.cat}`;
   document.getElementById('rightTitle').textContent=ap.name;
   const sup=ap.sup_ha?(+ap.sup_ha).toLocaleString('es-BO')+' ha':'';
   document.getElementById('rightSub').textContent=`${ap.cat}${ap.dep?' · '+ap.dep:''}${sup?' · '+sup:''}`;
   map.flyTo(ap.center,7,{duration:.9});
   renderAPList();
+  if(currentModule==='4') renderM4Stats();
 }
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>renderModule(t.dataset.mod)));
 // Toggle de leyenda (minimizar / expandir)
@@ -1972,10 +2040,13 @@ document.getElementById('zoomIn').addEventListener('click',()=>map.zoomIn());
 document.getElementById('zoomOut').addEventListener('click',()=>map.zoomOut());
 document.getElementById('resetView').addEventListener('click',()=>{
   map.flyTo([-16.5,-64.5],5); currentAP=null;
+  selectedAPs.clear();
+  updateAPMapFilter();
   document.getElementById('crumbArea').textContent=`${APN.length} Áreas Protegidas`;
   document.getElementById('rightTitle').textContent='Bolivia';
   document.getElementById('rightSub').textContent='Sistema Nacional de Áreas Protegidas · SERNAP';
   renderAPList();
+  renderRightPanelKPIs(currentModule);
 });
 map.on('mousemove',e=>document.getElementById('latlon').textContent=`${e.latlng.lat.toFixed(2)}, ${e.latlng.lng.toFixed(2)}`);
 map.on('zoomend',()=>document.getElementById('zoomLevel').textContent='z: '+map.getZoom());
