@@ -121,7 +121,7 @@
   }
 
   function refreshActiveDataPanel(){
-    if(currentModule==='4') renderM4DataPanel();
+    if(currentModule==='4' && typeof renderM4Stats==='function') renderM4Stats();
     else if(currentModule==='3' && typeof window.renderM3DataPanel==='function'){
       window.renderM3DataPanel();
     }else if(currentModule==='1' && typeof window.renderM1DataPanel==='function'){
@@ -277,10 +277,10 @@
     if(modId!=='4') restoreDefaultCards();
     originalRenderModule(modId);
     filterWrap.classList.toggle('module-hidden',!filterModules.has(modId));
-    if(modId==='4') renderM4DataPanel();
+    if(modId==='4' && typeof renderM4Stats==='function') renderM4Stats();
   };
 
   filterWrap.classList.toggle('module-hidden',!filterModules.has(currentModule));
   renderFilterList();
-  if(currentModule==='4') renderM4DataPanel();
+  if(currentModule==='4' && typeof renderM4Stats==='function') renderM4Stats();
 })();

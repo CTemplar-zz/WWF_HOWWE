@@ -46,6 +46,7 @@
 <script src="assets/capas/geo_lagos.js"></script>
 <!-- geo_cuencas_n8.js y geo_cuencas_n9.js removidos: migrados a PMTiles en assets/tiles/ -->
 <script src="assets/capas/geo_intersection.js"></script>
+<script src="assets/capas/geo_m4_intersection.js"></script>
 <script src="assets/capas/geo_ap_metrics_m2.js"></script>
 <script src="assets/capas/geo_deforestation_m3.js"></script>
 <script src="assets/capas/geo_landcover_m1.js"></script>
@@ -1406,7 +1407,7 @@ const MODULES = {
       {id:'sistemas_acuaticos_ap',name:'Sistemas Acuáticos',group:'Hidrología',color:'#49AE6F',opacity:70,on:false,pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/sistemas_acuaticos_ap.pmtiles',pmlayer:'sistemas_acuaticos_ap',maxDataZoom:12,downloadUrl:'assets/downloads/sistemas_acuaticos_ap.zip',downloadLabel:'Descargar shapefile ZIP'},
       {id:'rios_nacional_ap',name:'Ríos Nacional',group:'Hidrología',color:'#125b8a',opacity:100,on:false,pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/rios_nacional_ap.pmtiles',pmlayer:'rios_nacional_ap',maxDataZoom:12,downloadUrl:'assets/downloads/rios_nacional_ap.zip',downloadLabel:'Descargar shapefile ZIP'},
       {id:'rios_osm',name:'Ríos (OSM)',group:'Hidrología',color:'#1686c7',opacity:100,on:false,pmtiles:`${R2_PMTILES_BASE}/rios_osm.pmtiles`,pmlayer:'rios_osm',maxDataZoom:14,bounds:[-69.6450073,-22.8825986,-57.4556129,-9.6710442],noDownload:true,attribution:'© OpenStreetMap contributors'},
-      {id:'bofedales_ap',name:'Bofedales',group:'Hidrología',color:'#2271ae',opacity:75,on:false,pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/bofedales_ap.pmtiles',pmlayer:'bofedales_ap',maxDataZoom:12,downloadUrl:'assets/downloads/bofedales_ap.zip',downloadLabel:'Descargar shapefile ZIP'},
+      {id:'bofedales_ap',name:'Bofedales',group:'Hidrología',color:'#1F6B3A',opacity:75,on:false,pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/bofedales_ap.pmtiles',pmlayer:'bofedales_ap',maxDataZoom:12,downloadUrl:'assets/downloads/bofedales_ap.zip',downloadLabel:'Descargar shapefile ZIP'},
       {id:'lagos',name:'Lagos y lagunas 2016',group:'Hidrología',color:'#2374b5',opacity:80,on:false},
       {id:'humedales',name:'Humedales (meses inundados)',group:'Hidrología',color:'#2271ae',opacity:80,on:false,gradient:true,pmtiles:'https://pub-06c07fa32cf7477ba6aac2a6bffd46e6.r2.dev/PMTILES/humedales.pmtiles',pmlayer:'humedales',maxDataZoom:12},
       {id:'ramsar',name:'Sitios Ramsar (11 sitios)',group:'Hidrología',color:'#4aa3e3',opacity:90,on:true},
@@ -3198,9 +3199,9 @@ function createPMTilesLayer(layerDef){
       dataLayer: layerDef.pmlayer || id,
       filter: (z,f) => id === 'bofedales_ap' || aquaticCategories.has(String(f.props.TIPOS_AGUA || '').trim()),
       symbolizer: new protomapsL.PolygonSymbolizer({
-        fill: (z,f) => id === 'bofedales_ap' ? '#fcc2fc' : (aquaticColors[String(f.props.TIPOS_AGUA || '').trim()] || '#0084a8'),
+        fill: (z,f) => id === 'bofedales_ap' ? '#1F6B3A' : (aquaticColors[String(f.props.TIPOS_AGUA || '').trim()] || '#0084a8'),
         opacity: 1,
-        stroke: id === 'bofedales_ap' ? '#6e6e6e' : 'rgba(0,0,0,0)',
+        stroke: id === 'bofedales_ap' ? '#12472A' : 'rgba(0,0,0,0)',
         width: id === 'bofedales_ap' ? 0.7 : 0
       })
     }];
@@ -4516,7 +4517,7 @@ const ACTIVE_LAYER_LEGENDS={
     {c:'#005ce6',l:'Río secundario',v:''},
     {c:'#005ce6',l:'Arroyo',v:''},
   ]},
-  bofedales_ap:{title:'Bofedales',items:[{c:'#fcc2fc',l:'Bofedales y bofedales altoandinos',v:''}]},
+  bofedales_ap:{title:'Bofedales',items:[{c:'#1F6B3A',l:'Bofedales y bofedales altoandinos',v:''}]},
   cobertura_mapbiomas_2024:{title:'Cobertura MapBiomas 2024',items:MAPBIOMAS_LEGEND},
   cuencas:{title:'Cuencas (balance hidrico)',items:[{c:'#003f73',l:'Borde de cuenca',v:''}]},
   cuencas_n8:{title:'Sub-cuencas HydroBASINS nivel 8',items:[{c:'#003f73',l:'Borde de sub-cuenca',v:''}]},
