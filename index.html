@@ -4554,7 +4554,8 @@ function renderM4Stats(){
   const principal=m4Sum(rows,'Ríos','Río principal');
   const secondary=m4Sum(rows,'Ríos','Río secundario');
   const pct=v=>apArea>0?(v/apArea*100).toFixed(2):'0.00';
-  const scope=selectedAPs.size===0 ? '27 áreas protegidas' : `${selectedAPs.size} AP${selectedAPs.size===1?'':'s'} seleccionada${selectedAPs.size===1?'':'s'}`;
+  const availableAPCount=new Set(rows.map(row=>row.ap)).size;
+  const scope=selectedAPs.size===0 ? `${availableAPCount} áreas protegidas` : `${selectedAPs.size} AP${selectedAPs.size===1?'':'s'} seleccionada${selectedAPs.size===1?'':'s'}`;
   const clear=selectedAPs.size>0?` · <a href="#" id="clearM4Sel" style="color:var(--accent)">limpiar</a>`:'';
   grid.innerHTML=`
     <div class="kpi"><div class="lbl">Superficie de APs</div><div class="val">${formatHa(apArea)}<span class="unit">${haUnitLabel(apArea)}</span></div><div class="trend">${scope}${clear}</div></div>

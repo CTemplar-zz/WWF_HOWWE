@@ -1,12 +1,14 @@
 window['M4_INTERSECTION']={
-  "generated_at": "2026-08-30T18:46:48",
+  "generated_at": "2026-08-31T10:09:23",
   "sources": {
     "aps": "C:\\WWF HOWEE\\SIG\\ZONIFICACION\\Zonificacion SERNAP\\Zonificacion SERNAP\\Limites_APs.shp",
     "bofedales": "C:\\WWF HOWEE\\SIG\\BOFEDALES\\Bofedales_APs_Clip.shp",
     "lagos": "C:\\WWF HOWEE\\SIG\\BOFEDALES\\Lagos_Unificados_Espacialmente.shp",
     "rios": "C:\\WWF HOWEE\\SIG\\CONECTIVIDAD HIDRICA\\OSM_SA_Waterways_Bolivia.shp",
     "sistemas": "C:\\WWF HOWEE\\SIG\\HUMEDALES\\Sistemas_acuaticos_WFL1_shp\\Sist_acuat_WFL1.shp",
-    "ramsar": "C:\\WWF HOWEE\\SIG\\RAMSAR\\Sitios_Ramsar_Bolivia.shp"
+    "ramsar": "C:\\WWF HOWEE\\SIG\\RAMSAR\\Sitios_Ramsar_Bolivia.shp",
+    "el_chore_nonriver_excel": "C:\\Users\\fauna\\OneDrive\\Escritorio\\ENVIAR\\Word\\Interseccion_Areas_Protegidas_Total.xlsx (Resumen!A13:AF13)",
+    "el_chore_boundary": "C:\\WWF HOWEE\\SIG\\Areas_Protegidas"
   },
   "criteria": {
     "rivers_principal": "Campo name con contenido y sin la palabra Arroyo (sin distinguir mayúsculas/minúsculas)",
@@ -23,9 +25,10 @@ window['M4_INTERSECTION']={
     "river_metrics": "Longitud geodésica en kilómetros, sin porcentaje",
     "bofedales_overlap": "Disueltos espacialmente antes de tabular para evitar doble conteo",
     "ramsar_overlap": "Disueltos por nombre del sitio antes de tabular",
-    "ramsar_total": "El total por AP usa la unión espacial de todos los sitios Ramsar y área geodésica, sin doble conteo; el detalle por nombre se conserva aparte."
+    "ramsar_total": "El total por AP usa la unión espacial de todos los sitios Ramsar y área geodésica, sin doble conteo; el detalle por nombre se conserva aparte.",
+    "el_chore_update": "Valores no fluviales recuperados del Excel indicado; ríos recalculados sobre el límite vigente de El Chore. Principal: nombre con contenido salvo Arroyo; secundario: sin nombre o Arroyo."
   },
-  "ap_count": 27,
+  "ap_count": 28,
   "ramsar_classes": [
     "Bañados del Izozog y el río Parapetí",
     "Cuenca de Tajzara",
@@ -4140,11 +4143,163 @@ window['M4_INTERSECTION']={
       "clase": "Río Matos",
       "unidad": "ha",
       "valor": 0.0
+    },
+    {
+      "ap": "El Chore",
+      "ap_area_ha": 786315.319130978,
+      "grupo": "Bofedales",
+      "clase": "Bofedales",
+      "unidad": "ha",
+      "valor": 0
+    },
+    {
+      "ap": "El Chore",
+      "ap_area_ha": 786315.319130978,
+      "grupo": "Lagos y lagunas",
+      "clase": "Lagos y lagunas",
+      "unidad": "ha",
+      "valor": 12902.8465327422
+    },
+    {
+      "ap": "El Chore",
+      "ap_area_ha": 786315.319130978,
+      "grupo": "Ríos",
+      "clase": "Río principal",
+      "unidad": "km",
+      "valor": 774.7120870138747
+    },
+    {
+      "ap": "El Chore",
+      "ap_area_ha": 786315.319130978,
+      "grupo": "Ríos",
+      "clase": "Río secundario",
+      "unidad": "km",
+      "valor": 827.6250834362176
+    },
+    {
+      "ap": "El Chore",
+      "ap_area_ha": 786315.319130978,
+      "grupo": "Sistemas acuáticos",
+      "clase": "Aguas blancas",
+      "unidad": "ha",
+      "valor": 265547.983180597
+    },
+    {
+      "ap": "El Chore",
+      "ap_area_ha": 786315.319130978,
+      "grupo": "Sistemas acuáticos",
+      "clase": "Aguas claras",
+      "unidad": "ha",
+      "valor": 0
+    },
+    {
+      "ap": "El Chore",
+      "ap_area_ha": 786315.319130978,
+      "grupo": "Sistemas acuáticos",
+      "clase": "Aguas mixtas",
+      "unidad": "ha",
+      "valor": 29276.507774275
+    },
+    {
+      "ap": "El Chore",
+      "ap_area_ha": 786315.319130978,
+      "grupo": "Sistemas acuáticos",
+      "clase": "Aguas negras",
+      "unidad": "ha",
+      "valor": 0
+    },
+    {
+      "ap": "El Chore",
+      "ap_area_ha": 786315.319130978,
+      "grupo": "Sistemas acuáticos",
+      "clase": "Inundación estacional",
+      "unidad": "ha",
+      "valor": 705.345332650543
+    },
+    {
+      "ap": "El Chore",
+      "ap_area_ha": 786315.319130978,
+      "grupo": "Sistemas acuáticos",
+      "clase": "Inundación frecuente",
+      "unidad": "ha",
+      "valor": 485574.87244401
+    },
+    {
+      "ap": "El Chore",
+      "ap_area_ha": 786315.319130978,
+      "grupo": "Sitios Ramsar",
+      "clase": "Sitios Ramsar (total)",
+      "unidad": "ha",
+      "valor": 0
+    },
+    {
+      "ap": "El Chore",
+      "ap_area_ha": 786315.319130978,
+      "grupo": "Sitios Ramsar por sitio",
+      "clase": "Bañados del Izozog y el río Parapetí",
+      "unidad": "ha",
+      "valor": 0
+    },
+    {
+      "ap": "El Chore",
+      "ap_area_ha": 786315.319130978,
+      "grupo": "Sitios Ramsar por sitio",
+      "clase": "Cuenca de Tajzara",
+      "unidad": "ha",
+      "valor": 0
+    },
+    {
+      "ap": "El Chore",
+      "ap_area_ha": 786315.319130978,
+      "grupo": "Sitios Ramsar por sitio",
+      "clase": "Lago Titicaca",
+      "unidad": "ha",
+      "valor": 0
+    },
+    {
+      "ap": "El Chore",
+      "ap_area_ha": 786315.319130978,
+      "grupo": "Sitios Ramsar por sitio",
+      "clase": "Laguna Concepción",
+      "unidad": "ha",
+      "valor": 0
+    },
+    {
+      "ap": "El Chore",
+      "ap_area_ha": 786315.319130978,
+      "grupo": "Sitios Ramsar por sitio",
+      "clase": "Los Lípez",
+      "unidad": "ha",
+      "valor": 0
+    },
+    {
+      "ap": "El Chore",
+      "ap_area_ha": 786315.319130978,
+      "grupo": "Sitios Ramsar por sitio",
+      "clase": "Palmar de las Islas y Salinas de San José",
+      "unidad": "ha",
+      "valor": 0
+    },
+    {
+      "ap": "El Chore",
+      "ap_area_ha": 786315.319130978,
+      "grupo": "Sitios Ramsar por sitio",
+      "clase": "Pantanal boliviano",
+      "unidad": "ha",
+      "valor": 0
+    },
+    {
+      "ap": "El Chore",
+      "ap_area_ha": 786315.319130978,
+      "grupo": "Sitios Ramsar por sitio",
+      "clase": "Río Matos",
+      "unidad": "ha",
+      "valor": 0
     }
   ],
   "qa": {
     "source_counts": {
-      "aps": 27,
+      "aps": 28,
       "bofedales": 20095,
       "lagos": 5617,
       "rios": 119302,
@@ -4152,8 +4307,8 @@ window['M4_INTERSECTION']={
       "ramsar": 13
     },
     "river_clean_count": 119044,
-    "river_intersection_segments": 20072,
-    "detail_rows": 513,
+    "river_intersection_segments": 20266,
+    "detail_rows": 532,
     "max_ramsar_total_pct": 99.83481516934879,
     "polygon_intersection_counts": {
       "bofedales": 9,
@@ -4162,6 +4317,13 @@ window['M4_INTERSECTION']={
       "ramsar_por_sitio": 11,
       "ramsar_total": 9
     },
-    "max_polygon_summary_pct": 99.83481516934879
+    "max_polygon_summary_pct": 99.83481516934879,
+    "el_chore": {
+      "excel_row": "Resumen!A13:AF13",
+      "river_selected_segments": 194,
+      "river_principal_segments": 56,
+      "river_secondary_segments": 138,
+      "ramsar_total_ha": 0
+    }
   }
 };
