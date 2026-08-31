@@ -1314,7 +1314,7 @@ const MODULES = {
       {id:'paraba_fr', name:'Paraba Frente Roja',group:'Objetos de conservación', color:'#c54a2c',opacity:50,on:false, iucn:'EN',sci:'Ara rubrogenys'},
       {id:'jucumari',  name:'Jucumari',          group:'Objetos de conservación', color:'#e8a417',opacity:50,on:false, iucn:'VU',sci:'Tremarctos ornatus'},
       fishRecordLayer('registros_peces_dorado','Dorado',{recordSpecies:['Brachyplatystoma rousseauxii']},'Objetos de conservación'),
-      {id:'dorado',    name:'Dorado',            group:'Objetos de conservación', color:'#e8a417',opacity:50,on:false, iucn:'VU',sci:'Brachyplatystoma rousseauxii'},
+      {id:'dorado',    name:'Dorado · crecimiento y reproducción',group:'Objetos de conservación',color:'#00C5FF',opacity:100,on:false,iucn:'VU',sci:'Brachyplatystoma rousseauxii',swatch:'linear-gradient(90deg,#00C5FF 0 50%,#FFAA00 50% 100%)'},
       {id:'paraba_az', name:'Paraba Azul',       group:'Objetos de conservación', color:'#e8a417',opacity:50,on:false, iucn:'VU',sci:'Anodorhynchus hyacinthinus'},
       {id:'fl_andino', name:'Flamenco Andino',   group:'Objetos de conservación', color:'#e8a417',opacity:50,on:false, iucn:'VU',sci:'Phoenicoparrus andinus'},
       {id:'condor',    name:'Cóndor Andino',     group:'Objetos de conservación', color:'#e8a417',opacity:50,on:false, iucn:'VU',sci:'Vultur gryphus'},
@@ -1541,6 +1541,10 @@ Object.values(MODULES).forEach(mod => {
     if(layer.id==='zonificacion_sernap'){
       layer.transparency = 28;
       layer.opacity = 72;
+    }
+    if(layer.id==='dorado'){
+      layer.transparency = 0;
+      layer.opacity = 100;
     }
   });
 });
@@ -2996,6 +3000,27 @@ function createGeoJSONLayer(id, layerDef){
           <tr><td>Longitud</td><td>${km}</td></tr>
           <tr><td>Área protegida</td><td>${prot}</td></tr>
         </table></div>`,{maxWidth:260});
+      }
+    });
+  }
+  if(id==='dorado'){
+    const doradoStyle=value=>String(value||'').trim()==='Reproducción'
+      ? {fill:'#FFAA00',outline:'#FF5500'}
+      : {fill:'#00C5FF',outline:'#004DA8'};
+    return L.geoJSON(data,{
+      style:f=>{
+        const colors=doradoStyle(f.properties?.nombre);
+        return {color:colors.outline,weight:2,fillColor:colors.fill,fillOpacity:1,opacity:1};
+      },
+      onEachFeature:(f,l)=>{
+        const p=f.properties||{};
+        const zone=String(p.ZONAS||'').trim();
+        const area=Number(p.areakm2||0).toLocaleString('es-BO',{maximumFractionDigits:2});
+        l.bindPopup(`<div class="feature-popup"><h5><i>Brachyplatystoma rousseauxii</i></h5><table>
+          <tr><td>Proceso</td><td><b>${escapeHTML(p.nombre||'—')}</b></td></tr>
+          ${zone?`<tr><td>Zona</td><td>${escapeHTML(zone)}</td></tr>`:''}
+          <tr><td>Superficie</td><td>${area} km²</td></tr>
+        </table></div>`,{maxWidth:290});
       }
     });
   }
@@ -4565,6 +4590,10 @@ const ACTIVE_LAYER_LEGENDS={
   departamentos:{title:'Departamentos de Bolivia',items:[{c:'#000000',l:'Limite departamental',v:''}]},
   limite:{title:'Limite Bolivia',items:[{c:'#6a6a6a',l:'Limite nacional',v:''}]},
   apn:{title:'Areas Protegidas',items:SERNAP_LEGEND},
+  dorado:{title:'Dorado · crecimiento y reproducción',items:[
+    {c:'#00C5FF',l:'Zona de migración',v:''},
+    {c:'#FFAA00',l:'Zona de reproducción',v:''}
+  ]},
   zonificacion_sernap:{title:'Zonificación SERNAP',items:ZONIFICACION_SERNAP_LEGEND},
   ecoregiones:{title:'Ecoregiones',items:ECOREGION_LEGEND},
   kba_bolabril_2024:{title:'Key Biodiversity Areas',items:[{c:'#8a6f3e',l:'Key Biodiversity Areas',v:''}]},
