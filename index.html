@@ -1372,7 +1372,7 @@ const MODULES = {
     layers:[
       {id:'departamentos',name:'Departamentos de Bolivia',color:'#000000',opacity:100,on:true},
       {id:'apn',      name:'Áreas Protegidas',             color:'#2c8a4d',opacity:100,on:true},
-      {id:'zonificacion_sernap',name:'Zonificación SERNAP',group:'Gestión de áreas protegidas',color:'#8C6D4F',opacity:72,on:false,pmtiles:'assets/tiles/zonificacion_sernap_unificada.pmtiles',pmlayer:'zonificacion_sernap_unificada',maxDataZoom:12,bounds:[-69.36146640600813,-22.001907347368668,-60.11631401522835,-11.27832932031866],noDownload:true,swatch:'linear-gradient(90deg,#1B5E20,#A6D854,#F4D35E,#F39C34,#D9534F,#8E5AA9)'},
+      {id:'zonificacion_sernap',name:'Zonificación SERNAP',group:'Gestión de áreas protegidas',color:'#8C6D4F',opacity:72,on:false,pmtiles:'assets/tiles/zonificacion_sernap_unificada.pmtiles',pmlayer:'zonificacion_sernap_unificada',maxDataZoom:12,bounds:[-69.36146640600813,-22.90434052111475,-57.4542023352749,-11.27832932031866],noDownload:true,swatch:'linear-gradient(90deg,#1B5E20,#A6D854,#F4D35E,#F39C34,#D9534F,#8E5AA9)'},
       {id:'ecoregiones',name:'Ecoregiones',                 color:'#56a800',opacity:15,on:false,pmtiles:ECOREGIONES_PMTILES_URL,pmlayer:'ecoregiones',maxDataZoom:12,bounds:[-69.64435362999996,-22.89806221899994,-57.45333544299996,-9.665009243999975],downloadUrl:'assets/downloads/ecoregiones.zip',downloadLabel:'Descargar shapefile ZIP'},
       {id:'kba_bolabril_2024',name:'Key Biodiversity Areas',color:'#8a6f3e',opacity:15,on:false,pmtiles:KBA_PMTILES_URL,pmlayer:'kba_bolabril_2024',maxDataZoom:12,bounds:[-69.40180299999997,-22.90656832299993,-57.45443352799998,-9.670922873999928],downloadUrl:'assets/downloads/kba_bolabril_2024.zip',downloadLabel:'Descargar shapefile ZIP'},
       {id:'wms_amenaza_inundacion',name:'Amenaza de inundación',group:'SINACAR / INRA',color:'#2271ae',opacity:85,on:false,wmsLayer:'sinacar:layer_amenaza_de_inundacion_p5wxo',wms:INRA_WMS_URL,bounds:[-69.64493560791016,-22.898048400878906,-57.45443344116211,-9.653406143188477]},
@@ -2160,19 +2160,19 @@ const ZONIFICACION_SERNAP_CLASSES={
 };
 function zonificacionSernapClass(value){
   const raw=String(value||'').trim();
-  const normalized=raw.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const normalized=raw.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[_-]+/g,' ').replace(/\s+/g,' ').trim().toLowerCase();
   const code=raw.toUpperCase();
-  if(code==='ZPE'||normalized.includes('proteccion estricta')||normalized.includes('proteccion extricta')||normalized.includes('zona nucleo')) return 'proteccion';
+  if(code==='ZPE'||normalized.includes('proteccion')||normalized.includes('zona nucleo')||normalized.includes('alta fragilidad')) return 'proteccion';
   if(code==='ZA'||code==='ZAI'||normalized.includes('amortigu')) return 'amortiguamiento';
   if(code==='ZONA_REC'||normalized.includes('recuperacion')) return 'recuperacion';
   if(code==='ZIHC'||normalized.includes('historico cultural')) return 'cultural';
   if(code==='ZUE'||normalized.includes('uso especial')||normalized.includes('usos especiales')) return 'especial';
-  if(code==='ZUENE'||normalized.includes('extensivo no extractivo')) return 'extensivo_no';
+  if(normalized.includes('uso moderado')||normalized.includes('pastoril moderado')||normalized.includes('pastoril limitado')) return 'moderado';
+  if(code==='ZUENE'||normalized.includes('extensivo no extractivo')||normalized.includes('pastoril extensivo')) return 'extensivo_no';
   if(code.startsWith('ZUEE')||normalized.includes('extensivo extractivo')) return 'extensivo_ex';
-  if(code==='ZUINE'||normalized.includes('intensivo no extractivo')||normalized.includes('instensivo no extractivo')) return 'intensivo_no';
-  if(code==='ZUIE'||normalized.includes('intensivo extractivo')||normalized.includes('intesivo extractivo')) return 'intensivo_ex';
+  if(code==='ZUINE'||normalized.includes('intensivo no extractivo')||normalized.includes('instensivo no extractivo')||normalized.includes('intensino no extractivo')||normalized.includes('uso turistico')||normalized.includes('uso publico intensivo')) return 'intensivo_no';
+  if(code==='ZUIE'||normalized.includes('intensivo extractivo')||normalized.includes('intesivo extractivo')||normalized.includes('agropecuario intensivo')) return 'intensivo_ex';
   if(code.startsWith('ZARN')||normalized.includes('aprovechamiento')) return 'aprovechamiento';
-  if(normalized.includes('uso moderado')) return 'moderado';
   return 'otros';
 }
 function zonificacionSernapColor(value){
