@@ -121,7 +121,10 @@
   }
 
   function refreshActiveDataPanel(){
-    if(currentModule==='4' && typeof renderM4Stats==='function') renderM4Stats();
+    if(currentModule==='2'){
+      if(typeof renderM2Stats==='function') renderM2Stats();
+      if(typeof renderM2Donut==='function') renderM2Donut();
+    }else if(currentModule==='4' && typeof renderM4Stats==='function') renderM4Stats();
     else if(currentModule==='3' && typeof window.renderM3DataPanel==='function'){
       window.renderM3DataPanel();
     }else if(currentModule==='1' && typeof window.renderM1DataPanel==='function'){
