@@ -2232,6 +2232,14 @@ const riquezaSpeciesByAP = {};
 const apHaBySpecies = {};   // {sci_name: {ap_name: ha}}
 const speciesByLayer = {};   // {layer_id: [sci_name, ...]}
 
+function normalizeM2APKey(value){
+  return normalizeAPKey(value).replace(/\s+/g,'');
+}
+
+function getSelectedM2APKeys(){
+  return new Set([...selectedAPs].map(normalizeM2APKey));
+}
+
 function buildIntersectionIndex(){
   const data = window['GEO_INTERSECTION'];
   if(!data || !data.species) return;
@@ -2246,14 +2254,15 @@ function buildIntersectionIndex(){
 // Devuelve la superficie de intersección (ha) de una capa con las APs filtradas
 function getLayerIntersectedHa(layerId){
   const spList = speciesByLayer[layerId] || [];
+  const selectedKeys=getSelectedM2APKeys();
   let total = 0;
   for(const sci of spList){
     const byAp = apHaBySpecies[sci] || {};
     if(selectedAPs.size === 0){
       for(const ap in byAp) total += byAp[ap];
     } else {
-      for(const ap of selectedAPs){
-        if(byAp[ap]) total += byAp[ap];
+      for(const ap in byAp){
+        if(selectedKeys.has(normalizeM2APKey(ap))) total += byAp[ap];
       }
     }
   }
@@ -2263,6 +2272,7 @@ function getLayerIntersectedHa(layerId){
 // Para una capa, devuelve {sci_name: ha} filtrado por APs (usado en donut/tabla)
 function getLayerSpeciesBreakdown(layerId){
   const spList = speciesByLayer[layerId] || [];
+  const selectedKeys=getSelectedM2APKeys();
   const result = {};
   for(const sci of spList){
     const byAp = apHaBySpecies[sci] || {};
@@ -2270,8 +2280,8 @@ function getLayerSpeciesBreakdown(layerId){
     if(selectedAPs.size === 0){
       for(const ap in byAp) ha += byAp[ap];
     } else {
-      for(const ap of selectedAPs){
-        if(byAp[ap]) ha += byAp[ap];
+      for(const ap in byAp){
+        if(selectedKeys.has(normalizeM2APKey(ap))) ha += byAp[ap];
       }
     }
     if(ha > 0) result[sci] = ha;
@@ -2282,14 +2292,15 @@ function getLayerSpeciesBreakdown(layerId){
 // Cuenta especies con intersección > 0 en las APs filtradas, para una capa
 function getLayerSpeciesCountInAPs(layerId){
   const spList = speciesByLayer[layerId] || [];
+  const selectedKeys=getSelectedM2APKeys();
   let n = 0;
   for(const sci of spList){
     const byAp = apHaBySpecies[sci] || {};
     if(selectedAPs.size === 0){
       if(Object.keys(byAp).length > 0) n++;
     } else {
-      for(const ap of selectedAPs){
-        if(byAp[ap]){ n++; break; }
+      for(const ap in byAp){
+        if(selectedKeys.has(normalizeM2APKey(ap)) && byAp[ap]>0){ n++; break; }
       }
     }
   }
@@ -4362,11 +4373,12 @@ function getM2BreakdownItems(){
 // Los porcentajes de especies usan siempre esta superficie como denominador.
 function getM2APSummary(){
   let ha=0, count=0;
+  const selectedKeys=getSelectedM2APKeys();
   if(geoData['apn']){
     geoData['apn'].features.forEach(f=>{
       const p=f.properties;
       if(!p.nombre_ap) return;
-      const inScope=selectedAPs.size===0 || selectedAPs.has(p.nombre_ap);
+      const inScope=selectedAPs.size===0 || selectedKeys.has(normalizeM2APKey(p.nombre_ap));
       if(inScope){ ha+=(parseFloat(p.sup_ha)||0); count++; }
     });
   }
@@ -5025,7 +5037,7 @@ function renderAPList(){
 }
 function selectAP(ap){
   currentAP=ap;
-  if(currentModule==='4'){
+  if(currentModule==='2' || currentModule==='4'){
     selectedAPs.clear();
     selectedAPs.add(ap.name);
     updateAPMapFilter();
@@ -5036,6 +5048,10 @@ function selectAP(ap){
   document.getElementById('rightSub').textContent=`${ap.cat}${ap.dep?' · '+ap.dep:''}${sup?' · '+sup:''}`;
   map.flyTo(ap.center,7,{duration:.9});
   renderAPList();
+  if(currentModule==='2'){
+    renderM2Stats();
+    renderM2Donut();
+  }
   if(currentModule==='4') renderM4Stats();
 }
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>renderModule(t.dataset.mod)));
