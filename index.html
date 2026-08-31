@@ -4358,7 +4358,22 @@ function getM2BreakdownItems(){
   return items;
 }
 
-function drawDonutFromItems(items){
+// Superficie de referencia para M2: todas las APs o únicamente las filtradas.
+// Los porcentajes de especies usan siempre esta superficie como denominador.
+function getM2APSummary(){
+  let ha=0, count=0;
+  if(geoData['apn']){
+    geoData['apn'].features.forEach(f=>{
+      const p=f.properties;
+      if(!p.nombre_ap) return;
+      const inScope=selectedAPs.size===0 || selectedAPs.has(p.nombre_ap);
+      if(inScope){ ha+=(parseFloat(p.sup_ha)||0); count++; }
+    });
+  }
+  return {ha,count};
+}
+
+function drawDonutFromItems(items, apSurfaceHa){
   const svg=document.getElementById('donut'); if(!svg) return;
   svg.innerHTML='';
   const ns='http://www.w3.org/2000/svg';
@@ -4366,19 +4381,23 @@ function drawDonutFromItems(items){
   const cx=21,cy=21,r=15.9155;
   svg.appendChild(mk('circle',{cx,cy,r,fill:'none',stroke:'var(--bg)','stroke-width':6}));
   const total=items.reduce((s,i)=>s+i.ha,0);
-  if(total>0){
+  if(total>0 && apSurfaceHa>0){
     let cum=0;
     items.forEach(it=>{
-      const pct=(it.ha/total)*100;
-      svg.appendChild(mk('circle',{cx,cy,r,fill:'none',stroke:it.color,'stroke-width':6,'stroke-dasharray':`${pct} ${100-pct}`,'stroke-dashoffset':25-cum}));
-      cum+=pct;
+      const pct=(it.ha/apSurfaceHa)*100;
+      const visiblePct=Math.max(0,Math.min(pct,100-cum));
+      if(visiblePct>0){
+        svg.appendChild(mk('circle',{cx,cy,r,fill:'none',stroke:it.color,'stroke-width':6,'stroke-dasharray':`${visiblePct} ${100-visiblePct}`,'stroke-dashoffset':25-cum}));
+        cum+=visiblePct;
+      }
     });
   }
   svg.appendChild(mk('circle',{cx,cy,r:9,fill:'var(--bg-soft)'}));
   const lbl=mk('text',{x:cx,y:cy+0.6,'text-anchor':'middle','dominant-baseline':'middle',fill:'var(--text)','font-size':3.2,'font-family':'JetBrains Mono','font-weight':600});
-  lbl.textContent=formatHa(total); svg.appendChild(lbl);
+  const totalPct=apSurfaceHa>0?(total/apSurfaceHa)*100:0;
+  lbl.textContent=`${totalPct.toFixed(1)}%`; svg.appendChild(lbl);
   const sub=mk('text',{x:cx,y:cy+4.5,'text-anchor':'middle',fill:'var(--text-dim)','font-size':2});
-  sub.textContent=haUnitLabel(total); svg.appendChild(sub);
+  sub.textContent='de las APs'; svg.appendChild(sub);
 }
 
 function formatHaCell(ha){
@@ -4388,17 +4407,16 @@ function formatHaCell(ha){
   return Math.round(ha).toLocaleString('es-BO')+' ha';
 }
 
-function renderBreakdownTable(items){
+function renderBreakdownTable(items, apSurfaceHa){
   const tbody=document.getElementById('breakdownTbody'); if(!tbody) return;
   const head=document.querySelector('#breakdownWrap thead tr');
-  if(head) head.innerHTML=`<th style="text-align:left">Especie</th><th style="text-align:right">Sup. (ha)</th><th style="text-align:right">%</th>`;
+  if(head) head.innerHTML=`<th style="text-align:left">Especie</th><th style="text-align:right">Sup. (ha)</th><th style="text-align:right">% de APs</th>`;
   if(!items || items.length===0){
     tbody.innerHTML=`<tr><td colspan="3" class="empty">Sin datos. Activa una capa de especies.</td></tr>`;
     return;
   }
-  const total=items.reduce((s,i)=>s+i.ha,0);
   tbody.innerHTML=items.map(it=>{
-    const pct=total>0?((it.ha/total)*100).toFixed(1):'0.0';
+    const pct=apSurfaceHa>0?((it.ha/apSurfaceHa)*100).toFixed(1):'0.0';
     const cls=it.italic?'sp-name italic':'sp-name';
     const title=it.source?`Capa: ${it.source}`:'';
     return `<tr title="${title}"><td><span class="dot" style="background:${it.color}"></span><span class="${cls}">${it.label}</span></td><td class="num" style="text-align:right">${formatHaCell(it.ha)}</td><td class="num" style="text-align:right;color:var(--text);font-weight:600">${pct}%</td></tr>`;
@@ -4417,26 +4435,26 @@ function renderM2Donut(){
   if(tableTitle) tableTitle.innerHTML=`Desglose por especie en APs <span class="mono" style="color:var(--text-dim);font-size:10px">${scope}</span>`;
 
   const items=getM2BreakdownItems();
+  const apSurfaceHa=getM2APSummary().ha;
 
   // Donut
   if(items.length===0){
     document.getElementById('donut').innerHTML='';
     if(legend) legend.innerHTML=`<div style="font-size:11px;color:var(--text-dim);text-align:center;padding:10px 6px;line-height:1.4">Activa una capa de especies para ver su intersección con las APs.</div>`;
   } else {
-    drawDonutFromItems(items);
+    drawDonutFromItems(items,apSurfaceHa);
     // Mini-leyenda del donut: solo top 5 + "otros"
     const top=items.slice(0,5);
     const rest=items.slice(5);
-    const total=items.reduce((s,i)=>s+i.ha,0);
     if(legend){
       legend.style.maxHeight='150px'; legend.style.overflowY='auto';
       let html=top.map(it=>{
-        const pct=total>0?((it.ha/total)*100).toFixed(1):'0.0';
+        const pct=apSurfaceHa>0?((it.ha/apSurfaceHa)*100).toFixed(1):'0.0';
         return `<div class="row" title="${it.sci}"><span class="dot" style="background:${it.color}"></span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${it.label}</span><span class="pct mono">${pct}%</span></div>`;
       }).join('');
       if(rest.length>0){
         const restHa=rest.reduce((s,i)=>s+i.ha,0);
-        const pct=total>0?((restHa/total)*100).toFixed(1):'0.0';
+        const pct=apSurfaceHa>0?((restHa/apSurfaceHa)*100).toFixed(1):'0.0';
         html += `<div class="row" style="opacity:.8"><span class="dot" style="background:#a0a0a0"></span><span>+ ${rest.length} más</span><span class="pct mono">${pct}%</span></div>`;
       }
       legend.innerHTML=html;
@@ -4444,20 +4462,12 @@ function renderM2Donut(){
   }
 
   // Tabla
-  renderBreakdownTable(items);
+  renderBreakdownTable(items,apSurfaceHa);
 }
 
 function renderM2Stats(){
   const grid=document.querySelector('.kpi-grid'); if(!grid) return;
-  // Superficie AP (de sup_ha en GeoJSON)
-  let supAP=0, apCount=0;
-  if(geoData['apn']){
-    geoData['apn'].features.forEach(f=>{
-      const p=f.properties; if(!p.nombre_ap) return;
-      const inSel = selectedAPs.size===0 || selectedAPs.has(p.nombre_ap);
-      if(inSel){ supAP += (parseFloat(p.sup_ha)||0); apCount++; }
-    });
-  }
+  const {ha:supAP,count:apCount}=getM2APSummary();
   const activeSp = MODULES['2'].layers.filter(l=> activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar' && l.id!=='cuencas' && l.id!=='ffr' && l.id!=='lagos' && l.id!=='cuencas_n8' && l.id!=='cuencas_n9' && l.id!=='sea' && l.id!=='registros_peces_m2');
   // Superficie de intersección (ha) ? datos reales de ArcGIS, filtrados por APs
   let supInterHa = 0;
