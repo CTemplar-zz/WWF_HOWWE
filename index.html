@@ -30,6 +30,7 @@
 <script src="assets/capas/geo_fl_andino.js"></script>
 <script src="assets/capas/geo_fl_james.js"></script>
 <script src="assets/capas/geo_condor.js"></script>
+<script src="assets/capas/Potenciales_M2/geo_potenciales_m2.js"></script>
 <script src="assets/capas/geo_brycon.js"></script>
 <script src="assets/capas/geo_colossoma.js"></script>
 <script src="assets/capas/geo_riq_orestias.js"></script>
@@ -1322,6 +1323,17 @@ const MODULES = {
       {id:'fl_james',  name:'Flamenco James',    group:'Objetos de conservación', color:'#4aa3e3',opacity:50,on:false, iucn:'NT',sci:'Phoenicoparrus jamesi'},
       {id:'guanaco',   name:'Guanaco',           group:'Objetos de conservación', color:'#4ec97a',opacity:50,on:false, iucn:'LC',sci:'Lama guanicoe'},
       {id:'vicuna',    name:'Vicuña',            group:'Objetos de conservación', color:'#4ec97a',opacity:50,on:false, iucn:'LC',sci:'Vicugna vicugna'},
+      {id:'pot_cinclus',name:'Cinclus schulzii',group:'Objetos de Conservacion Potenciales',color:'#7b3294',opacity:50,on:false,sci:'Cinclus schulzii',potentialSpecies:true},
+      {id:'pot_colossoma',name:'Colossoma macropomum',group:'Objetos de Conservacion Potenciales',color:'#1b9e77',opacity:50,on:false,sci:'Colossoma macropomum',potentialSpecies:true},
+      {id:'pot_rhinella_quechua',name:'Rhinella quechua',group:'Objetos de Conservacion Potenciales',color:'#66a61e',opacity:50,on:false,sci:'Rhinella quechua',potentialSpecies:true},
+      {id:'pot_blastocerus',name:'Blastocerus dichotomus',group:'Objetos de Conservacion Potenciales',color:'#d95f02',opacity:50,on:false,sci:'Blastocerus dichotomus',potentialSpecies:true},
+      {id:'pot_acanthochelys',name:'Acanthochelys macrocephala',group:'Objetos de Conservacion Potenciales',color:'#7570b3',opacity:50,on:false,sci:'Acanthochelys macrocephala',potentialSpecies:true},
+      {id:'pot_fulica',name:'Fulica gigantea',group:'Objetos de Conservacion Potenciales',color:'#e6ab02',opacity:50,on:false,sci:'Fulica gigantea',potentialSpecies:true},
+      {id:'pot_phegornis',name:'Phegornis mitchellii',group:'Objetos de Conservacion Potenciales',color:'#a6761d',opacity:50,on:false,sci:'Phegornis mitchellii',potentialSpecies:true},
+      {id:'pot_telmatobius',name:'Telmatobius spp. · distribuciones',group:'Objetos de Conservacion Potenciales',color:'#1f78b4',opacity:50,on:false,sci:'Telmatobius spp.',potentialSpecies:true,multiSpecies:true},
+      {id:'riq_telmatobius_pot',name:'Telmatobius spp. · riqueza',group:'Objetos de Conservacion Potenciales',color:'#800026',opacity:100,on:false,gradient:true,multiSpecies:true,richnessField:'NUM_ESPEC',gradientPalette:'cream-red',swatch:'linear-gradient(90deg,#fff7bc,#fec44f,#f03b20,#800026)'},
+      {id:'pot_caiman',name:'Caiman latirostris',group:'Objetos de Conservacion Potenciales',color:'#408040',opacity:50,on:false,sci:'Caiman latirostris',potentialSpecies:true},
+      {id:'pot_podocnemis',name:'Podocnemis expansa',group:'Objetos de Conservacion Potenciales',color:'#6b8e23',opacity:50,on:false,sci:'Podocnemis expansa',potentialSpecies:true},
       fishRecordLayer('registros_peces_brycon','Sábalo',{recordSpecies:['Brycon amazonicus']},'Propuesta de objetos de conservación'),
       {id:'brycon',        name:'Sábalo',                group:'Propuesta de objetos de conservación', color:'#5fa3b5',opacity:50,on:false, iucn:'LC',sci:'Brycon amazonicus'},
       fishRecordLayer('registros_peces_colossoma','Pacú',{recordSpecies:['Colossoma macropomum']},'Propuesta de objetos de conservación'),
@@ -2026,6 +2038,17 @@ const DATA_FILES = {
   'fl_andino':'assets/capas/Phoenicoparrus_andinus_FlamencoAndino.geojson',
   'fl_james': 'assets/capas/Phoenicoparrus_jamesi_FlamencoJames.geojson',
   'condor':   'assets/capas/Vultur_gryphus_Condor.geojson',
+  'pot_cinclus': 'assets/capas/Potenciales_M2/Cinclus_schulzii_Bolivia.geojson',
+  'pot_colossoma': 'assets/capas/Potenciales_M2/Colossoma_macropomum_Bolivia.geojson',
+  'pot_rhinella_quechua': 'assets/capas/Potenciales_M2/Rhinella_quechua_Bolivia.geojson',
+  'pot_blastocerus': 'assets/capas/Potenciales_M2/Blastocerus_dichotomus_Bolivia.geojson',
+  'pot_acanthochelys': 'assets/capas/Potenciales_M2/Acanthochelys_macrocephala_Bolivia.geojson',
+  'pot_fulica': 'assets/capas/Potenciales_M2/Fulica_gigantea_Bolivia.geojson',
+  'pot_phegornis': 'assets/capas/Potenciales_M2/Phegornis_mitchellii_Bolivia.geojson',
+  'pot_telmatobius': 'assets/capas/Potenciales_M2/Telmatobius_spp_Bolivia.geojson',
+  'riq_telmatobius_pot': 'assets/capas/Potenciales_M2/Riqueza_Telmatobius_Bolivia.geojson',
+  'pot_caiman': 'assets/capas/Potenciales_M2/Caiman_latirostris_Bolivia.geojson',
+  'pot_podocnemis': 'assets/capas/Potenciales_M2/Podocnemis_expansa_Bolivia.geojson',
   'brycon':        'assets/capas/Grupos/Brycon_amazonicus.geojson',
   'colossoma':     'assets/capas/Grupos/Colossoma_macropomum.geojson',
   'riq_orestias':  'assets/capas/Grupos/Riqueza_Orestias.geojson',
@@ -2420,6 +2443,16 @@ function blueGradient(t){
   return `rgb(${r},${g},${b})`;
 }
 
+function creamRedGradient(t){
+  t=Math.max(0,Math.min(1,t));
+  const stops=[[255,247,188],[254,196,79],[240,59,32],[128,0,38]];
+  const scaled=t*(stops.length-1);
+  const idx=Math.min(stops.length-2,Math.floor(scaled));
+  const local=scaled-idx;
+  const rgb=stops[idx].map((value,i)=>Math.round(value+(stops[idx+1][i]-value)*local));
+  return `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+}
+
 function normalizeAPKey(value){
   return String(value || '')
     .normalize('NFD')
@@ -2472,25 +2505,28 @@ function createGeoJSONLayer(id, layerDef){
   }
   // Capas de riqueza: gradiente por N_ESP, popup con lista de especies
   if(id.startsWith('riq_')){
-    const nesps=data.features.map(f=>+f.properties.N_ESP||0);
+    const richnessField=layerDef.richnessField||'N_ESP';
+    const nesps=data.features.map(f=>+f.properties[richnessField]||0);
     const minN=Math.min(...nesps);
     const maxN=Math.max(1,...nesps);
     const range=Math.max(1, maxN-minN);
     return L.geoJSON(data,{
       style:f=>{
-        const n=+f.properties.N_ESP||0;
+        const n=+f.properties[richnessField]||0;
         const t=(n-minN)/range;
-        const fill=blueGradient(t);
-        return{color:'#0d4577',weight:0.7,fillColor:fill,fillOpacity:1,opacity:1};
+        const fill=layerDef.gradientPalette==='cream-red'?creamRedGradient(t):blueGradient(t);
+        const outline=layerDef.gradientPalette==='cream-red'?'#6b001f':'#0d4577';
+        return{color:outline,weight:0.7,fillColor:fill,fillOpacity:1,opacity:1};
       },
       onEachFeature:(f,l)=>{
         const p=f.properties;
+        const n=+p[richnessField]||0;
         const especies=(p.ESPECIES||'').split(';').map(s=>s.trim()).filter(Boolean);
         const listHTML=especies.length
           ? `<ul style="margin:4px 0 0 0;padding-left:14px;max-height:160px;overflow-y:auto;font-size:11px;line-height:1.45">${especies.map(s=>`<li><i>${s}</i></li>`).join('')}</ul>`
           : '—';
-        l.bindPopup(`<div class="feature-popup"><h5>Riqueza de especies</h5><table>
-          <tr><td>N° especies</td><td><b style="color:#0d4577;font-size:13px">${p.N_ESP||0}</b></td></tr>
+        l.bindPopup(`<div class="feature-popup"><h5>${escapeHTML(layerDef.name||'Riqueza de especies')}</h5><table>
+          <tr><td>N° especies</td><td><b style="color:#800026;font-size:13px">${n}</b></td></tr>
           <tr><td>Especies</td></tr></table>${listHTML}</div>`,{maxWidth:300});
       }
     });
@@ -3029,6 +3065,19 @@ function createGeoJSONLayer(id, layerDef){
   const iucn=mod2Def?.iucn||'';
   const sci=mod2Def?.sci||'';
   const color=layerDef.color;
+  if(layerDef.potentialSpecies){
+    return L.geoJSON(data,{
+      style:{color,weight:1.5,fillColor:color,fillOpacity:0.32,opacity:0.85},
+      onEachFeature:(f,l)=>{
+        const p=f.properties||{};
+        const scientificName=p.sci_name||sci||layerDef.name;
+        l.bindPopup(`<div class="feature-popup"><h5><i>${escapeHTML(scientificName)}</i></h5><table>
+          <tr><td>Tipo</td><td>Distribución potencial en Bolivia</td></tr>
+          <tr><td>Fuente</td><td>UICN / procesamiento geoespacial</td></tr>
+        </table></div>`,{maxWidth:290});
+      }
+    });
+  }
   return L.geoJSON(data,{
     style:{color,weight:1.5,fillColor:color,fillOpacity:0.28,opacity:0.75},
     onEachFeature:(f,l)=>{
@@ -4292,7 +4341,7 @@ function getM2BreakdownItems(){
   const activeSp=MODULES['2'].layers.filter(l=>activeLayers.has(l.id) && DATA_FILES[l.id] && l.id!=='apn' && l.id!=='limite' && l.id!=='departamentos' && l.id!=='humedales' && l.id!=='ramsar' && l.id!=='cuencas' && l.id!=='ffr' && l.id!=='lagos' && l.id!=='cuencas_n8' && l.id!=='cuencas_n9' && l.id!=='sea' && l.id!=='registros_peces_m2');
   const items=[];
   activeSp.forEach(s=>{
-    if(s.id.startsWith('riq_')){
+    if(s.id.startsWith('riq_')||s.multiSpecies){
       const breakdown=getRiquezaSpeciesBreakdown(s.id);
       const names=Object.keys(breakdown).filter(n=>breakdown[n]>0).sort();
       const palette=generateBluePalette(names.length);
@@ -4714,7 +4763,7 @@ function layerLegendSpec(layerDef){
   if(layerDef.overlapTiles) return {title:layerDef.name,items:OVERLAP_LEGEND};
   if(layerDef.recordLayer) return {title:layerDef.name,items:fishRecordLegendItems(layerDef)};
   if(layerDef.speciesDistributionTiles) return {title:layerDef.name,items:[{c:layerDef.color||'#064e8a',l:'Distribucion de especie',v:''}]};
-  if(layerDef.id && layerDef.id.startsWith('riq_')) return {title:layerDef.name,items:[{c:'linear-gradient(90deg,#d7efff,#064e8a)',l:'Menor a mayor riqueza',v:''}]};
+  if(layerDef.id && layerDef.id.startsWith('riq_')) return {title:layerDef.name,items:[{c:layerDef.swatch||'linear-gradient(90deg,#d7efff,#064e8a)',l:'Menor a mayor riqueza',v:''}]};
   if(layerDef.gradient) return {title:layerDef.name,items:[{c:layerDef.swatch||`linear-gradient(90deg,#d7efff,${layerDef.color||'#2374b5'})`,l:'Menor a mayor valor',v:''}]};
   if(layerDef.iucn){
     const color=IUCN_COLORS[layerDef.iucn]||layerDef.color||'#2374b5';
