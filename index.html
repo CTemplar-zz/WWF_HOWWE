@@ -4380,6 +4380,18 @@ function getM2BreakdownItems(){
 function getM2APSummary(){
   let ha=0, count=0;
   const selectedKeys=getSelectedM2APKeys();
+  const tableAPs=window['GEO_INTERSECTION']?.m2_table_aps||[];
+  if(tableAPs.length){
+    const scoped=selectedAPs.size===0
+      ? tableAPs
+      : tableAPs.filter(ap=>selectedKeys.has(normalizeM2APKey(ap.name)));
+    if(selectedAPs.size===0 || scoped.length){
+      return {
+        ha:scoped.reduce((sum,ap)=>sum+(parseFloat(ap.area_ha)||0),0),
+        count:scoped.length,
+      };
+    }
+  }
   if(geoData['apn']){
     geoData['apn'].features.forEach(f=>{
       const p=f.properties;
@@ -4496,6 +4508,8 @@ function renderM2Stats(){
   // Total de especies (sumando las de capas de riqueza)
   let totalSpInLayers = 0;
   activeSp.forEach(s=>{ totalSpInLayers += (speciesByLayer[s.id]||[]).length; });
+  const tableLayers=new Set(window['GEO_INTERSECTION']?.m2_table_layers||[]);
+  const usesValidatedTable=activeSp.some(s=>tableLayers.has(s.id));
 
   const scope = selectedAPs.size===0 ? `${apCount} áreas (todas)` : `${selectedAPs.size} AP${selectedAPs.size===1?'':'s'} seleccionadas`;
   const clearLink = selectedAPs.size>0 ? ` · <a href="#" id="clearAPSel" style="color:var(--accent)">limpiar</a>` : '';
@@ -4513,7 +4527,7 @@ function renderM2Stats(){
     <div class="kpi" style="grid-column:span 2">
       <div class="lbl">Especies con presencia en APs</div>
       <div class="val">${countSpInAP}<span class="unit">/ ${totalSpInLayers} en capas activas</span></div>
-      <div class="trend">${selectedAPs.size===0 ? 'En todas las APs' : 'En APs seleccionadas'} · datos ArcGIS</div>
+      <div class="trend">${selectedAPs.size===0 ? 'En todas las APs' : 'En APs seleccionadas'} · ${usesValidatedTable?'tabla validada':'datos ArcGIS'}</div>
     </div>
   `;
   const clr=document.getElementById('clearAPSel');
