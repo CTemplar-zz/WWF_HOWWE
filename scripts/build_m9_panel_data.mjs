@@ -17,6 +17,7 @@ function parseCsv(text) {
   }
   if (field || row.length) { row.push(field.replace(/\r$/, '')); rows.push(row); }
   const headers = rows.shift() || [];
+  if (headers.length) headers[0] = headers[0].replace(/^\uFEFF/, '');
   return rows.filter(values => values.some(Boolean)).map(values =>
     Object.fromEntries(headers.map((header, index) => [header, values[index] ?? '']))
   );
