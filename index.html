@@ -1014,6 +1014,7 @@
     <button class="tab" data-mod="6"><span class="tab-dot" style="background:#4a8aa8"></span><span class="tab-num">M6</span>Comunidades y bienestar</button>
     <button class="tab" data-mod="7"><span class="tab-dot" style="background:#8a6f3e"></span><span class="tab-num">M7</span>AIOC Charagua Iyambae</button>
     <button class="tab" data-mod="8"><span class="tab-dot" style="background:#5b6fb3"></span><span class="tab-num">M8</span>Datos INE</button>
+    <button class="tab" data-mod="9"><span class="tab-dot" style="background:#b85c38"></span><span class="tab-num">M9</span>Áreas, Obras y Proyectos</button>
   </nav>
   <main class="main">
     <aside class="left">
@@ -1539,6 +1540,26 @@ const MODULES = {
       {c:'linear-gradient(90deg,#fff2b2,#f2a45d,#c62828)',l:'Población en áreas protegidas',v:'Menor → mayor'},
       {c:'#000000',l:'Límites municipales',v:'Sin relleno'},
     ]}
+  },
+  '9': { title:'Áreas, Obras y Proyectos', sub:'AOP e infraestructura dentro de áreas protegidas', color:'#b85c38',
+    icon:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M4 20h16M6 20V8h12v12M9 8V4h6v4M9 12h2m2 0h2m-6 4h2m2 0h2"/></svg>',
+    layers:[
+      {id:'m9_limites_aps',name:'Límites de áreas protegidas',group:'Marco espacial',color:'#70a800',opacity:100,on:true,geojsonUrl:'assets/capas/m9/limites_aps.geojson',bounds:[-69.65,-22.91,-57.45,-9.66],noDownload:true},
+      {id:'m9_aop_sernap',name:'AOPs (SERNAP)',group:'Áreas, obras y proyectos',color:'#fccbc9',opacity:100,on:true,pmtiles:'assets/tiles/m9_aop_sernap.pmtiles',pmlayer:'m9_aop_sernap',maxDataZoom:14,bounds:[-70.445,-22.832,-57.735,-9.254],noDownload:true},
+      {id:'m9_construcciones',name:'Construcciones (Viviendas)',group:'Infraestructura',color:'#ff0000',opacity:100,on:false,pmtiles:'assets/tiles/m9_construcciones.pmtiles',pmlayer:'m9_construcciones',maxDataZoom:14,bounds:[-69.356,-22.896,-57.505,-11.296],noDownload:true},
+      {id:'m9_vias_caminos',name:'Vías y Caminos',group:'Infraestructura',color:'#e66a14',swatch:'linear-gradient(90deg,#e66914,#dea600,#7d7d7d,#2a7a37)',opacity:100,on:false,pmtiles:'assets/tiles/m9_vias_caminos.pmtiles',pmlayer:'m9_vias_caminos',maxDataZoom:14,bounds:[-69.359,-22.898,-57.487,-11.346],noDownload:true},
+      {id:'m9_lineas_mt',name:'Líneas de Media Tensión',group:'Infraestructura energética',color:'#c3fcb8',opacity:100,on:false,pmtiles:'assets/tiles/m9_lineas_mt.pmtiles',pmlayer:'m9_lineas_mt',maxDataZoom:14,bounds:[-69.337,-22.257,-57.721,-11.833],noDownload:true},
+      {id:'m9_lineas_at',name:'Líneas de Alta Tensión',group:'Infraestructura energética',color:'#dad4fc',opacity:100,on:false,geojsonUrl:'assets/capas/m9/lineas_at.geojson',noDownload:true},
+      {id:'m9_plantas',name:'Plantas de generación eléctrica',group:'Infraestructura energética',color:'#bafcc9',opacity:100,on:false,geojsonUrl:'assets/capas/m9/plantas.geojson',noDownload:true},
+      {id:'m9_represas',name:'Represas',group:'Infraestructura energética',color:'#e3fcbd',opacity:100,on:false,geojsonUrl:'assets/capas/m9/represas.geojson',noDownload:true},
+    ],
+    legend:{title:'Áreas, Obras y Proyectos',ind:'M9',items:[
+      {c:'#70a800',l:'Límite de área protegida',v:'Sin relleno'},
+      {c:'#fccbc9',l:'AOP SERNAP',v:'Punto'},
+      {c:'#ff0000',l:'Construcción',v:'Sin relleno'},
+      {c:'#c3fcb8',l:'Media tensión',v:''},{c:'#dad4fc',l:'Alta tensión',v:''},
+      {c:'#bafcc9',l:'Planta de generación',v:'Punto'},{c:'#e3fcbd',l:'Represa',v:'Punto'}
+    ]}
   }
 };
 const DEFAULT_LAYER_TRANSPARENCY = 15;
@@ -1559,6 +1580,10 @@ Object.values(MODULES).forEach(mod => {
       layer.opacity = 72;
     }
     if(layer.id==='dorado'){
+      layer.transparency = 0;
+      layer.opacity = 100;
+    }
+    if(String(layer.id||'').startsWith('m9_')){
       layer.transparency = 0;
       layer.opacity = 100;
     }
@@ -2386,6 +2411,7 @@ function updateAPMapFilter(){
     const ld=MODULES[modId].layers.find(l=>l.id==='apn');
     if(ld) applyLayerOpacity('apn', layer, ld.opacity);
   });
+  if(typeof window.refreshM9MapFilter==='function') window.refreshM9MapFilter();
 }
 
 function toggleAPSelection(name){
@@ -2479,6 +2505,45 @@ function normalizeAPKey(value){
     .trim();
 }
 
+function m9APField(layerId){
+  if(layerId==='m9_aop_sernap') return 'AREA_AP';
+  if(layerId==='m9_vias_caminos') return 'area_protegida';
+  return 'AP_NOMBRE';
+}
+function m9FeatureMatchesSelection(properties,layerId){
+  if(selectedAPs.size===0) return true;
+  const values=String((properties||{})[m9APField(layerId)]||'')
+    .split(';').map(normalizeAPKey).filter(Boolean);
+  const selected=new Set([...selectedAPs].map(normalizeAPKey));
+  return values.some(value=>selected.has(value));
+}
+function registerM9ProtectedAreas(data){
+  const known=new Set(APN.map(ap=>normalizeAPKey(ap.name)));
+  const aliases={'serrania del aguarague':'aguarague'};
+  (data?.features||[]).forEach(feature=>{
+    const properties=feature.properties||{};
+    const name=String(properties.AP_NOMBRE||'').trim();
+    const key=normalizeAPKey(name);
+    if(!name||known.has(key)) return;
+    try{
+      const center=L.geoJSON(feature).getBounds().getCenter();
+      const previousKey=aliases[key];
+      const previous=previousKey?APN.find(ap=>normalizeAPKey(ap.name)===previousKey):null;
+      if(previous){
+        known.delete(previousKey);known.add(key);
+        if(selectedAPs.has(previous.name)){selectedAPs.delete(previous.name);selectedAPs.add(name);}
+        Object.assign(previous,{name,center:[center.lat,center.lng],sup_ha:Number(properties.AREA_HA||0)});
+        return;
+      }
+      APN.push({code:'',name,cat:'SERNAP',center:[center.lat,center.lng],sup_ha:Number(properties.AREA_HA||0)});
+      known.add(key);
+    }catch(_){ }
+  });
+  APN.sort((a,b)=>a.name.localeCompare(b.name));
+  renderAPList();
+  if(typeof window.refreshProtectedAreaFilterList==='function') window.refreshProtectedAreaFilterList();
+}
+
 function miningFeatureVisible(feature){
   const area=normalizeAPKey(feature?.properties?.nombre_ap);
   if(window.m3MiningOutsideOnly) return !area;
@@ -2503,6 +2568,37 @@ function createGeoJSONLayer(id, layerDef){
   let data=geoData[id];
   if(layerDef.recordLayer && geoData['registros_peces_m2']) data=geoData['registros_peces_m2'];
   if(!data) return L.layerGroup();
+  if(['m9_limites_aps','m9_lineas_at','m9_plantas','m9_represas'].includes(id)){
+    if(id==='m9_limites_aps') registerM9ProtectedAreas(data);
+    const visible=feature=>m9FeatureMatchesSelection(feature.properties||{},id);
+    const style=feature=>{
+      if(id==='m9_limites_aps') return {color:'#70a800',weight:2,opacity:1,fillColor:'#63993d',fillOpacity:0};
+      if(id==='m9_lineas_at') return {color:'#dad4fc',weight:1,opacity:1};
+      return {};
+    };
+    const title={m9_limites_aps:'Área protegida',m9_lineas_at:'Línea de Alta Tensión',m9_plantas:'Planta de generación eléctrica',m9_represas:'Represa'}[id];
+    const labels={AP_NOMBRE:'Área protegida',empresa:'Empresa',nivel_volt:'Nivel de voltaje',linea:'Línea',codigo:'Código',planta:'Planta',tecnologia:'Tecnología',potencia_n:'Potencia nominal',potencia_i:'Potencia instalada',Nom_Presa:'Nombre',Municipio:'Municipio',Uso:'Uso',Tipo_Presa:'Tipo de presa',Estado:'Estado',Volumen_m3:'Volumen',Rio_Presa:'Río',AREA_HA:'Superficie (ha)'};
+    const layer=L.geoJSON(data,{
+      filter:visible,
+      style,
+      pointToLayer:(feature,latlng)=>{
+        const dam=id==='m9_represas';
+        return L.circleMarker(latlng,{radius:4,color:'#4b5144',weight:1,fillColor:dam?'#e3fcbd':'#bafcc9',fillOpacity:1,opacity:1});
+      },
+      onEachFeature:(feature,child)=>{
+        const p=feature.properties||{};
+        const rows=Object.entries(labels).filter(([key])=>p[key]!==undefined&&p[key]!==null&&String(p[key]).trim()!=='').map(([key,label])=>`<tr><td>${label}</td><td><b>${escapeHTML(String(p[key]))}</b></td></tr>`).join('');
+        child.bindPopup(`<div class="feature-popup"><h5>${title}</h5><table>${rows}</table></div>`,{maxWidth:310});
+        if(id==='m9_limites_aps'){
+          child.bindTooltip(`<b>${escapeHTML(p.AP_NOMBRE||'Área protegida')}</b>`,{sticky:true,direction:'top'});
+          child.on('click',()=>toggleAPSelection(p.AP_NOMBRE));
+        }
+      }
+    });
+    layer._m9Data=data;
+    layer._m9LayerId=id;
+    return layer;
+  }
   if(id==='mineria_ilegal'){
     const opacity=Math.max(0,Math.min(1,(layerDef.opacity??78)/100));
     return L.geoJSON(data,{
@@ -3287,7 +3383,55 @@ function createPMTilesLayer(layerDef){
   const id = layerDef.id;
   let paintRules;
   let labelRules = [];
-  if(id === 'humedales'){
+  if(id === 'm9_aop_sernap'){
+    paintRules=[{
+      dataLayer:layerDef.pmlayer||id,
+      filter:(z,f)=>m9FeatureMatchesSelection(f.props,id),
+      symbolizer:new protomapsL.CircleSymbolizer({radius:3,fill:'#fccbc9',stroke:'#554744',width:1,opacity:1})
+    }];
+  } else if(id === 'm9_construcciones'){
+    paintRules=[{
+      dataLayer:layerDef.pmlayer||id,
+      filter:(z,f)=>m9FeatureMatchesSelection(f.props,id),
+      symbolizer:new protomapsL.PolygonSymbolizer({fill:'rgba(0,0,0,0)',opacity:1,stroke:'#ff0000',width:2})
+    }];
+  } else if(id === 'm9_lineas_mt'){
+    paintRules=[{
+      dataLayer:layerDef.pmlayer||id,
+      filter:(z,f)=>m9FeatureMatchesSelection(f.props,id),
+      symbolizer:new protomapsL.LineSymbolizer({color:'#c3fcb8',width:1,opacity:1})
+    }];
+  } else if(id === 'm9_vias_caminos'){
+    const roadStyle=value=>({
+      'Calle residencial':['#7d7d7d',1.5],
+      'Calle residencial de prioridad peatonal':['#8a68b8',1.4],
+      'Camino de clasificación desconocida':['#696969',1.3],
+      'Camino rural o huella':['#89582a',1.2],
+      'Carretera primaria':['#e66914',2.8],
+      'Carretera secundaria':['#dea600',2.4],
+      'Carretera terciaria':['#c2971c',2],
+      'Carretera troncal':['#ffffff',1.7],
+      'Ciclovía':['#0087be',1.2],
+      'Enlace de carretera primaria':['#f59137',2.3],
+      'Enlace de carretera troncal':['#e14150',2.6],
+      'Escalinata':['#9141af',1],
+      'Sendero':['#2a7a37',1],
+      'Vía de servicio':['#afafaf',1.1],
+      'Vía en construcción':['#505050',1.5],
+      'Vía peatonal':['#4ba550',.9],
+      'Vía sin clasificar':['#919191',1.3],
+      'Zona o vía peatonal':['#5fb464',1.1],
+      'Área de descanso':['#287391',1.4]
+    }[String(value||'').trim()]||['#696969',1.2]);
+    paintRules=[{
+      dataLayer:layerDef.pmlayer||id,
+      filter:(z,f)=>m9FeatureMatchesSelection(f.props,id),
+      symbolizer:new protomapsL.LineSymbolizer({
+        color:(z,f)=>roadStyle(f.props.tipo_camino)[0],
+        width:(z,f)=>roadStyle(f.props.tipo_camino)[1],opacity:1
+      })
+    }];
+  } else if(id === 'humedales'){
     const colorByMeses = m => {
       const v = +m || 0;
       return v <= 1 ? '#E8F4FB' : v <= 2 ? '#C9E2F2' : v <= 3 ? '#9FCBE5'
@@ -3576,9 +3720,36 @@ function createPMTilesLayer(layerDef){
       const r = found[0];
       const f = r.feature || r;
       const props = (f && (f.properties || f.props)) || {};
+      if(id.startsWith('m9_') && !m9FeatureMatchesSelection(props,id)) return;
 
       let html;
-      if (id === 'humedales') {
+      if (id === 'm9_aop_sernap') {
+        html=`<div class="feature-popup"><h5>${escapeHTML(props.NOM_AOP||'AOP SERNAP')}</h5><table>
+          <tr><td>Sector agrupado</td><td><b>${escapeHTML(props.SECTOR_AGR||'Sin información')}</b></td></tr>
+          <tr><td>Tipo de AOP</td><td>${escapeHTML(props.TIPO_AOP||'—')}</td></tr>
+          <tr><td>Etapa</td><td>${escapeHTML(props.ETAPA||'—')}</td></tr>
+          <tr><td>Año</td><td>${escapeHTML(props.ANIO||'—')}</td></tr>
+          <tr><td>Área protegida</td><td>${escapeHTML(props.AREA_AP||'—')}</td></tr>
+        </table></div>`;
+      } else if (id === 'm9_construcciones') {
+        html=`<div class="feature-popup"><h5>Construcción (Vivienda)</h5><table>
+          <tr><td>Superficie</td><td><b>${Number(props.CLIP_M2||props.AREA_M2||0).toLocaleString('es-BO',{maximumFractionDigits:2})} m²</b></td></tr>
+          <tr><td>Confianza</td><td>${props.CONFIDENCE??'—'}</td></tr>
+          <tr><td>Área protegida</td><td>${escapeHTML(props.AP_NOMBRE||'—')}</td></tr>
+        </table></div>`;
+      } else if (id === 'm9_vias_caminos') {
+        html=`<div class="feature-popup"><h5>${escapeHTML(props.name||'Vía sin nombre')}</h5><table>
+          <tr><td>Tipo de camino</td><td><b>${escapeHTML(props.tipo_camino||'—')}</b></td></tr>
+          <tr><td>Área protegida</td><td>${escapeHTML(props.area_protegida||'—')}</td></tr>
+        </table></div>`;
+      } else if (id === 'm9_lineas_mt') {
+        html=`<div class="feature-popup"><h5>Línea de Media Tensión</h5><table>
+          <tr><td>Empresa</td><td><b>${escapeHTML(props.empresa||'—')}</b></td></tr>
+          <tr><td>Nivel de voltaje</td><td>${escapeHTML(props.nivel_volt||'—')}</td></tr>
+          <tr><td>Conductor</td><td>${escapeHTML(props.tipo_condu||'—')}</td></tr>
+          <tr><td>Área protegida</td><td>${escapeHTML(props.AP_NOMBRE||'—')}</td></tr>
+        </table></div>`;
+      } else if (id === 'humedales') {
         const m = props.Meses;
         const txt = (m === 0 || m === 1) ? '0 — 1 mes'
                   : (m > 6) ? 'Más de 6 meses ('+m+')'
@@ -4765,6 +4936,20 @@ const ACTIVE_LAYER_LEGENDS={
   presion_pesca:{title:'Presiones Antropicas · Pesca',items:[{c:'#c500ff',l:'Pesca',v:''}]},
   presion_quemas_incendios:{title:'Presiones Antropicas · Quemas e incendios',items:[{c:'#d6452c',l:'Quemas e incendios',v:''}]},
   presion_deforestacion:{title:'Presiones Antropicas · Deforestación',items:[{c:'#6f8b2d',l:'Deforestación',v:''}]},
+  m9_limites_aps:{title:'Límites de áreas protegidas',items:[{c:'#70a800',l:'Límite SERNAP actualizado',v:'Sin relleno'}]},
+  m9_aop_sernap:{title:'AOPs (SERNAP)',items:[{c:'#fccbc9',l:'Área, Obra o Proyecto',v:'Punto'}]},
+  m9_construcciones:{title:'Construcciones (Viviendas)',items:[{c:'#ff0000',l:'Huella de construcción',v:'Sin relleno'}]},
+  m9_lineas_mt:{title:'Líneas de Media Tensión',items:[{c:'#c3fcb8',l:'Media tensión',v:''}]},
+  m9_lineas_at:{title:'Líneas de Alta Tensión',items:[{c:'#dad4fc',l:'Alta tensión',v:''}]},
+  m9_plantas:{title:'Plantas de generación eléctrica',items:[{c:'#bafcc9',l:'Planta de generación',v:'Punto'}]},
+  m9_represas:{title:'Represas',items:[{c:'#e3fcbd',l:'Represa',v:'Punto'}]},
+  m9_vias_caminos:{title:'Vías y Caminos',items:[
+    {c:'#e66914',l:'Carretera primaria',v:''},{c:'#dea600',l:'Carretera secundaria',v:''},{c:'#c2971c',l:'Carretera terciaria',v:''},{c:'#ffffff',l:'Carretera troncal',v:''},
+    {c:'#f59137',l:'Enlace de carretera primaria',v:''},{c:'#e14150',l:'Enlace de carretera troncal',v:''},{c:'#7d7d7d',l:'Calle residencial',v:''},{c:'#8a68b8',l:'Residencial de prioridad peatonal',v:''},
+    {c:'#89582a',l:'Camino rural o huella',v:''},{c:'#2a7a37',l:'Sendero',v:''},{c:'#4ba550',l:'Vía peatonal',v:''},{c:'#5fb464',l:'Zona o vía peatonal',v:''},
+    {c:'#0087be',l:'Ciclovía',v:''},{c:'#9141af',l:'Escalinata',v:''},{c:'#afafaf',l:'Vía de servicio',v:''},{c:'#505050',l:'Vía en construcción',v:''},
+    {c:'#919191',l:'Vía sin clasificar',v:''},{c:'#696969',l:'Clasificación desconocida',v:''},{c:'#287391',l:'Área de descanso',v:''}
+  ]},
 };
 
 function legendRowsHTML(items){
@@ -4895,6 +5080,7 @@ function toggleLayer(layerId,rowEl){
     if(legend) legend.classList.remove('collapsed');
   }
   if(currentModule==='2'){ renderM2Stats(); renderM2Donut(); }
+  if(currentModule==='9' && typeof window.renderM9DataPanel==='function') window.renderM9DataPanel();
 }
 function updateStatusLayers(){
   const n=activeLayers.size+userLayers.length;
@@ -5180,5 +5366,7 @@ loadAllGeoData().then(()=>{
 <script src="assets/capas/m6_nbi_panel.js"></script>
 <script src="assets/capas/ine_m8_config.js"></script>
 <script src="assets/capas/m8_ine_panel.js"></script>
+<script src="assets/capas/m9/m9_aop_data.js"></script>
+<script src="assets/capas/m9/m9_aop_panel.js"></script>
 </body>
 </html>

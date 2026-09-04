@@ -131,6 +131,8 @@
       window.renderM1DataPanel();
     }else if(currentModule==='8' && typeof window.renderM8DataPanel==='function'){
       window.renderM8DataPanel();
+    }else if(currentModule==='9' && typeof window.renderM9DataPanel==='function'){
+      window.renderM9DataPanel();
     }
   }
 
@@ -205,6 +207,7 @@
     renderFilterList(filterSearch.value);
   };
   window.clearProtectedAreaFilter=clearSelection;
+  window.refreshProtectedAreaFilterList=()=>renderFilterList(filterSearch.value);
 
   function renderFilterList(query=''){
     const q=normalize(query);
