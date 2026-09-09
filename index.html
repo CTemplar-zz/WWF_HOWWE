@@ -15,6 +15,8 @@
 <script src="assets/capas/geo_limite.js"></script>
 <script src="assets/capas/geo_departamentos.js"></script>
 <script src="assets/capas/geo_apn.js"></script>
+<script src="assets/capas/geo_aps_todos_niveles.js"></script>
+<script src="assets/capas/geo_aps_propuestas.js"></script>
 <script src="assets/capas/geo_jaguar.js"></script>
 <script src="assets/capas/geo_borochi.js"></script>
 <script src="assets/capas/geo_inia_bol.js"></script>
@@ -1285,6 +1287,8 @@ const MODULES = {
       {id:'departamentos',name:'Departamentos de Bolivia', color:'#000000',opacity:100,on:true},
       {id:'limites_municipales',name:'Límites municipales',color:'#000000',opacity:100,on:false,pmtiles:'assets/tiles/limites_municipales.pmtiles',pmlayer:'limites_municipales',maxDataZoom:12,bounds:[-69.64524603576484,-22.906568378770086,-57.454433527709995,-9.669633002177594],noDownload:true},
       {id:'apn',   name:'Áreas Protegidas (33 polígonos)',  color:'#2c8a4d',opacity:100,on:true},
+      {id:'aps_todos_niveles',name:'Áreas protegidas por jurisdicción (184 polígonos)',color:'#1f6b3a',opacity:55,on:false,swatch:'linear-gradient(90deg,#1f6b3a 0 33%,#d28e2c 33% 66%,#2c7da0 66% 100%)',downloadUrl:'assets/capas/AreasProtegidas_TodosNiveles.geojson',downloadLabel:'Descargar GeoJSON'},
+      {id:'aps_propuestas',name:'Áreas protegidas propuestas (6 polígonos)',color:'#8a5a9e',opacity:40,on:false,downloadUrl:'assets/capas/AreasProtegidas_Propuestas.geojson',downloadLabel:'Descargar GeoJSON'},
       {id:'limite',name:'Límite Bolivia',                    color:'#6a6a6a',opacity:80,on:true},
       {id:'ecoregiones',name:'Ecoregiones',                   color:'#56a800',opacity:15,on:false,pmtiles:ECOREGIONES_PMTILES_URL,pmlayer:'ecoregiones',maxDataZoom:12,bounds:[-69.64435362999996,-22.89806221899994,-57.45333544299996,-9.665009243999975],downloadUrl:'assets/downloads/ecoregiones.zip',downloadLabel:'Descargar shapefile ZIP'},
       {id:'kba_bolabril_2024',name:'Key Biodiversity Areas',  color:'#8a6f3e',opacity:15,on:false,pmtiles:KBA_PMTILES_URL,pmlayer:'kba_bolabril_2024',maxDataZoom:12,bounds:[-69.40180299999997,-22.90656832299993,-57.45443352799998,-9.670922873999928],downloadUrl:'assets/downloads/kba_bolabril_2024.zip',downloadLabel:'Descargar shapefile ZIP'},
@@ -2051,6 +2055,8 @@ setBasemap(savedBasemap);
 // === GeoJSON real layers ===
 const DATA_FILES = {
   'apn':      'assets/capas/AreasProtegidas_Bolivia.geojson',
+  'aps_todos_niveles': 'assets/capas/AreasProtegidas_TodosNiveles.geojson',
+  'aps_propuestas': 'assets/capas/AreasProtegidas_Propuestas.geojson',
   'limite':   'assets/capas/Bolivia_limite.geojson',
   'departamentos': 'assets/capas/Departamentos_Bolivia.geojson',
   'jaguar':   'assets/capas/Panthera_onca_Jaguar.geojson',
@@ -3097,6 +3103,56 @@ function createGeoJSONLayer(id, layerDef){
           <tr><td>Geocode</td><td>${p.geocode||'—'}</td></tr>
           <tr><td>Feature ID</td><td>${p.featureId||'—'}</td></tr>
         </table></div>`);
+      }
+    });
+  }
+  if(id==='aps_todos_niveles'){
+    const jurisdictionColors={
+      nacional:'#1f6b3a',
+      departamental:'#d28e2c',
+      municipal:'#2c7da0',
+      indigena:'#7b5ea7',
+      'sin clasificacion':'#7a8178'
+    };
+    const jurisdictionKey=value=>{
+      const normalized=String(value||'').trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+      return normalized || 'sin clasificacion';
+    };
+    return L.geoJSON(data,{
+      style:f=>{
+        const c=jurisdictionColors[jurisdictionKey(f.properties?.Jurisdicci)]||jurisdictionColors['sin clasificacion'];
+        return{color:c,weight:1.4,fillColor:c,fillOpacity:(layerDef.opacity??55)/100,opacity:0.95};
+      },
+      onEachFeature:(f,l)=>{
+        const p=f.properties||{};
+        const name=p.NOMBRE||'Área protegida';
+        const jurisdiction=String(p.Jurisdicci||'').trim()||'Sin clasificación';
+        const hectares=Number(p.Ha);
+        const ha=Number.isFinite(hectares)?hectares.toLocaleString('es-BO',{maximumFractionDigits:1}):'—';
+        l.bindPopup(`<div class="feature-popup"><h5>${escapeHTML(name)}</h5><table>
+          <tr><td>Jurisdicción</td><td><b>${escapeHTML(jurisdiction)}</b></td></tr>
+          <tr><td>Tipo</td><td>${escapeHTML(p.Tipo||'—')}</td></tr>
+          <tr><td>Categoría</td><td>${escapeHTML(p.DESIGNA||'—')}</td></tr>
+          <tr><td>Departamento</td><td>${escapeHTML(p.Depto||'—')}</td></tr>
+          <tr><td>Superficie</td><td>${ha} ha</td></tr>
+        </table></div>`);
+        l.bindTooltip(`${escapeHTML(name)} · ${escapeHTML(jurisdiction)}`,{sticky:true});
+      }
+    });
+  }
+  if(id==='aps_propuestas'){
+    return L.geoJSON(data,{
+      style:{color:'#6f3f82',weight:2,dashArray:'7 5',fillColor:'#8a5a9e',fillOpacity:(layerDef.opacity??40)/100,opacity:1},
+      onEachFeature:(f,l)=>{
+        const p=f.properties||{};
+        const name=p.Nombre||'Área protegida propuesta';
+        const hectares=Number(p.SUP_HA);
+        const ha=Number.isFinite(hectares)&&hectares>0?hectares.toLocaleString('es-BO',{maximumFractionDigits:1}):'—';
+        l.bindPopup(`<div class="feature-popup"><h5>${escapeHTML(name)}</h5><table>
+          <tr><td>Tipo</td><td><b>Área protegida propuesta</b></td></tr>
+          <tr><td>Superficie</td><td>${ha} ha</td></tr>
+        </table></div>`);
+        l.bindTooltip(escapeHTML(name),{sticky:true});
       }
     });
   }
@@ -4869,6 +4925,14 @@ const ACTIVE_LAYER_LEGENDS={
   departamentos:{title:'Departamentos de Bolivia',items:[{c:'#000000',l:'Limite departamental',v:''}]},
   limite:{title:'Limite Bolivia',items:[{c:'#6a6a6a',l:'Limite nacional',v:''}]},
   apn:{title:'Areas Protegidas',items:SERNAP_LEGEND},
+  aps_todos_niveles:{title:'Áreas protegidas por jurisdicción',items:[
+    {c:'#1f6b3a',l:'Nacional',v:'29 áreas'},
+    {c:'#d28e2c',l:'Departamental',v:'48 áreas'},
+    {c:'#2c7da0',l:'Municipal',v:'102 áreas'},
+    {c:'#7b5ea7',l:'Indígena',v:'3 áreas'},
+    {c:'#7a8178',l:'Sin clasificación',v:'2 áreas'}
+  ]},
+  aps_propuestas:{title:'Áreas protegidas propuestas',items:[{c:'#8a5a9e',l:'Área propuesta',v:'6 áreas'}]},
   dorado:{title:'Dorado · crecimiento y reproducción',items:[
     {c:'#00C5FF',l:'Zona de migración',v:''},
     {c:'#FFAA00',l:'Zona de reproducción',v:''}
