@@ -8,6 +8,7 @@
   const BASINS_ID='ine_cuencas_n3';
   const BASIN_DATA_URL='assets/capas/ine_cuenca_censo_2024.json';
   const BASIN_EXCEL_URL='assets/downloads/Datos_Poblacionales_Cuencas_INE_2024.xlsx';
+  const BASIN_PDF_BASE='assets/downloads/fichas_cuenca/';
   const COMMUNITIES_URL='assets/capas/ine_comunidades_m8.geojson';
   const BLOCKS_URL='assets/capas/ine_manzanas_m8.geojson';
   const grid=document.querySelector('.kpi-grid');
@@ -33,7 +34,7 @@
   let populationAPLayer=null;
   let populationAPOpacity=1;
   let basinsLayer=null;
-  let basinsOpacity=.3;
+  let basinsOpacity=.6;
   let selectedBasinCode='';
   let panelMode='points';
   let selectionLabel='Sin selección para reporte';
@@ -68,6 +69,8 @@
     .m8-metric-name{line-height:1.25}.m8-metric-track{height:7px;border-radius:5px;background:var(--panel-2);overflow:hidden}.m8-metric-fill{height:100%;border-radius:5px;min-width:2px}.m8-metric-value{text-align:right;font-family:monospace;font-size:9px;color:var(--text-dim);white-space:nowrap}
     .m8-ap-list{display:flex;flex-direction:column;gap:4px;max-height:330px;overflow:auto;margin-top:8px}.m8-ap-row{display:grid;grid-template-columns:11px 1fr auto;gap:7px;align-items:center;width:100%;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:7px;padding:7px;text-align:left;cursor:pointer;font:500 10px Inter,sans-serif}.m8-ap-row:hover{border-color:#d17b56}.m8-ap-row.selected{border-color:#c94b3e;background:color-mix(in srgb,#f2a45d 12%,var(--panel))}.m8-ap-row i{width:9px;height:9px;border-radius:2px}.m8-ap-row b{font-family:monospace;font-size:9px}.m8-ap-row.no-data{opacity:.62}.m8-ap-actions{display:flex;justify-content:space-between;align-items:center;gap:8px}.m8-ap-actions a{font-size:9px;color:#40579d;text-decoration:none}.m8-ap-actions a:hover{text-decoration:underline}
     .m8-basin-row:hover{border-color:#2f6388}.m8-basin-row.selected{border-color:#173b57;background:color-mix(in srgb,#8fc4e8 20%,var(--panel))}
+    .m8-basin-sheet-download{grid-column:1/-1;display:flex;align-items:center;justify-content:center;text-decoration:none;background:#173b57;color:#fff;border-color:#173b57;margin-top:2px}.m8-basin-sheet-download:hover{background:#244f6d;color:#fff;border-color:#244f6d}.m8-basin-sheet-download:disabled{background:var(--panel-2);color:var(--text-dim);border-color:var(--border)}
+    .m8-popup-clear-basin{width:100%;margin-top:9px;padding:7px 9px;color:#173b57;border-color:#8eb7d0;background:#e7f3fa}
     .m8-basin-label{background:rgba(255,255,255,.76);border:0;box-shadow:none;color:#173b57;font:700 9px Inter,sans-serif;padding:1px 3px;text-align:center;text-shadow:0 1px 0 #fff;white-space:normal;max-width:105px}
     .m8-basin-label:before{display:none}
     .m8-basins-low-zoom .m8-basin-label-unit{display:none}.m8-basins-low-zoom .m8-basin-label{font-size:8px;max-width:78px;padding:0 2px}
@@ -79,7 +82,7 @@
     {c:'#8c5bc0',l:'Centro urbano',v:'Código -M'}
   ]};
   ACTIVE_LAYER_LEGENDS[BLOCKS_ID]={title:'Manzanas censales INE',items:[{c:'#e08a24',l:'Manzana censal',v:'Código -A'}]};
-  ACTIVE_LAYER_LEGENDS[BASINS_ID]={title:'Cuencas Hidrográficas (Nivel 3)',items:[{c:'#8fc4e8',l:'Cuenca hidrográfica',v:'Borde azul oscuro · 70% transparencia'}]};
+  ACTIVE_LAYER_LEGENDS[BASINS_ID]={title:'Cuencas Hidrográficas (Nivel 3)',items:[{c:'#8fc4e8',l:'Cuenca hidrográfica',v:'Borde azul oscuro · 40% transparencia'}]};
   LAYER_METADATA[COMMUNITIES_ID]={title:'Comunidades y centros urbanos · Censo 2024',body:[
     'Puntos oficiales consultados mediante la API del Geoportal del INE y extraídos dentro de áreas protegidas.',
     'COD_INE es el identificador utilizado para validar y generar fichas técnicas oficiales.'
@@ -169,7 +172,7 @@
     }
     renderM8DataPanel();
   }
-  function clearBasinSelection(){selectedBasinCode='';refreshBasinsLayer();renderM8DataPanel();}
+  function clearBasinSelection(){selectedBasinCode='';map.closePopup?.();refreshBasinsLayer();renderM8DataPanel();}
 
   function pointStyle(feature){
     const code=codeOf(feature);
@@ -201,7 +204,7 @@
 
   createGeoJSONLayer=function(id,layerDef){
     if(id===BASINS_ID){
-      basinsOpacity=Math.max(0,Math.min(1,num(layerDef.opacity??30)/100));
+      basinsOpacity=Math.max(0,Math.min(1,num(layerDef.opacity??60)/100));
       basinsLayer=L.geoJSON(geoData[id]||{type:'FeatureCollection',features:[]},{
         style:basinStyle,
         onEachFeature:(feature,layer)=>{
@@ -212,8 +215,15 @@
             <tr><td>Código Nivel 3</td><td><b>${escapeHTML(code)}</b></td></tr>
             <tr><td>Superficie</td><td>${p.area_km2?`${num(p.area_km2).toLocaleString('es-BO',{maximumFractionDigits:1})} km²`:'—'}</td></tr>
             <tr><td>Población 2024</td><td>${p.tiene_ficha?compact(p.poblacion_2024):'Sin ficha disponible'}</td></tr>
-          </table><div style="margin-top:7px;font-size:10px;color:var(--text-dim)">Haz clic para filtrar los indicadores por esta cuenca.</div></div>`,{maxWidth:300});
+          </table><div style="margin-top:7px;font-size:10px;color:var(--text-dim)">Esta cuenca está filtrando los indicadores del panel.</div>
+          <button class="m8-btn m8-popup-clear-basin" type="button">Quitar filtro de cuenca</button></div>`,{maxWidth:300});
           layer.on('click',event=>{if(event.originalEvent)L.DomEvent.stopPropagation(event.originalEvent);selectBasin(code);});
+          layer.on('popupopen',event=>{
+            const button=event.popup?.getElement?.()?.querySelector('.m8-popup-clear-basin');
+            if(!button)return;
+            L.DomEvent.disableClickPropagation(button);
+            button.onclick=clearBasinSelection;
+          });
         }
       });
       refreshBasinLabelVisibility();
@@ -517,11 +527,17 @@
   function renderBasinPanel(){
     if(!basinData){renderLoading('Cargando las fichas consolidadas por cuenca…');ensureBasinData().then(()=>{if(currentModule===MODULE_ID&&panelMode==='basins')renderM8DataPanel();});return;}
     const rows=scopedBasinRecords();const scope=scopedBasinInventory();const valid=rows.filter(row=>row.tiene_ficha);const population=sum(valid,'edad_total_total');const women=sum(valid,'edad_total_mujeres');const housing=sum(valid,'vivienda_total');
+    const selectedRecord=selectedBasinCode?basinRecord(selectedBasinCode):null;
+    const selectedPdf=selectedRecord?.tiene_ficha&&selectedRecord.archivo_pdf?`${BASIN_PDF_BASE}${encodeURIComponent(selectedRecord.archivo_pdf)}`:'';
+    const sheetDownload=selectedPdf
+      ? `<a class="m8-btn m8-basin-sheet-download" href="${selectedPdf}" download title="Descargar ficha de ${escapeHTML(selectedBasinLabel())}">Descargar ficha PDF</a>`
+      : `<button class="m8-btn m8-basin-sheet-download" type="button" disabled>${selectedBasinCode?'Ficha PDF no disponible':'Selecciona una cuenca para descargar su ficha'}</button>`;
     grid.classList.remove('m3-three-kpis');grid.innerHTML=`${tabsHTML()}
       <div class="kpi"><div class="lbl">Población</div><div class="val">${compact(population)}</div><div class="trend">${escapeHTML(selectedBasinLabel())}</div></div>
       <div class="kpi"><div class="lbl">Mujeres</div><div class="val">${compact(women)}</div><div class="trend">${population?(women/population*100).toLocaleString('es-BO',{maximumFractionDigits:1}):0}% de la población</div></div>
       <div class="kpi"><div class="lbl">Viviendas</div><div class="val">${compact(housing)}</div><div class="trend">Viviendas particulares y colectivas</div></div>
-      <div class="kpi"><div class="lbl">Fichas disponibles</div><div class="val">${compact(valid.length)}</div><div class="trend">de ${compact(scope.length)} ${scope.length===1?'cuenca':'cuencas'} en el filtro</div></div>`;
+      <div class="kpi"><div class="lbl">Fichas disponibles</div><div class="val">${compact(valid.length)}</div><div class="trend">de ${compact(scope.length)} ${scope.length===1?'cuenca':'cuencas'} en el filtro</div></div>
+      ${sheetDownload}`;
     donutCard.innerHTML=`<h4>Variables principales <span class="mono" style="color:var(--text-dim);font-size:10px">Censo 2024</span></h4>
       ${valid.length?`${metricSection('Estructura por edad',valid,[['0–19 años','edad_0_19_total','edad_total_total','#f0b657'],['20–39 años','edad_20_39_total','edad_total_total','#df8150'],['40–59 años','edad_40_59_total','edad_total_total','#bd5446'],['60 años o más','edad_60_mas_total','edad_total_total','#873c45']])}
       ${metricSection('Educación · población de 19 años o más',valid,[['Sin nivel','educacion_ninguno_total','educacion_total_19_mas_total','#b95f55'],['Primaria','educacion_primaria_total','educacion_total_19_mas_total','#de955f'],['Secundaria','educacion_secundaria_total','educacion_total_19_mas_total','#e8c35c'],['Superior','educacion_superior_total','educacion_total_19_mas_total','#728f6f']])}
