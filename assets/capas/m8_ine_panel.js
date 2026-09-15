@@ -5,6 +5,9 @@
   const DATA_URL='assets/capas/ine_m8_data.json';
   const AP_DATA_URL='assets/capas/ine_ap_censo_2024.json';
   const EXCEL_URL='assets/downloads/Datos_INE_Areas_Protegidas_2024.xlsx';
+  const BASINS_ID='ine_cuencas_n3';
+  const BASIN_DATA_URL='assets/capas/ine_cuenca_censo_2024.json';
+  const BASIN_EXCEL_URL='assets/downloads/Datos_Poblacionales_Cuencas_INE_2024.xlsx';
   const COMMUNITIES_URL='assets/capas/ine_comunidades_m8.geojson';
   const BLOCKS_URL='assets/capas/ine_manzanas_m8.geojson';
   const grid=document.querySelector('.kpi-grid');
@@ -23,10 +26,15 @@
   let loadPromise=null;
   let apData=null;
   let apLoadPromise=null;
+  let basinData=null;
+  let basinLoadPromise=null;
   let communitiesLayer=null;
   let blocksLayer=null;
   let populationAPLayer=null;
   let populationAPOpacity=1;
+  let basinsLayer=null;
+  let basinsOpacity=.3;
+  let selectedBasinCode='';
   let panelMode='points';
   let selectionLabel='Sin selección para reporte';
   let statusMessage='Selecciona una o más áreas protegidas, unidades en el mapa o dibuja un límite.';
@@ -52,13 +60,17 @@
     .m8-unit-row i{width:8px;height:8px;border-radius:50%;background:#5b6fb3}.m8-unit-row small{color:var(--text-dim)}
     .m8-draw-help{font-size:10px;color:var(--text-dim);line-height:1.45;margin:4px 0 8px}.m8-draw-active{outline:2px solid #5b6fb3!important}
     .m8-source-note{font-size:9px;color:var(--text-dim);line-height:1.4;margin-top:8px}
-    .m8-view-tabs{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;background:var(--panel-2);border:1px solid var(--border);border-radius:9px}
+    .m8-view-tabs{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;background:var(--panel-2);border:1px solid var(--border);border-radius:9px}
     .m8-view-tab{border:0;border-radius:6px;background:transparent;color:var(--text-dim);font:600 10px Inter,sans-serif;padding:8px 5px;cursor:pointer}
     .m8-view-tab.active{background:var(--panel);color:#40579d;box-shadow:0 1px 4px rgba(35,48,90,.12)}
     .m8-ap-section{margin-top:11px}.m8-ap-section:first-of-type{margin-top:4px}.m8-ap-section h5{margin:0 0 7px;font:700 10px Inter,sans-serif;letter-spacing:.055em;text-transform:uppercase;color:var(--text-dim)}
     .m8-metric{display:grid;grid-template-columns:minmax(92px,1fr) 1.35fr auto;gap:7px;align-items:center;margin:6px 0;font-size:10px}
     .m8-metric-name{line-height:1.25}.m8-metric-track{height:7px;border-radius:5px;background:var(--panel-2);overflow:hidden}.m8-metric-fill{height:100%;border-radius:5px;min-width:2px}.m8-metric-value{text-align:right;font-family:monospace;font-size:9px;color:var(--text-dim);white-space:nowrap}
     .m8-ap-list{display:flex;flex-direction:column;gap:4px;max-height:330px;overflow:auto;margin-top:8px}.m8-ap-row{display:grid;grid-template-columns:11px 1fr auto;gap:7px;align-items:center;width:100%;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:7px;padding:7px;text-align:left;cursor:pointer;font:500 10px Inter,sans-serif}.m8-ap-row:hover{border-color:#d17b56}.m8-ap-row.selected{border-color:#c94b3e;background:color-mix(in srgb,#f2a45d 12%,var(--panel))}.m8-ap-row i{width:9px;height:9px;border-radius:2px}.m8-ap-row b{font-family:monospace;font-size:9px}.m8-ap-row.no-data{opacity:.62}.m8-ap-actions{display:flex;justify-content:space-between;align-items:center;gap:8px}.m8-ap-actions a{font-size:9px;color:#40579d;text-decoration:none}.m8-ap-actions a:hover{text-decoration:underline}
+    .m8-basin-row:hover{border-color:#2f6388}.m8-basin-row.selected{border-color:#173b57;background:color-mix(in srgb,#8fc4e8 20%,var(--panel))}
+    .m8-basin-label{background:rgba(255,255,255,.76);border:0;box-shadow:none;color:#173b57;font:700 9px Inter,sans-serif;padding:1px 3px;text-align:center;text-shadow:0 1px 0 #fff;white-space:normal;max-width:105px}
+    .m8-basin-label:before{display:none}
+    .m8-basins-low-zoom .m8-basin-label-unit{display:none}.m8-basins-low-zoom .m8-basin-label{font-size:8px;max-width:78px;padding:0 2px}
   `;
   document.head.appendChild(style);
 
@@ -67,6 +79,7 @@
     {c:'#8c5bc0',l:'Centro urbano',v:'Código -M'}
   ]};
   ACTIVE_LAYER_LEGENDS[BLOCKS_ID]={title:'Manzanas censales INE',items:[{c:'#e08a24',l:'Manzana censal',v:'Código -A'}]};
+  ACTIVE_LAYER_LEGENDS[BASINS_ID]={title:'Cuencas Hidrográficas (Nivel 3)',items:[{c:'#8fc4e8',l:'Cuenca hidrográfica',v:'Borde azul oscuro · 70% transparencia'}]};
   LAYER_METADATA[COMMUNITIES_ID]={title:'Comunidades y centros urbanos · Censo 2024',body:[
     'Puntos oficiales consultados mediante la API del Geoportal del INE y extraídos dentro de áreas protegidas.',
     'COD_INE es el identificador utilizado para validar y generar fichas técnicas oficiales.'
@@ -75,11 +88,17 @@
     'Manzanas oficiales consultadas mediante la API del Geoportal del INE.',
     'Las geometrías fueron reparadas y asignadas a las áreas protegidas mediante su centroide.'
   ]};
+  LAYER_METADATA[BASINS_ID]={title:'Cuencas Hidrográficas (Nivel 3)',body:[
+    'Unidades hidrográficas de nivel 3 en coordenadas WGS 84.',
+    'El campo nivel_3 vincula cada geometría con las fichas de población del INE, Censo 2024.'
+  ]};
 
   const num=value=>Number.isFinite(Number(value))?Number(value):0;
   const compact=value=>num(value).toLocaleString('es-BO');
   const normalize=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
   const codeOf=feature=>String(feature?.properties?.COD_INE||'');
+  const basinCodeOf=feature=>String(feature?.properties?.nivel_3||'').padStart(3,'0');
+  const basinNameOf=feature=>feature?.properties?.nombre_cuenca||feature?.properties?.nombre_n3||`Unidad hidrográfica ${basinCodeOf(feature)}`;
   const groupOf=feature=>`${normalize(feature?.properties?.NOMBRE)}|${feature?.properties?.COD_MPIO||''}`;
 
   function populationRecords(){return apData?.records||[];}
@@ -117,6 +136,41 @@
     });
   }
 
+  function basinRecords(){return basinData?.records||[];}
+  function basinRecord(code){const key=String(code||'').padStart(3,'0');return basinRecords().find(row=>String(row.nivel_3)===key);}
+  function basinStyle(feature){
+    const selected=!selectedBasinCode||basinCodeOf(feature)===selectedBasinCode;
+    return {
+      color:selected?'#173b57':'#55768d',
+      weight:selectedBasinCode&&selected?3:1.35,
+      opacity:selected ? .96 : .35,
+      fillColor:'#8fc4e8',
+      fillOpacity:selected?basinsOpacity:Math.min(.08,basinsOpacity*.25)
+    };
+  }
+  function refreshBasinsLayer(){
+    basinsLayer?.eachLayer(layer=>{
+      if(!layer.feature||!layer.setStyle)return;
+      layer.setStyle(basinStyle(layer.feature));
+      if(basinCodeOf(layer.feature)===selectedBasinCode)layer.bringToFront?.();
+    });
+  }
+  function refreshBasinLabelVisibility(){map.getContainer()?.classList.toggle('m8-basins-low-zoom',map.getZoom()<8);}
+  map.on('zoomend',refreshBasinLabelVisibility);
+  function selectBasin(code,zoom=false){
+    selectedBasinCode=String(code||'').padStart(3,'0');
+    panelMode='basins';
+    refreshBasinsLayer();
+    if(zoom&&basinsLayer){
+      basinsLayer.eachLayer(layer=>{
+        if(basinCodeOf(layer.feature)!==selectedBasinCode)return;
+        const bounds=layer.getBounds?.();if(bounds?.isValid())map.fitBounds(bounds.pad(.08));
+      });
+    }
+    renderM8DataPanel();
+  }
+  function clearBasinSelection(){selectedBasinCode='';refreshBasinsLayer();renderM8DataPanel();}
+
   function pointStyle(feature){
     const code=codeOf(feature);
     const selected=selectedCodes.has(code);
@@ -146,6 +200,25 @@
   }
 
   createGeoJSONLayer=function(id,layerDef){
+    if(id===BASINS_ID){
+      basinsOpacity=Math.max(0,Math.min(1,num(layerDef.opacity??30)/100));
+      basinsLayer=L.geoJSON(geoData[id]||{type:'FeatureCollection',features:[]},{
+        style:basinStyle,
+        onEachFeature:(feature,layer)=>{
+          const p=feature.properties||{};const code=basinCodeOf(feature);const name=basinNameOf(feature);
+          const unitLabel=normalize(name).startsWith('unidad hidrografica');
+          layer.bindTooltip(escapeHTML(name),{permanent:true,direction:'center',className:`m8-basin-label${unitLabel?' m8-basin-label-unit':''}`,interactive:false});
+          layer.bindPopup(`<div class="feature-popup"><h5>${escapeHTML(name)}</h5><table>
+            <tr><td>Código Nivel 3</td><td><b>${escapeHTML(code)}</b></td></tr>
+            <tr><td>Superficie</td><td>${p.area_km2?`${num(p.area_km2).toLocaleString('es-BO',{maximumFractionDigits:1})} km²`:'—'}</td></tr>
+            <tr><td>Población 2024</td><td>${p.tiene_ficha?compact(p.poblacion_2024):'Sin ficha disponible'}</td></tr>
+          </table><div style="margin-top:7px;font-size:10px;color:var(--text-dim)">Haz clic para filtrar los indicadores por esta cuenca.</div></div>`,{maxWidth:300});
+          layer.on('click',event=>{if(event.originalEvent)L.DomEvent.stopPropagation(event.originalEvent);selectBasin(code);});
+        }
+      });
+      refreshBasinLabelVisibility();
+      return basinsLayer;
+    }
     if(id===COMMUNITIES_ID){
       communitiesData=geoData[id]||communitiesData;
       communitiesLayer=L.geoJSON(communitiesData||{type:'FeatureCollection',features:[]},{
@@ -181,6 +254,11 @@
   };
 
   applyLayerOpacity=function(id,layer,pct){
+    if(id===BASINS_ID&&layer===basinsLayer){
+      basinsOpacity=Math.max(0,Math.min(1,num(pct)/100));
+      refreshBasinsLayer();
+      return;
+    }
     if(id===COMMUNITIES_ID){
       layer?.eachLayer(child=>{if(child.feature&&child.setStyle)child.setStyle(pointStyle(child.feature));});
       return;
@@ -207,6 +285,17 @@
       }).then(data=>{apData=data;refreshPopulationAPLayer();return data;}).catch(error=>{statusMessage=error.message;statusKind='error';console.warn(error);});
     }
     return apLoadPromise;
+  }
+
+  function ensureBasinData(){
+    if(basinData)return Promise.resolve(basinData);
+    if(!basinLoadPromise){
+      basinLoadPromise=fetch(BASIN_DATA_URL).then(response=>{
+        if(!response.ok)throw new Error('No se pudieron cargar las fichas consolidadas por cuenca');
+        return response.json();
+      }).then(data=>{basinData=data;return data;}).catch(error=>{statusMessage=error.message;statusKind='error';console.warn(error);});
+    }
+    return basinLoadPromise;
   }
 
   function ensureData(){
@@ -356,7 +445,7 @@
     [...(communitiesData?.features||[]),...(blocksData?.features||[])].forEach(feature=>{if(codes.has(codeOf(feature)))rows.push(feature.properties||{});});
     return rows.slice(0,20);
   }
-  function tabsHTML(){return `<div class="m8-view-tabs"><button class="m8-view-tab${panelMode==='points'?' active':''}" type="button" data-m8-mode="points">Datos puntuales</button><button class="m8-view-tab${panelMode==='areas'?' active':''}" type="button" data-m8-mode="areas">Por área protegida</button></div>`;}
+  function tabsHTML(){return `<div class="m8-view-tabs"><button class="m8-view-tab${panelMode==='points'?' active':''}" type="button" data-m8-mode="points">Datos puntuales</button><button class="m8-view-tab${panelMode==='areas'?' active':''}" type="button" data-m8-mode="areas">Por área protegida</button><button class="m8-view-tab${panelMode==='basins'?' active':''}" type="button" data-m8-mode="basins">Por cuenca</button></div>`;}
   function bindTabs(){document.querySelectorAll('[data-m8-mode]').forEach(button=>button.addEventListener('click',()=>{panelMode=button.dataset.m8Mode;cancelDrawing(true);renderM8DataPanel();}));}
   function renderLoading(label){
     grid.classList.remove('m3-three-kpis');grid.innerHTML=`${tabsHTML()}<div class="kpi" style="grid-column:1/-1"><div class="lbl">Datos INE</div><div class="trend">${escapeHTML(label)}</div></div>`;
@@ -418,10 +507,41 @@
       <div class="m8-source-note">Selecciona un área para filtrar el mapa y todas las variables. La lista está ordenada de mayor a menor población.</div>`;
     bindTabs();document.getElementById('m8ClearAPPopulation')?.addEventListener('click',()=>window.clearProtectedAreaFilter?.());document.querySelectorAll('[data-m8-ap-index]').forEach(button=>button.addEventListener('click',()=>window.setProtectedAreaFilter?.([allRows[num(button.dataset.m8ApIndex)].area_protegida])));
   }
+  function basinInventory(){return basinData?.cuencas||[];}
+  function selectedBasinLabel(){
+    if(!selectedBasinCode)return 'Todas las cuencas';
+    return basinInventory().find(row=>String(row.nivel_3)===selectedBasinCode)?.cuenca||`Cuenca ${selectedBasinCode}`;
+  }
+  function scopedBasinRecords(){return selectedBasinCode?basinRecords().filter(row=>String(row.nivel_3)===selectedBasinCode):basinRecords();}
+  function scopedBasinInventory(){return selectedBasinCode?basinInventory().filter(row=>String(row.nivel_3)===selectedBasinCode):basinInventory();}
+  function renderBasinPanel(){
+    if(!basinData){renderLoading('Cargando las fichas consolidadas por cuenca…');ensureBasinData().then(()=>{if(currentModule===MODULE_ID&&panelMode==='basins')renderM8DataPanel();});return;}
+    const rows=scopedBasinRecords();const scope=scopedBasinInventory();const valid=rows.filter(row=>row.tiene_ficha);const population=sum(valid,'edad_total_total');const women=sum(valid,'edad_total_mujeres');const housing=sum(valid,'vivienda_total');
+    grid.classList.remove('m3-three-kpis');grid.innerHTML=`${tabsHTML()}
+      <div class="kpi"><div class="lbl">Población</div><div class="val">${compact(population)}</div><div class="trend">${escapeHTML(selectedBasinLabel())}</div></div>
+      <div class="kpi"><div class="lbl">Mujeres</div><div class="val">${compact(women)}</div><div class="trend">${population?(women/population*100).toLocaleString('es-BO',{maximumFractionDigits:1}):0}% de la población</div></div>
+      <div class="kpi"><div class="lbl">Viviendas</div><div class="val">${compact(housing)}</div><div class="trend">Viviendas particulares y colectivas</div></div>
+      <div class="kpi"><div class="lbl">Fichas disponibles</div><div class="val">${compact(valid.length)}</div><div class="trend">de ${compact(scope.length)} ${scope.length===1?'cuenca':'cuencas'} en el filtro</div></div>`;
+    donutCard.innerHTML=`<h4>Variables principales <span class="mono" style="color:var(--text-dim);font-size:10px">Censo 2024</span></h4>
+      ${valid.length?`${metricSection('Estructura por edad',valid,[['0–19 años','edad_0_19_total','edad_total_total','#f0b657'],['20–39 años','edad_20_39_total','edad_total_total','#df8150'],['40–59 años','edad_40_59_total','edad_total_total','#bd5446'],['60 años o más','edad_60_mas_total','edad_total_total','#873c45']])}
+      ${metricSection('Educación · población de 19 años o más',valid,[['Sin nivel','educacion_ninguno_total','educacion_total_19_mas_total','#b95f55'],['Primaria','educacion_primaria_total','educacion_total_19_mas_total','#de955f'],['Secundaria','educacion_secundaria_total','educacion_total_19_mas_total','#e8c35c'],['Superior','educacion_superior_total','educacion_total_19_mas_total','#728f6f']])}
+      ${metricSection('Seguro de salud',valid,[['SUS','seguro_salud_sus_total','seguro_salud_total_total','#5f8e9e'],['Caja de salud','seguro_salud_caja_salud_total','seguro_salud_total_total','#6177a8'],['Seguro privado','seguro_salud_seguro_privado_total','seguro_salud_total_total','#8f6fa4'],['Ninguno','seguro_salud_ninguno_total','seguro_salud_total_total','#b86858']])}
+      ${metricSection('Actividad económica · población ocupada',valid,[['Agricultura','actividad_agricultura_total','actividad_total_14_mas_total','#748b51'],['Comercio','actividad_comercio_total','actividad_total_14_mas_total','#d19a42'],['Manufactura','actividad_manufactura_total','actividad_total_14_mas_total','#bb714f'],['Construcción','actividad_construccion_total','actividad_total_14_mas_total','#877c6d'],['Transporte','actividad_transporte_total','actividad_total_14_mas_total','#607f9a']])}
+      ${metricSection('Servicios en el hogar',valid,[['Electricidad pública','electricidad_servicio_publico','electricidad_total','#dbbd45'],['Agua por red','agua_red','agua_total','#4f91bd'],['Alcantarillado','saneamiento_alcantarillado','saneamiento_total','#667fa8'],['Internet','tic_internet','tic_total_hogares','#7b64a7']])}`:'<div class="m8-status">No hay una ficha disponible para la cuenca seleccionada.</div>'}
+      <div class="m8-source-note">Fuente: fichas de población del INE, Censo 2024. Los totales corresponden a las fichas de cuencas visibles en el filtro.</div>`;
+    const allRows=basinInventory().slice().sort((a,b)=>num(b.poblacion_2024)-num(a.poblacion_2024)||a.cuenca.localeCompare(b.cuenca,'es'));
+    breakdownCard.style.display='';breakdownCard.innerHTML=`<div class="m8-ap-actions"><h4 style="margin:0">Cuencas por población</h4><a href="${BASIN_EXCEL_URL}" download>Descargar Excel</a></div>
+      <button class="m8-btn" id="m8ClearBasin" type="button" style="width:100%;margin-top:8px"${selectedBasinCode?'':' disabled'}>Limpiar filtro de cuenca</button>
+      <div class="m8-ap-list">${allRows.map((row,index)=>{const selected=String(row.nivel_3)===selectedBasinCode;const value=row.tiene_ficha?compact(row.poblacion_2024):'Sin ficha';return `<button class="m8-ap-row m8-basin-row${selected?' selected':''}${row.tiene_ficha?'':' no-data'}" type="button" data-m8-basin-index="${index}"><i style="background:#8fc4e8;border:1px solid #173b57"></i><span>${escapeHTML(row.cuenca)}<br><small>Nivel 3 · ${escapeHTML(row.nivel_3)}</small></span><b>${value}</b></button>`;}).join('')}</div>
+      <div class="m8-source-note">Selecciona una cuenca en el mapa o en esta lista para filtrar todas las variables. La lista está ordenada de mayor a menor población.</div>`;
+    bindTabs();document.getElementById('m8ClearBasin')?.addEventListener('click',clearBasinSelection);document.querySelectorAll('[data-m8-basin-index]').forEach(button=>button.addEventListener('click',()=>selectBasin(allRows[num(button.dataset.m8BasinIndex)].nivel_3,true)));
+  }
   function renderM8DataPanel(){
     if(currentModule!==MODULE_ID||!grid||!donutCard||!breakdownCard)return;
-    if(panelMode==='areas')renderAreaPanel();else renderPointPanel();
-    const title=document.getElementById('rightTitle');const sub=document.getElementById('rightSub');if(title)title.textContent=selectedAPs.size?selectedAPLabel():'Datos INE';if(sub)sub.textContent=panelMode==='areas'?'Indicadores por área protegida · Censo 2024':'Comunidades, manzanas y fichas oficiales · Censo 2024';
+    if(panelMode==='areas')renderAreaPanel();else if(panelMode==='basins')renderBasinPanel();else renderPointPanel();
+    const title=document.getElementById('rightTitle');const sub=document.getElementById('rightSub');
+    if(title)title.textContent=panelMode==='basins'?(selectedBasinCode?selectedBasinLabel():'Datos INE'):selectedAPs.size?selectedAPLabel():'Datos INE';
+    if(sub)sub.textContent=panelMode==='areas'?'Indicadores por área protegida · Censo 2024':panelMode==='basins'?'Indicadores por cuenca · Censo 2024':'Comunidades, manzanas y fichas oficiales · Censo 2024';
   }
   function restoreDefault(){
     cancelDrawing(true);if(grid)grid.innerHTML=defaultGridHTML;if(donutCard)donutCard.innerHTML=defaultDonutHTML;if(breakdownCard){breakdownCard.style.display='';breakdownCard.innerHTML=defaultBreakdownHTML;}

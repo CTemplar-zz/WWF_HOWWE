@@ -1534,6 +1534,7 @@ const MODULES = {
       {id:'departamentos',name:'Departamentos de Bolivia',group:'Marco espacial',color:'#000000',opacity:100,on:true},
       {id:'limites_municipales',name:'Límites municipales',group:'Marco espacial',color:'#000000',opacity:100,on:false,pmtiles:'assets/tiles/limites_municipales.pmtiles',pmlayer:'limites_municipales',maxDataZoom:12,bounds:[-69.64524603576484,-22.906568378770086,-57.454433527709995,-9.669633002177594],noDownload:true},
       {id:'apn',name:'Áreas Protegidas · población 2024',group:'Marco espacial',color:'linear-gradient(90deg,#fff2b2,#f2a45d,#c62828)',opacity:100,on:true,populationChoropleth:true},
+      {id:'ine_cuencas_n3',name:'Cuencas Hidrográficas (Nivel 3)',group:'Marco espacial',color:'#8fc4e8',opacity:30,on:true,geojsonUrl:'assets/capas/cuencas_nivel3_ine.geojson',noDownload:true},
       {id:'ine_comunidades_m8',name:'Comunidades y centros urbanos INE',group:'Censo 2024',color:'#5b6fb3',opacity:95,on:true,geojsonUrl:'assets/capas/ine_comunidades_m8.geojson'},
       {id:'ine_manzanas_m8',name:'Manzanas censales INE',group:'Censo 2024',color:'#e08a24',opacity:70,on:false,geojsonUrl:'assets/capas/ine_manzanas_m8.geojson'},
     ],
@@ -1542,6 +1543,7 @@ const MODULES = {
       {c:'#8c5bc0',l:'Centro urbano',v:'Punto'},
       {c:'#e08a24',l:'Manzana censal',v:'Polígono'},
       {c:'linear-gradient(90deg,#fff2b2,#f2a45d,#c62828)',l:'Población en áreas protegidas',v:'Menor → mayor'},
+      {c:'#8fc4e8',l:'Cuencas hidrográficas',v:'Nivel 3'},
       {c:'#000000',l:'Límites municipales',v:'Sin relleno'},
     ]}
   },
@@ -1582,6 +1584,10 @@ Object.values(MODULES).forEach(mod => {
     if(layer.id==='zonificacion_sernap'){
       layer.transparency = 28;
       layer.opacity = 72;
+    }
+    if(layer.id==='ine_cuencas_n3'){
+      layer.transparency = 70;
+      layer.opacity = 30;
     }
     if(layer.id==='dorado'){
       layer.transparency = 0;
