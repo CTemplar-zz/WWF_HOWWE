@@ -2,6 +2,10 @@
   const deforestation = window.DEFORESTATION_M3 || {years:[],rows:[]};
   const deforestationYears = Array.isArray(deforestation.years) ? deforestation.years.map(Number) : [];
   const deforestationRows = Array.isArray(deforestation.rows) ? deforestation.rows : [];
+  const burns = window.BURNS_M3 || {years:[],rows:[]};
+  const burnsYears = Array.isArray(burns.years) ? burns.years.map(Number) : [];
+  const burnsRows = Array.isArray(burns.rows) ? burns.rows : [];
+  let burnsTableYear = burnsYears[burnsYears.length-1];
   const selectedEcoregions = new Set();
   let activeThreatPanel = 'deforestation';
   let miningOutsideOnly = false;
@@ -21,7 +25,8 @@
     .toLowerCase()
     .replace(/\btipnis\b/g,'')
     .replace(/[^a-z0-9]+/g,' ')
-    .trim();
+    .trim()
+    .replace(/^serrania del aguarague$/, 'aguarague');
 
   const allEcoregions = [...new Set(deforestationRows.map(row=>row.ecoregion))]
     .sort((a,b)=>a.localeCompare(b,'es'));
@@ -41,7 +46,7 @@
     tabs.innerHTML=`
       <button class="m3-panel-tab" type="button" role="tab" data-threat-panel="deforestation">Deforestación</button>
       <button class="m3-panel-tab" type="button" role="tab" data-threat-panel="mining">Minería</button>
-      <button class="m3-panel-tab" type="button" role="tab" data-threat-panel="burns" disabled title="Panel disponible próximamente">Quemas</button>
+      <button class="m3-panel-tab" type="button" role="tab" data-threat-panel="burns">Quemas</button>
     `;
     rightPanel?.insertBefore(tabs,rightPanel.querySelector('.info-h'));
     tabs.querySelectorAll('[data-threat-panel]:not(:disabled)').forEach(button=>{
@@ -230,6 +235,67 @@
     updateDeforestationContext(rows);
   }
 
+  function scopedBurnsRows(){
+    if(selectedAPs.size===0) return burnsRows;
+    const selected=selectedAPKeys();
+    return burnsRows.filter(row=>selected.has(normalizeAP(row.name)));
+  }
+
+  function renderBurnsPanel(){
+    const rows=scopedBurnsRows();
+    const annualTotals=burnsYears.map(year=>({
+      year,
+      value:rows.reduce((sum,row)=>sum+(Number(row.annual?.[year])||0),0)
+    }));
+    const totalAnnualHa=annualTotals.reduce((sum,item)=>sum+item.value,0);
+    const latest=annualTotals[annualTotals.length-1] || {year:'',value:0};
+    const apHa=rows.reduce((sum,row)=>sum+(Number(row.apHa)||0),0);
+    const latestPct=apHa>0 ? latest.value/apHa*100 : 0;
+    const pctFormat=value=>value.toLocaleString('es-BO',{minimumFractionDigits:2,maximumFractionDigits:2})+' %';
+    const clearAP=selectedAPs.size
+      ? ` · <a href="#" id="m3ClearBurnsAP" style="color:var(--accent)">limpiar AP</a>`
+      : '';
+    const year=burnsTableYear || latest.year;
+    const sorted=[...rows].sort((a,b)=>(Number(b.annual?.[year])||0)-(Number(a.annual?.[year])||0));
+
+    grid.classList.remove('m3-three-kpis');
+    breakdownCard.style.display='';
+    grid.innerHTML=`
+      <div class="kpi"><div class="lbl">Superficie anual acumulada</div><div class="val">${formatSurfaceHTML(totalAnnualHa)}</div><div class="trend">Suma 2016–2023; una zona puede repetirse${clearAP}</div></div>
+      <div class="kpi"><div class="lbl">Quemas ${latest.year}</div><div class="val">${formatSurfaceHTML(latest.value)}</div><div class="trend">Superficie quemada</div></div>
+      <div class="kpi"><div class="lbl">AP quemada ${latest.year}</div><div class="val">${pctFormat(latestPct)}</div><div class="trend">Respecto a ${rows.length===1?'la superficie del AP':'la superficie conjunta de las AP'}</div></div>
+      <div class="kpi"><div class="lbl">Cobertura del filtro</div><div class="val">${rows.length}<span class="unit">AP</span></div><div class="trend">${selectedAPs.size?'AP seleccionadas':'Todas las AP de la tabla'}</div></div>
+    `;
+    donutCard.innerHTML=`
+      <h4>Evolución anual <span class="mono" style="color:var(--text-dim);font-size:10px">superficie (ha)</span></h4>
+      ${annualChartHTML(annualTotals,'Superficie quemada por año en hectáreas','burns')}
+      <div class="m3-panel-note">${selectedAPs.size===1?escapeHTML([...selectedAPs][0]):`${rows.length} áreas protegidas`}. La superficie se suma por año; el porcentaje corresponde al área de las AP incluidas en el filtro.</div>
+    `;
+    breakdownCard.innerHTML=`
+      <h4>Quemas por área protegida</h4>
+      <div class="m3-burns-toolbar">
+        <label for="m3BurnsYear">Año <select id="m3BurnsYear">${burnsYears.map(value=>`<option value="${value}"${value===year?' selected':''}>${value}</option>`).join('')}</select></label>
+        <a class="m3-burns-download" href="assets/downloads/Superficie_Quemas_AP_2016_2023.xlsx" download>Descargar tabla Excel</a>
+      </div>
+      <div class="m3-burns-table-wrap"><table class="m3-burns-table"><thead><tr><th>Área protegida</th><th>ha</th><th>% AP</th></tr></thead><tbody>
+      ${sorted.map(row=>`<tr><td>${escapeHTML(row.name)}</td><td>${(Number(row.annual?.[year])||0).toLocaleString('es-BO',{maximumFractionDigits:2})}</td><td>${pctFormat((Number(row.fraction?.[year])||0)*100)}</td></tr>`).join('')}
+      </tbody></table></div>
+      <div class="m3-panel-note">El Excel contiene una fila por AP y columnas separadas de hectáreas y porcentaje para cada año de 2016 a 2023.</div>
+    `;
+    document.getElementById('m3BurnsYear')?.addEventListener('change',event=>{
+      burnsTableYear=Number(event.target.value);
+      renderM3DataPanel();
+    });
+    document.getElementById('m3ClearBurnsAP')?.addEventListener('click',event=>{
+      event.preventDefault();
+      document.getElementById('apFilterClear')?.click();
+    });
+    const title=document.getElementById('rightTitle');
+    const sub=document.getElementById('rightSub');
+    if(title) title.textContent=selectedAPs.size===1?[...selectedAPs][0]:'Quemas en áreas protegidas';
+    if(sub) sub.textContent=`2016–2023 · ${rows.length} áreas protegidas`;
+  }
+
   function miningRows(){
     const features=typeof geoData!=='undefined' && geoData.mineria_ilegal?.features;
     return Array.isArray(features) ? features.map(feature=>feature.properties||{}) : [];
@@ -394,6 +460,7 @@
     updatePanelTabs();
     refreshMiningLayerStyle();
     if(activeThreatPanel==='mining') renderMiningPanel();
+    else if(activeThreatPanel==='burns') renderBurnsPanel();
     else renderDeforestationPanel();
   }
 

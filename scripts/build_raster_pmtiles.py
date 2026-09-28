@@ -59,6 +59,17 @@ DEFORESTATION_CLASSES = {
     8: ("2023", "#800026"),
 }
 
+PERSISTENCE_CLASSES = {
+    1: ("1 año de quema", "#fff59d"),
+    2: ("2 años de quema", "#ffe082"),
+    3: ("3 años de quema", "#ffb74d"),
+    4: ("4 años de quema", "#ff8a65"),
+    5: ("5 años de quema", "#ef5350"),
+    6: ("6 años de quema", "#c62828"),
+    7: ("7 años de quema", "#880e4f"),
+    8: ("8 años de quema", "#4a148c"),
+}
+
 STYLES = {
     "mapbiomas": {
         "classes": MAPBIOMAS_CLASSES,
@@ -70,6 +81,12 @@ STYLES = {
         "classes": DEFORESTATION_CLASSES,
         "name": "Deforestacion Bolivia 2016-2023",
         "description": "Ano de la primera deforestacion observada por pixel de 30 m. En superposiciones conserva el ano mas antiguo.",
+        "attribution": "WWF Bolivia - procesamiento propio",
+    },
+    "persistence": {
+        "classes": PERSISTENCE_CLASSES,
+        "name": "Persistencia de quemas en áreas protegidas 2016-2023",
+        "description": "Cantidad de años con quema entre 2016 y 2023 dentro de áreas protegidas. Raster de visualización de 75 m derivado del shapefile de persistencia.",
         "attribution": "WWF Bolivia - procesamiento propio",
     },
 }

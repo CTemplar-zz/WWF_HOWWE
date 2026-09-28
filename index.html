@@ -54,6 +54,7 @@
 <script src="assets/capas/geo_m4_intersection.js"></script>
 <script src="assets/capas/geo_ap_metrics_m2.js"></script>
 <script src="assets/capas/geo_deforestation_m3.js"></script>
+<script src="assets/capas/geo_burns_m3.js"></script>
 <script src="assets/capas/geo_landcover_m1.js"></script>
 <!-- geo_sea.js removido: migrado a PMTiles en assets/tiles/sea.pmtiles -->
 <style>
@@ -835,6 +836,8 @@
   .m3-chart-bar:hover { opacity: 1; }
   .m3-chart-wrap.mining .m3-chart-bar { fill: #b24b24; }
   .m3-chart-wrap.mining .m3-chart-bar.latest { fill: #7f1d1d; }
+  .m3-chart-wrap.burns .m3-chart-bar { fill: #ef5350; }
+  .m3-chart-wrap.burns .m3-chart-bar.latest { fill: #880e4f; }
   .m3-panel-tabs {
     display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 5px;
     margin: 0 16px 12px; padding: 4px; border: 1px solid var(--border);
@@ -904,6 +907,14 @@
   .m3-eco-option.active .m3-eco-check { background: #d6452c; border-color: #d6452c; }
   .m3-eco-value { color: var(--text-dim); font: 500 9.5px 'JetBrains Mono', monospace; white-space: nowrap; }
   .m3-panel-note { margin-top: 8px; color: var(--text-dim); font-size: 10px; line-height: 1.4; }
+  .m3-burns-toolbar { display:flex; align-items:center; justify-content:space-between; gap:8px; margin: 4px 0 8px; }
+  .m3-burns-toolbar select { border:1px solid var(--border); border-radius:5px; background:var(--bg-panel); color:var(--text); padding:4px; font:inherit; font-size:10px; }
+  .m3-burns-download { color:var(--accent); font-size:10px; font-weight:600; text-decoration:none; }
+  .m3-burns-table-wrap { max-height:285px; overflow:auto; }
+  .m3-burns-table { width:100%; border-collapse:collapse; font-size:10px; }
+  .m3-burns-table th,.m3-burns-table td { padding:6px 4px; border-bottom:1px solid var(--border); text-align:right; }
+  .m3-burns-table th:first-child,.m3-burns-table td:first-child { text-align:left; }
+  .m3-burns-table th { color:var(--text-dim); position:sticky; top:0; background:var(--bg-panel); }
   .statusbar { display: flex; align-items: center; padding: 0 14px; background: var(--bg-elev); border-top: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--text-dim); gap: 16px; }
   .statusbar .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 5px; display: inline-block; box-shadow: 0 0 6px var(--accent); }
   .statusbar .right-status { margin-left: auto; display: flex; gap: 14px; }
@@ -1402,6 +1413,7 @@ const MODULES = {
       {id:'wms_quemas_incendios_2019_2022',name:'Quemas e incendios 2019-2022',group:'SINACAR / INRA',color:'#e87522',opacity:85,on:false,wmsLayer:'sinacar:layer_quemasincendios19_22_9vror',wms:INRA_WMS_URL,bounds:[-69.5682373046875,-22.868593215942383,-57.6021614074707,-9.678046226501465]},
       {id:'wms_quemas_incendios_2023_2025',name:'Quemas e incendios 2023-2025',group:'SINACAR / INRA',color:'#a43b1d',opacity:85,on:false,wmsLayer:'sinacar:layer_quemasincendios23_25_5xk55',wms:INRA_WMS_URL,bounds:[-69.56733703613281,-22.762861251831055,-57.46281433105469,-9.687928199768066]},
       {id:'deforestacion_2016_2023',name:'Deforestación 2016-2023',group:'Procesamiento propio',color:'#e31a1c',opacity:100,on:false,rasterPmtiles:'assets/tiles/deforestacion_2016_2023.pmtiles',maxDataZoom:12,bounds:[-69.91981275060164,-22.875657283846408,-57.29586204901586,-9.585587371420294],attribution:'WWF Bolivia',swatch:'linear-gradient(90deg,#ffffcc 0%,#fed976 28%,#fd8d3c 55%,#e31a1c 78%,#800026 100%)'},
+      {id:'persistencia_quemas_2016_2023',name:'Persistencia de quemas 2016-2023',group:'Procesamiento propio',color:'#c62828',opacity:100,on:false,rasterPmtiles:'assets/tiles/persistencia_quemas_2016_2023.pmtiles',maxDataZoom:12,bounds:[-69.3994580663737,-22.3359741186952,-57.41449056973905,-11.282649125864243],attribution:'WWF Bolivia',swatch:'linear-gradient(90deg,#fff59d 0%,#ffb74d 32%,#ef5350 60%,#880e4f 85%,#4a148c 100%)',downloadUrl:'assets/downloads/Superficie_Quemas_AP_2016_2023.xlsx',downloadLabel:'Descargar tabla Excel'},
       {id:'mineria_ilegal',name:'Minería ilegal 2018-2025',group:'Procesamiento propio',color:'#9c0027',opacity:78,on:false,bounds:[-68.926465,-18.391773,-60.727119,-9.737141],downloadUrl:'assets/downloads/mineria_ilegal_ap_todos.zip',downloadLabel:'Descargar shapefile ZIP'},
 
     ],
@@ -1416,6 +1428,14 @@ const MODULES = {
       {c:'#fc4e2a',l:'Deforestación 2021',v:'2021'},
       {c:'#e31a1c',l:'Deforestación 2022',v:'2022'},
       {c:'#800026',l:'Deforestación 2023',v:'2023'},
+      {c:'#fff59d',l:'Quemas en 1 año',v:'1'},
+      {c:'#ffe082',l:'Quemas en 2 años',v:'2'},
+      {c:'#ffb74d',l:'Quemas en 3 años',v:'3'},
+      {c:'#ff8a65',l:'Quemas en 4 años',v:'4'},
+      {c:'#ef5350',l:'Quemas en 5 años',v:'5'},
+      {c:'#c62828',l:'Quemas en 6 años',v:'6'},
+      {c:'#880e4f',l:'Quemas en 7 años',v:'7'},
+      {c:'#4a148c',l:'Quemas en 8 años',v:'8'},
       {c:'#9c0027',l:'Minería ilegal',v:'2018-2025'},
 
     ]}
@@ -1652,6 +1672,15 @@ const LAYER_METADATA = {
       'La visualización se sirve como PMTiles hasta el nivel de zoom 12.'
     ],
     note: 'Procesamiento propio a partir de las capas anuales de deforestación.'
+  },
+  persistencia_quemas_2016_2023: {
+    title: 'Persistencia de quemas 2016-2023',
+    body: [
+      'Cada color indica en cuántos años hubo quemas entre 2016 y 2023 dentro de las áreas protegidas.',
+      'La capa de visualización conserva las ocho clases y colores del mapa de ArcGIS Pro. Sus píxeles de 75 m se sirven como PMTiles hasta el nivel de zoom 12.',
+      'La tabla descargable presenta superficie quemada y porcentaje del AP para cada año.'
+    ],
+    note: 'Procesamiento propio a partir de las capas anuales de quemas recortadas a áreas protegidas.'
   },
   mineria_ilegal: {
     title: 'Minería ilegal 2018-2025',
